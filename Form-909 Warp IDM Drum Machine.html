@@ -1,7 +1,14 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Form 909-WARP — a zero-dependency, browser-native IDM drum machine and polyrhythmic sequencer built on the Web Audio API. Six synthesis voices, per-step parameter locks, Euclidean generation and offline 24-bit WAV rendering.">
+  <meta name="author" content="zazieproductions">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="The Bureau of Unreasonable Rhythms — Form 909-WARP">
+  <meta property="og:description" content="A zero-dependency IDM drum machine: six Web Audio synthesis voices, polyrhythmic lanes, per-step parameter locks and offline 24-bit WAV export.">
   <title>The Bureau of Unreasonable Rhythms — Experimental Metric Facility</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +28,7 @@
       --rad-red: #ef4444;
       --glitch-pink: #f43f5e;
       --knob-track: #1e2631;
-      --text-dim: #64748b;
+      --text-dim: #74839a; /* 4.72:1 on --panel-bg — WCAG AA for the 9–10px labels it is used on */
       --text-mid: #94a3b8;
       --text-bright: #f8fafc;
       --mono: 'Share Tech Mono', monospace;
@@ -602,9 +609,15 @@
       background: rgba(0, 0, 0, 0.8);
       backdrop-filter: blur(4px);
       z-index: 1000;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    /* `hidden` is the single source of truth for modal visibility: it is
+       understood by assistive technology and by the CSS in one step. */
+    .modal-backdrop[hidden] {
+      display: none;
     }
 
     .modal-dialog {
@@ -680,6 +693,69 @@
       border: 1px solid #334155;
       color: #94a3b8;
     }
+
+    /* ---------------------------------------------------------------------
+       Accessibility: keyboard focus ring
+       `:focus-visible` (not `:focus`) so pointer users do not see outlines.
+       --------------------------------------------------------------------- */
+    :focus-visible {
+      outline: 2px solid var(--cyan-bright);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    .step-cell:focus-visible {
+      outline: 2px solid var(--amber);
+      outline-offset: 1px;
+      z-index: 2;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* ---------------------------------------------------------------------
+       Accessibility: vestibular-safe rendering.
+       The CRT scanlines, blinking LEDs and pulse animations are decorative;
+       when the OS requests reduced motion they are neutralised rather than
+       removed, so layout and hit targets stay identical.
+       --------------------------------------------------------------------- */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+
+      .scanlines {
+        display: none;
+      }
+    }
+
+    /* High-contrast preference: thicken borders rather than restyle entirely. */
+    @media (prefers-contrast: more) {
+      .module-box,
+      .step-cell,
+      .modal-dialog,
+      .progress-bar-wrap {
+        border-color: #94a3b8;
+      }
+
+      .step-cell {
+        background: #1b2430;
+      }
+    }
   </style>
 </head>
 <body>
@@ -701,26 +777,29 @@
         <span style="font-size: 10px; color: var(--text-dim);">SYNC</span>
       </div>
 
-      <button id="playBtn" class="btn primary">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <button id="playBtn" class="btn primary" aria-pressed="false" aria-describedby="transportHint">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         <span>EXECUTE [SPACE]</span>
       </button>
 
       <div style="display:flex; align-items:center; gap:6px;">
-        <label style="font-size:10px; color:var(--text-dim);">BPM</label>
-        <input type="number" id="tempoInput" min="40" max="360" value="168" style="width:52px; background:#0c1015; border:1px solid #334155; color:var(--cyan); font-family:var(--mono); padding:4px 6px; border-radius:3px; font-size:12px; font-weight:bold; text-align:center;">
+        <label for="tempoInput" style="font-size:10px; color:var(--text-dim);">BPM</label>
+        <input type="number" id="tempoInput" min="40" max="360" value="168" aria-label="Tempo in beats per minute" style="width:52px; background:#0c1015; border:1px solid #334155; color:var(--cyan); font-family:var(--mono); padding:4px 6px; border-radius:3px; font-size:12px; font-weight:bold; text-align:center;">
       </div>
 
       <button id="chaosBtn" class="btn accent" title="Inject Algorithmic Mutagen">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 3l-4 4 4 4V7h5v2h2V5h-7V3zm-8 18l4-4-4-4v4H3v2h5v2zM3 7h5v2H3V7zm13 10h5v2h-5v-2z"/></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 3l-4 4 4 4V7h5v2h2V5h-7V3zm-8 18l4-4-4-4v4H3v2h5v2zM3 7h5v2H3V7zm13 10h5v2h-5v-2z"/></svg>
         <span>MUTATE</span>
       </button>
 
       <button id="exportModalBtn" class="btn" style="border-color: #059669; color: #34d399;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
         <span>EXPORT 24-BIT WAV</span>
       </button>
     </div>
+    <p id="transportHint" class="visually-hidden">
+      Press the space bar to start or stop the sequencer whenever focus is not inside a text field or a step cell.
+    </p>
   </header>
 
   <!-- Bureau Workspace -->
@@ -736,8 +815,9 @@
           <span id="dspLoad" style="font-size:9px; color:var(--text-mid);">DSP: 48kHz</span>
         </div>
         <div class="crt-terminal">
-          <canvas id="oscilloscope" width="300" height="90"></canvas>
-          <div class="log-ticker" id="loreTicker">
+          <canvas id="oscilloscope" width="300" height="90" role="img"
+                  aria-label="Oscilloscope: live waveform of the master output bus."></canvas>
+          <div class="log-ticker" id="loreTicker" role="status" aria-live="polite" aria-atomic="true">
             DIRECTIVE 44: ALL SYNC VIOLATIONS MUST BE DOCUMENTED IN TRIPLICATE.
           </div>
         </div>
@@ -750,6 +830,7 @@
           <span class="badge">9 PROTOCOLS</span>
         </div>
         <div class="preset-selector">
+          <label class="visually-hidden" for="presetSelect">Curated dissonance archive: choose a case file</label>
           <select id="presetSelect" class="preset-dropdown">
             <option value="confield">Case 01: Confield Lattice (168 BPM · Micro-bursts)</option>
             <option value="drukqs">Case 02: Drukqs Drill Incident (192 BPM · Ratchets)</option>
@@ -778,17 +859,17 @@
         
         <div class="knob-grid">
           <div class="dial-unit">
-            <label>BIT CRUSH</label>
+            <label for="fxCrush">BIT CRUSH</label>
             <input type="range" id="fxCrush" min="0" max="1" step="0.01" value="0.15">
             <span class="dial-val" id="fxCrushVal">15%</span>
           </div>
           <div class="dial-unit">
-            <label>DRIVE SAT</label>
+            <label for="fxDrive">DRIVE SAT</label>
             <input type="range" id="fxDrive" min="0" max="1" step="0.01" value="0.25">
             <span class="dial-val" id="fxDriveVal">25%</span>
           </div>
           <div class="dial-unit">
-            <label>TIME JITTER</label>
+            <label for="fxHumanize">TIME JITTER</label>
             <input type="range" id="fxHumanize" min="0" max="25" step="1" value="4">
             <span class="dial-val" id="fxHumanizeVal">4ms</span>
           </div>
@@ -796,17 +877,17 @@
 
         <div class="knob-grid" style="margin-top:12px;">
           <div class="dial-unit">
-            <label>FILTER CUTOFF</label>
+            <label for="fxCutoff">FILTER CUTOFF</label>
             <input type="range" id="fxCutoff" min="150" max="18000" step="10" value="16500">
             <span class="dial-val" id="fxCutoffVal">16.5k</span>
           </div>
           <div class="dial-unit">
-            <label>DELAY TIME</label>
+            <label for="fxDelayTime">DELAY TIME</label>
             <input type="range" id="fxDelayTime" min="0.03" max="0.65" step="0.01" value="0.18">
             <span class="dial-val" id="fxDelayTimeVal">180ms</span>
           </div>
           <div class="dial-unit">
-            <label>FEEDBACK</label>
+            <label for="fxDelayFeedback">FEEDBACK</label>
             <input type="range" id="fxDelayFeedback" min="0" max="0.85" step="0.01" value="0.32">
             <span class="dial-val" id="fxDelayFeedbackVal">32%</span>
           </div>
@@ -821,17 +902,17 @@
         </div>
         <div class="knob-grid">
           <div class="dial-unit">
-            <label>GLOBAL PROB</label>
+            <label for="globalProb">GLOBAL PROB</label>
             <input type="range" id="globalProb" min="10" max="100" step="1" value="100">
             <span class="dial-val" id="globalProbVal">100%</span>
           </div>
           <div class="dial-unit">
-            <label>DRILL DENSITY</label>
+            <label for="globalRatchet">DRILL DENSITY</label>
             <input type="range" id="globalRatchet" min="0" max="100" step="1" value="20">
             <span class="dial-val" id="globalRatchetVal">20%</span>
           </div>
           <div class="dial-unit">
-            <label>SWING %</label>
+            <label for="masterSwing">SWING %</label>
             <input type="range" id="masterSwing" min="0" max="50" step="1" value="12">
             <span class="dial-val" id="masterSwingVal">12%</span>
           </div>
@@ -869,22 +950,22 @@
 
         <div class="knob-grid-4">
           <div class="dial-unit">
-            <label>VELOCITY</label>
+            <label for="stepVel">VELOCITY</label>
             <input type="range" id="stepVel" min="0" max="127" value="100">
             <span class="dial-val" id="stepVelVal">100</span>
           </div>
           <div class="dial-unit">
-            <label>RATCHET (BURST)</label>
+            <label for="stepRatch">RATCHET (BURST)</label>
             <input type="range" id="stepRatch" min="1" max="4" value="1">
             <span class="dial-val" id="stepRatchVal">1x</span>
           </div>
           <div class="dial-unit">
-            <label>PROBABILITY</label>
+            <label for="stepProb">PROBABILITY</label>
             <input type="range" id="stepProb" min="0" max="100" value="100">
             <span class="dial-val" id="stepProbVal">100%</span>
           </div>
           <div class="dial-unit">
-            <label>PITCH P-LOCK</label>
+            <label for="stepPitch">PITCH P-LOCK</label>
             <input type="range" id="stepPitch" min="-24" max="24" value="0">
             <span class="dial-val" id="stepPitchVal">0 st</span>
           </div>
@@ -896,15 +977,15 @@
   </main>
 
   <!-- Audio Exporter Modal -->
-  <div class="modal-backdrop" id="exportModal">
-    <div class="modal-dialog">
-      <h3>OFFLINE MASTER TAPE BOUNCE</h3>
-      <p style="font-size:11px; color:var(--text-mid); margin-bottom:12px;">
+  <div class="modal-backdrop" id="exportModal" hidden>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle" aria-describedby="exportModalDesc">
+      <h3 id="exportModalTitle">OFFLINE MASTER TAPE BOUNCE</h3>
+      <p id="exportModalDesc" style="font-size:11px; color:var(--text-mid); margin-bottom:12px;">
         The Bureau will render an uncompressed, mathematically scrutinized 24-bit PCM WAV file via offline audio rendering.
       </p>
 
       <div style="display:flex; gap:10px; margin-bottom:12px;">
-        <label style="font-size:11px; color:var(--text-dim); display:flex; align-items:center; gap:6px;">
+        <label for="exportBars" style="font-size:11px; color:var(--text-dim); display:flex; align-items:center; gap:6px;">
           Length:
           <select id="exportBars" style="background:#090c0f; color:#fff; border:1px solid #334155; padding:3px 6px; font-family:var(--mono);">
             <option value="2">2 Patterns (Loops)</option>
@@ -915,7 +996,8 @@
         </label>
       </div>
 
-      <div class="progress-bar-wrap">
+      <div class="progress-bar-wrap" role="progressbar" aria-labelledby="exportModalTitle"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="exportProgressWrap">
         <div class="progress-fill" id="exportProgress"></div>
       </div>
       <div id="exportStatusText" style="font-size:10px; color:var(--cyan); margin-bottom:16px;">READY FOR EXPORT</div>
@@ -1000,6 +1082,7 @@
     class BureauEngine {
       constructor() {
         this.audioCtx = null;
+        this.audioUnavailable = false;
         this.isPlaying = false;
         this.bpm = 168;
         this.stepIndex = 0;
@@ -1023,25 +1106,64 @@
 
         // Tracks data
         this.tracks = [];
-        this.selectedStep = null; // { trackIdx, stepIdx }
-        
-        // Mute/Solo States
-        this.mutes = [false, false, false, false, false, false];
-        this.solos = [false, false, false, false, false, false];
+        this.selectedStep = null; // { tIdx, sIdx }
+
+        // Web Audio node cache for the offline render graph (see `exportWav`).
+        this._crushCurve = null;
+        this._crushBits = null;
 
         this.initTracks();
       }
 
+      /**
+       * Create the AudioContext and master bus on first use; resume it if
+       * suspended. Safe to call repeatedly.
+       *
+       * Browsers refuse to start an AudioContext without a user gesture, so
+       * every interaction path that can produce sound calls this first.
+       *
+       * It never throws. If Web Audio is unavailable the instrument is silent
+       * but the interface stays fully explorable — the documented
+       * progressive-enhancement behaviour. Without this guard, a single
+       * exception here would abort the click handler before the pattern edit
+       * it was guarding had been applied.
+       *
+       * @returns {boolean} true when an audio context is available.
+       */
       initAudio() {
+        if (this.audioUnavailable) return false;
+
         if (!this.audioCtx) {
           const AudioContext = window.AudioContext || window.webkitAudioContext;
-          this.audioCtx = new AudioContext({ latencyHint: 'interactive' });
-          this.setupMasterBus();
-          this.setupOscilloscope();
+          if (!AudioContext) {
+            this.audioUnavailable = true;
+            return false;
+          }
+          try {
+            this.audioCtx = new AudioContext({ latencyHint: 'interactive' });
+            this.setupMasterBus();
+          } catch (err) {
+            console.error('Form 909-WARP: Web Audio unavailable — the interface ' +
+                          'remains explorable but silent.', err);
+            this.audioUnavailable = true;
+            this.audioCtx = null;
+            return false;
+          }
         }
+
+        // The scope is a readout, not part of the signal path: if its 2D
+        // context is unavailable the instrument stays audible and simply
+        // renders no waveform.
+        try {
+          this.setupOscilloscope();
+        } catch (err) {
+          console.warn('Form 909-WARP: vector scope unavailable.', err);
+        }
+
         if (this.audioCtx.state === 'suspended') {
           this.audioCtx.resume();
         }
+        return true;
       }
 
       setupMasterBus() {
@@ -1059,6 +1181,13 @@
         // Master Saturation / Drive Waveshaper
         this.driveShaper = ctx.createWaveShaper();
         this.updateDriveCurve(this.fx.drive);
+
+        // Bit-crush / amplitude quantiser.
+        // Deliberately placed once on the master bus rather than once per voice:
+        // a dense 4x ratchet can fire hundreds of voices per bar, and each
+        // WaveShaper curve allocation is 44 100 float32 samples.
+        this.crushShaper = ctx.createWaveShaper();
+        this.updateCrushCurve(this.fx.crush);
 
         // Lowpass Filter
         this.masterFilter = ctx.createBiquadFilter();
@@ -1088,10 +1217,11 @@
         this.limiter.release.value = 0.08;
 
         // Routing
-        // Track buses -> masterFilter -> driveShaper -> limiter -> Analyser -> Destination
-        // And masterFilter -> delayNode -> delayWet -> limiter
+        // Track buses -> crushShaper -> masterFilter -> driveShaper -> limiter -> Analyser -> Destination
+        // And masterFilter -> delayNode -> delayWet -> driveShaper
         this.busIn = ctx.createGain();
-        this.busIn.connect(this.masterFilter);
+        this.busIn.connect(this.crushShaper);
+        this.crushShaper.connect(this.masterFilter);
 
         this.masterFilter.connect(this.driveShaper);
         this.masterFilter.connect(this.delayNode);
@@ -1103,6 +1233,11 @@
         this.analyser.connect(ctx.destination);
       }
 
+      /**
+       * Rebuild the master saturation curve (a classic arctangent-style soft clipper).
+       * @param {number} amount 0..1 — `k` scales the transfer function's knee.
+       * @returns {Float32Array} the 44 100-point transfer curve.
+       */
       updateDriveCurve(amount) {
         const k = amount * 40;
         const n_samples = 44100;
@@ -1114,9 +1249,54 @@
         }
         if (this.driveShaper) {
           this.driveShaper.curve = curve;
+          // 4x oversampling keeps the harmonics this curve generates from
+          // aliasing back below Nyquist, which would sound like gritty noise.
           this.driveShaper.oversample = '4x';
         }
         return curve;
+      }
+
+      /**
+       * Rebuild the bit-crush curve: a staircase quantiser that snaps the incoming
+       * signal to the nearest of 2^bits amplitude levels.
+       *
+       * `amount` maps linearly from 16-bit (transparent) down to CRUSH_MIN_BITS.
+       * Two details matter musically:
+       *   - `oversample = 'none'`. Oversampling would low-pass the staircase and
+       *     undo the effect; the harsh, unfiltered aliasing *is* the sound.
+       *   - The curve is memoised on bit depth. Dragging the slider sweeps 101
+       *     discrete values but only 14 distinct curves, so 86% of the
+       *     allocations (44 100 float32 = 176 KB each) are avoided.
+       *
+       * @param {number} amount 0..1
+       * @returns {Float32Array} the quantisation transfer curve.
+       */
+      updateCrushCurve(amount) {
+        const CRUSH_MIN_BITS = 3;
+        const CRUSH_MAX_BITS = 16;
+        const n_samples = 44100;
+
+        const bits = Math.max(
+          CRUSH_MIN_BITS,
+          Math.min(CRUSH_MAX_BITS, Math.round(CRUSH_MAX_BITS - amount * (CRUSH_MAX_BITS - CRUSH_MIN_BITS)))
+        );
+
+        if (this._crushBits !== bits || !this._crushCurve) {
+          const levels = Math.pow(2, bits) / 2;
+          const curve = new Float32Array(n_samples);
+          for (let i = 0; i < n_samples; ++i) {
+            const x = (i * 2) / n_samples - 1;
+            curve[i] = Math.round(x * levels) / levels;
+          }
+          this._crushBits = bits;
+          this._crushCurve = curve;
+        }
+
+        if (this.crushShaper) {
+          this.crushShaper.curve = this._crushCurve;
+          this.crushShaper.oversample = 'none';
+        }
+        return this._crushCurve;
       }
 
       initTracks() {
@@ -1148,33 +1328,32 @@
         const velNorm = (stepData.vel / 127);
         const pitchShift = Math.pow(2, stepData.pitchOffset / 12);
 
-        // Apply bitcrush emulation or digital degradation if fx.crush > 0
-        const isCrush = this.fx.crush > 0.05;
-
+        // Note: bit-crush is applied on the master bus, not per voice. Threading it
+        // through each generator meant six signatures carried an argument nobody read.
         switch (trackIdx) {
           case 0: // BD: FM Pitch Sweep Punch + Click
-            this.synthKick(ctx, destNode, time, velNorm, pitchShift, isCrush);
+            this.synthKick(ctx, destNode, time, velNorm, pitchShift);
             break;
           case 1: // SN: Dual Filtered Noise & Resonant Membrane
-            this.synthSnare(ctx, destNode, time, velNorm, pitchShift, isCrush);
+            this.synthSnare(ctx, destNode, time, velNorm, pitchShift);
             break;
           case 2: // CH: Metallic Frequency Modulated Slices
-            this.synthHat(ctx, destNode, time, velNorm, pitchShift, isCrush);
+            this.synthHat(ctx, destNode, time, velNorm, pitchShift);
             break;
           case 3: // PERC: Ring-mod Industrial Clang
-            this.synthPerc(ctx, destNode, time, velNorm, pitchShift, isCrush);
+            this.synthPerc(ctx, destNode, time, velNorm, pitchShift);
             break;
           case 4: // GLITCH: Micro granular bit noise burst
-            this.synthGlitch(ctx, destNode, time, velNorm, pitchShift, isCrush);
+            this.synthGlitch(ctx, destNode, time, velNorm, pitchShift);
             break;
           case 5: // SUB: Acidic Saw-Square Squelch
-            this.synthSub(ctx, destNode, time, velNorm, pitchShift, isCrush);
+            this.synthSub(ctx, destNode, time, velNorm, pitchShift);
             break;
         }
       }
 
       // BD Synthesizer
-      synthKick(ctx, dest, time, vel, pitchShift, crush) {
+      synthKick(ctx, dest, time, vel, pitchShift) {
         const osc = ctx.createOscillator();
         const oscMod = ctx.createOscillator();
         const modGain = ctx.createGain();
@@ -1225,7 +1404,7 @@
       }
 
       // Snare Synthesizer
-      synthSnare(ctx, dest, time, vel, pitchShift, crush) {
+      synthSnare(ctx, dest, time, vel, pitchShift) {
         // Tonal body
         const osc = ctx.createOscillator();
         const oscGain = ctx.createGain();
@@ -1273,7 +1452,7 @@
       }
 
       // Hat Synthesizer (Metallic 6-op cluster)
-      synthHat(ctx, dest, time, vel, pitchShift, crush) {
+      synthHat(ctx, dest, time, vel, pitchShift) {
         const ratios = [2, 3.01, 4.15, 5.4, 6.8, 8.2];
         const fundamental = 420 * pitchShift;
         const hatMix = ctx.createGain();
@@ -1301,7 +1480,7 @@
       }
 
       // Perc Synthesizer (Metallic Clang FM)
-      synthPerc(ctx, dest, time, vel, pitchShift, crush) {
+      synthPerc(ctx, dest, time, vel, pitchShift) {
         const carrier = ctx.createOscillator();
         const modulator = ctx.createOscillator();
         const modGain = ctx.createGain();
@@ -1333,7 +1512,7 @@
       }
 
       // Glitch Synthesizer (Broken micro-granule click)
-      synthGlitch(ctx, dest, time, vel, pitchShift, crush) {
+      synthGlitch(ctx, dest, time, vel, pitchShift) {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         const filter = ctx.createBiquadFilter();
@@ -1359,7 +1538,7 @@
       }
 
       // Sub Synthesizer (Square / Acid bass note)
-      synthSub(ctx, dest, time, vel, pitchShift, crush) {
+      synthSub(ctx, dest, time, vel, pitchShift) {
         const osc = ctx.createOscillator();
         const filter = ctx.createBiquadFilter();
         const gain = ctx.createGain();
@@ -1386,11 +1565,12 @@
 
       // --- Precise Scheduler Engine ---
       start() {
-        this.initAudio();
+        if (!this.initAudio()) return false;
         this.isPlaying = true;
         this.stepIndex = 0;
         this.nextNoteTime = this.audioCtx.currentTime + 0.05;
         this.timerID = setInterval(() => this.scheduler(), this.lookahead);
+        return true;
       }
 
       stop() {
@@ -1423,8 +1603,10 @@
       }
 
       scheduleStep(globalStep, time) {
-        // Evaluate solo state
-        const anySolo = this.solos.some(s => s === true);
+        // Solo is derived from the tracks themselves, so there is exactly one
+        // source of truth. (A shadow `this.solos` array previously drifted out
+        // of sync whenever a preset reloaded the track list.)
+        const anySolo = this.tracks.some(t => t.solo);
 
         this.tracks.forEach((track, tIdx) => {
           if (track.mute) return;
@@ -1571,27 +1753,82 @@
       }
 
       // --- High-Resolution Offline Audio Exporter (16/24-Bit WAV) ---
-      async exportWav(numBars, onProgress) {
-        const sampleRate = 48000;
+
+      /**
+       * Deterministic 32-bit PRNG (mulberry32).
+       *
+       * Live playback deliberately uses Math.random() so no two passes through
+       * a pattern are identical. A bounce must be reproducible instead: the
+       * offline path draws from a seeded stream, so the same pattern, settings
+       * and seed always render bit-identical audio. That is what makes
+       * regression diffs and A/B comparisons meaningful.
+       *
+       * @param {number} seed
+       * @returns {() => number} uniform sample in [0, 1)
+       */
+      static mulberry32(seed) {
+        let a = seed >>> 0;
+        return function () {
+          a = (a + 0x6D2B79F5) >>> 0;
+          let t = a;
+          t = Math.imul(t ^ (t >>> 15), t | 1);
+          t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      /**
+       * Render the current pattern offline.
+       *
+       * The offline graph mirrors the real-time bus node-for-node and
+       * parameter-for-parameter, including every stochastic step live
+       * playback applies (humanise jitter, probability gating, drill
+       * injection) plus the master trim. Omitting any of these produces a
+       * bounce that does not match what the performer heard — the classic
+       * offline-render bug — so the two paths are kept structurally parallel.
+       *
+       * @param {number} numBars number of 4-beat patterns to render
+       * @param {(pct:number) => void} [onProgress] called with 0..100
+       * @param {{sampleRate?:number, bitDepth?:16|24, seed?:number}} [options]
+       * @returns {Promise<{blob:Blob, seed:number, duration:number, sampleRate:number, bitDepth:number}>}
+       */
+      async exportWav(numBars, onProgress, options) {
+        // Default parameters only fire for `undefined`, not `null`, and a
+        // caller passing `null` for an optional callback is both natural and
+        // easy to do by accident. Normalise rather than crash mid-render.
+        const report = typeof onProgress === 'function' ? onProgress : () => {};
+        options = options || {};
+
+        const sampleRate = options.sampleRate || 48000;
+        const bitDepth = options.bitDepth === 16 ? 16 : 24;
+        const seed = ((options.seed != null)
+          ? options.seed
+          : (Date.now() ^ Math.floor(Math.random() * 0xffffffff))) >>> 0;
+        const rand = BureauEngine.mulberry32(seed);
+
         const beatsPerBar = 4;
         const totalBeats = numBars * beatsPerBar;
-        const duration = (60.0 / this.bpm) * totalBeats + 1.5; // add tail for reverb/delay
+        // +1.5 s of tail so delay feedback and limiter release ring out fully.
+        const duration = (60.0 / this.bpm) * totalBeats + 1.5;
 
         const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
         const offline = new OfflineCtx(2, Math.ceil(sampleRate * duration), sampleRate);
 
-        // Build offline routing chain mirroring real-time
-        const offLimiter = offline.createDynamicsCompressor();
-        offLimiter.threshold.value = -3.5;
-        offLimiter.knee.value = 6;
-        offLimiter.ratio.value = 12;
+        // ---- Offline bus: mirrors `setupMasterBus()` ----
+        const offBus = offline.createGain();
 
-        const offDrive = offline.createWaveShaper();
-        offDrive.curve = this.updateDriveCurve(this.fx.drive);
+        const offCrush = offline.createWaveShaper();
+        offCrush.curve = this.updateCrushCurve(this.fx.crush);
+        offCrush.oversample = 'none';
 
         const offFilter = offline.createBiquadFilter();
         offFilter.type = 'lowpass';
         offFilter.frequency.value = this.fx.cutoff;
+        offFilter.Q.value = 1.8;
+
+        const offDrive = offline.createWaveShaper();
+        offDrive.curve = this.updateDriveCurve(this.fx.drive);
+        offDrive.oversample = '4x';
 
         const offDelay = offline.createDelay();
         offDelay.delayTime.value = this.fx.delayTime;
@@ -1604,22 +1841,34 @@
         offDelayFb.connect(offDelay);
         offDelay.connect(offDelayWet);
 
-        const offBus = offline.createGain();
-        offBus.connect(offFilter);
+        const offLimiter = offline.createDynamicsCompressor();
+        offLimiter.threshold.value = -3.5;
+        offLimiter.knee.value = 6;
+        offLimiter.ratio.value = 12;
+        offLimiter.attack.value = 0.003;
+        offLimiter.release.value = 0.08;
+
+        // Live playback trims 0.88 after the limiter. Without the same trim the
+        // bounce came out roughly 1.1 dB hotter than the monitored signal.
+        const offMaster = offline.createGain();
+        offMaster.gain.value = 0.88;
+
+        offBus.connect(offCrush);
+        offCrush.connect(offFilter);
         offFilter.connect(offDrive);
         offFilter.connect(offDelay);
         offDelayWet.connect(offDrive);
-
         offDrive.connect(offLimiter);
-        offLimiter.connect(offline.destination);
+        offLimiter.connect(offMaster);
+        offMaster.connect(offline.destination);
 
-        // Schedule all steps offline
+        // ---- Schedule every step ----
         const stepRate = 0.25;
         const secondsPerBeat = 60.0 / this.bpm;
         const totalSteps = totalBeats * 4;
+        const anySolo = this.tracks.some(t => t.solo);
 
         let currentTime = 0.05;
-        const anySolo = this.solos.some(s => s === true);
 
         for (let s = 0; s < totalSteps; s++) {
           let swingOffset = 0;
@@ -1632,77 +1881,154 @@
             if (track.mute) return;
             if (anySolo && !track.solo) return;
 
-            const tStepIdx = s % track.currentLength;
-            const stepData = track.steps[tStepIdx];
+            const stepData = track.steps[s % track.currentLength];
             if (!stepData.active) return;
 
-            // Ratchets
-            const ratchets = stepData.ratchet;
-            const stepDur = secondsPerBeat * stepRate;
-            const subDur = stepDur / ratchets;
+            // Probability gate — same arithmetic as `scheduleStep`.
+            if (rand() * 100 > stepData.prob * this.fx.globalProb) return;
+
+            // Drill injection — same arithmetic as `scheduleStep`.
+            let ratchets = stepData.ratchet;
+            if (this.fx.globalRatchet > 0 && ratchets === 1 && rand() < this.fx.globalRatchet * 0.4) {
+              ratchets = rand() > 0.5 ? 2 : 4;
+            }
+
+            const subDur = (secondsPerBeat * stepRate) / ratchets;
 
             for (let r = 0; r < ratchets; r++) {
-              const rTime = stepTimestamp + (r * subDur);
+              const jitter = (rand() - 0.5) * (this.fx.humanize / 1000);
+              const rTime = Math.max(stepTimestamp, stepTimestamp + (r * subDur) + jitter);
               const ratchetVel = Math.max(20, stepData.vel * (1 - (r * 0.12)));
-              const bStep = { ...stepData, vel: ratchetVel };
-              this.playTrackSound(tIdx, rTime, bStep, offline, offBus);
+              this.playTrackSound(tIdx, rTime, { ...stepData, vel: ratchetVel }, offline, offBus);
             }
           });
 
           currentTime += secondsPerBeat * stepRate;
         }
 
-        // Render audio buffer
-        const renderedBuffer = await offline.startRendering();
-        return this.bufferToWaveBlob(renderedBuffer);
+        // ---- Render, reporting genuine progress ----
+        // OfflineAudioContext exposes no progress event, so we ask it to park
+        // itself at N checkpoints; each time it does, we advance the bar and
+        // call resume(). Where suspend/resume is unsupported the bar degrades
+        // to a coarse two-stage reading rather than faking a smooth animation.
+        const CHECKPOINTS = 10;
+        let supportsSuspend = true;
+        try {
+          for (let i = 1; i < CHECKPOINTS; i++) {
+            const pending = offline.suspend((duration * i) / CHECKPOINTS);
+            if (pending && typeof pending.catch === 'function') pending.catch(() => {});
+          }
+        } catch (err) {
+          supportsSuspend = false;
+        }
+
+        report(5);
+        const renderPromise = offline.startRendering();
+
+        let settled = false;
+        renderPromise.then(() => { settled = true; }, () => { settled = true; });
+
+        if (supportsSuspend) {
+          const deadline = Date.now() + 120000; // hard stop: never hang the UI
+          let wasRunning = false;
+          let reached = 0;
+
+          await new Promise((resolve) => {
+            const pump = () => {
+              if (settled || Date.now() > deadline) return resolve();
+              if (offline.state === 'running') {
+                wasRunning = true;
+              } else if (wasRunning && offline.state === 'suspended') {
+                reached++;
+                report(Math.min(95, Math.round(5 + (reached / CHECKPOINTS) * 90)));
+                const resumed = offline.resume();
+                if (resumed && typeof resumed.catch === 'function') resumed.catch(() => {});
+              }
+              setTimeout(pump, 30);
+            };
+            pump();
+          });
+        } else {
+          report(50);
+        }
+
+        const renderedBuffer = await renderPromise;
+        report(100);
+
+        return {
+          blob: this.bufferToWaveBlob(renderedBuffer, bitDepth),
+          seed,
+          duration,
+          sampleRate,
+          bitDepth
+        };
       }
 
-      bufferToWaveBlob(abuffer) {
+      /**
+       * Encode an AudioBuffer as a RIFF/WAVE blob.
+       *
+       * @param {AudioBuffer} abuffer
+       * @param {16|24} [bitDepth=24] 24-bit is the default because the render
+       *   is float32 end to end; truncating to 16-bit would throw away roughly
+       *   48 dB of dynamic range that the synthesised material actually uses
+       *   (quiet micro-grain detail sitting under a loud, limited master).
+       * @returns {Blob}
+       */
+      bufferToWaveBlob(abuffer, bitDepth = 24) {
         const numOfChan = abuffer.numberOfChannels;
-        const length = abuffer.length * numOfChan * 2 + 44;
+        const bytesPerSample = bitDepth / 8;
+        const blockAlign = numOfChan * bytesPerSample;
+        const dataBytes = abuffer.length * blockAlign;
+        const length = dataBytes + 44;
         const out = new DataView(new ArrayBuffer(length));
         let pos = 0;
 
-        function setUint16(data) {
-          out.setUint16(pos, data, true);
-          pos += 2;
-        }
-        function setUint32(data) {
-          out.setUint32(pos, data, true);
-          pos += 4;
-        }
+        const setUint16 = (data) => { out.setUint16(pos, data, true); pos += 2; };
+        const setUint32 = (data) => { out.setUint32(pos, data, true); pos += 4; };
 
         // RIFF chunk descriptor
         setUint32(0x46464952); // "RIFF"
-        setUint32(length - 8);  // file length - 8
+        setUint32(length - 8); // everything after this field
         setUint32(0x45564157); // "WAVE"
 
         // fmt chunk
         setUint32(0x20746d66); // "fmt "
-        setUint32(16);         // length = 16
-        setUint16(1);          // PCM
+        setUint32(16);         // PCM fmt chunk is always 16 bytes
+        setUint16(1);          // WAVE_FORMAT_PCM
         setUint16(numOfChan);
         setUint32(abuffer.sampleRate);
-        setUint32(abuffer.sampleRate * 2 * numOfChan); // byte rate
-        setUint16(numOfChan * 2);                      // block align
-        setUint16(16);                                 // 16-bit PCM
+        setUint32(abuffer.sampleRate * blockAlign); // byte rate
+        setUint16(blockAlign);
+        setUint16(bitDepth);
 
         // data chunk
         setUint32(0x61746164); // "data"
-        setUint32(length - pos - 4);
+        setUint32(dataBytes);
 
-        // write interleaved samples
         const channels = [];
         for (let i = 0; i < numOfChan; i++) {
           channels.push(abuffer.getChannelData(i));
         }
 
-        for (let i = 0; i < abuffer.length; i++) {
-          for (let ch = 0; ch < numOfChan; ch++) {
-            let sample = Math.max(-1, Math.min(1, channels[ch][i]));
-            sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
-            out.setInt16(pos, sample, true);
-            pos += 2;
+        if (bitDepth === 16) {
+          for (let i = 0; i < abuffer.length; i++) {
+            for (let ch = 0; ch < numOfChan; ch++) {
+              const s = Math.max(-1, Math.min(1, channels[ch][i]));
+              out.setInt16(pos, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+              pos += 2;
+            }
+          }
+        } else {
+          // 24-bit little-endian, sign-extended into a 32-bit intermediate.
+          for (let i = 0; i < abuffer.length; i++) {
+            for (let ch = 0; ch < numOfChan; ch++) {
+              const s = Math.max(-1, Math.min(1, channels[ch][i]));
+              const v = Math.round(s < 0 ? s * 0x800000 : s * 0x7fffff);
+              out.setUint8(pos, v & 0xff);
+              out.setUint8(pos + 1, (v >> 8) & 0xff);
+              out.setUint8(pos + 2, (v >> 16) & 0xff);
+              pos += 3;
+            }
           }
         }
 
@@ -1858,6 +2184,7 @@
       bureau.fx.crush = p.crush;
       document.getElementById('fxCrush').value = p.crush;
       document.getElementById('fxCrushVal').innerText = `${Math.round(p.crush * 100)}%`;
+      if (bureau.crushShaper) bureau.updateCrushCurve(p.crush);
 
       bureau.fx.drive = p.drive;
       document.getElementById('fxDrive').value = p.drive;
@@ -1897,8 +2224,40 @@
     }
 
     // --- UI Rendering & Interaction ---
+
+    /**
+     * Human-readable summary of a step for assistive technology.
+     * @param {object} track
+     * @param {object} step
+     * @param {number} sIdx 0-based
+     * @returns {string}
+     */
+    function describeStep(track, step, sIdx) {
+      const pitch = step.pitchOffset === 0
+        ? 'no pitch lock'
+        : `${step.pitchOffset > 0 ? 'plus' : 'minus'} ${Math.abs(step.pitchOffset)} semitones`;
+      return `${track.name}, step ${sIdx + 1}, ${step.active ? 'on' : 'off'}, ` +
+             `ratchet ${step.ratchet} times, ${pitch}, probability ${step.prob} percent.`;
+    }
+
+    /**
+     * Rebuild the whole sequencer grid from engine state.
+     *
+     * This is a full re-render rather than a diff. 192 cells is cheap enough
+     * (~1 ms) that reconciliation would cost more in complexity than it saves,
+     * but it does destroy focus — so the focused cell is captured up front and
+     * restored afterwards. Without that, keyboard editing of a step is
+     * impossible: every toggle would drop the user back to <body>.
+     */
     function renderAllTracks() {
       const container = document.getElementById('tracksContainer');
+
+      // Preserve keyboard focus across the teardown.
+      const focused = document.activeElement;
+      const focusTrack = focused && focused.dataset ? focused.dataset.track : null;
+      const focusStep = focused && focused.dataset ? focused.dataset.step : null;
+      const hadFocus = focusTrack !== null && focusTrack !== undefined;
+
       container.innerHTML = '';
 
       bureau.tracks.forEach((track, tIdx) => {
@@ -1914,8 +2273,12 @@
           </div>
           <span class="track-type">${track.type}</span>
           <div class="track-buttons">
-            <button class="track-mini-btn ${track.mute ? 'active' : ''}" id="mute-${tIdx}">MUTE</button>
-            <button class="track-mini-btn solo ${track.solo ? 'active' : ''}" id="solo-${tIdx}">SOLO</button>
+            <button class="track-mini-btn ${track.mute ? 'active' : ''}" id="mute-${tIdx}"
+                    aria-pressed="${track.mute ? 'true' : 'false'}"
+                    aria-label="Mute ${track.name}">MUTE</button>
+            <button class="track-mini-btn solo ${track.solo ? 'active' : ''}" id="solo-${tIdx}"
+                    aria-pressed="${track.solo ? 'true' : 'false'}"
+                    aria-label="Solo ${track.name}">SOLO</button>
           </div>
         `;
 
@@ -1923,6 +2286,8 @@
         const lane = document.createElement('div');
         lane.className = 'step-lane';
         lane.id = `lane-${tIdx}`;
+        lane.setAttribute('role', 'group');
+        lane.setAttribute('aria-label', `${track.name} pattern, ${track.currentLength} steps`);
 
         for (let sIdx = 0; sIdx < track.currentLength; sIdx++) {
           const step = track.steps[sIdx];
@@ -1930,6 +2295,14 @@
           cell.className = `step-cell ${step.active ? 'active-trigger' : ''} ${step.ratchet > 1 ? 'ratchet-' + step.ratchet : ''}`;
           cell.dataset.track = tIdx;
           cell.dataset.step = sIdx;
+
+          // Cells behave as toggle buttons. Only active steps join the tab
+          // order, so a keyboard user traverses the notes that actually
+          // sound instead of walking all 192 grid positions.
+          cell.setAttribute('role', 'button');
+          cell.setAttribute('aria-pressed', step.active ? 'true' : 'false');
+          cell.setAttribute('aria-label', describeStep(track, step, sIdx));
+          cell.tabIndex = step.active ? 0 : -1;
 
           // Inside cell widgets
           const ratchetSymbol = step.ratchet > 1 ? `${step.ratchet}x` : '';
@@ -1944,19 +2317,50 @@
             </div>
           `;
 
-          // Click handler (toggle, ratchet with shift, select)
-          cell.addEventListener('click', (e) => {
+          /** Mutate the step exactly as a pointer click would, then re-render. */
+          const toggle = (withRatchet) => {
             bureau.initAudio();
-            if (e.shiftKey) {
+            if (withRatchet) {
               // Cycle ratchets: 1 -> 2 -> 3 -> 4 -> 1
               step.ratchet = (step.ratchet % 4) + 1;
               step.active = true;
             } else {
-              // Toggle active
               step.active = !step.active;
             }
             selectStep(tIdx, sIdx);
             renderAllTracks();
+          };
+
+          // Click handler (toggle, ratchet with shift, select)
+          cell.addEventListener('click', (e) => {
+            toggle(e.shiftKey);
+          });
+
+          // Keyboard parity with the pointer: Enter toggles, Shift+Enter
+          // ratchets, arrows walk the lane. Space is claimed by the global
+          // transport binding, so Enter is the cell activation key.
+          cell.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              e.stopPropagation();
+              toggle(e.shiftKey);
+              return;
+            }
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+              e.preventDefault();
+              e.stopPropagation();
+              const dir = e.key === 'ArrowRight' ? 1 : -1;
+              const len = track.currentLength;
+              for (let n = 1; n <= len; n++) {
+                const target = lane.children[(((sIdx + dir * n) % len) + len) % len];
+                if (target) {
+                  target.tabIndex = 0;
+                  target.focus();
+                  selectStep(parseInt(target.dataset.track, 10), parseInt(target.dataset.step, 10));
+                  return;
+                }
+              }
+            }
           });
 
           // Right click inspects without toggle
@@ -1973,10 +2377,13 @@
         auxBox.className = 'track-aux';
         auxBox.innerHTML = `
           <div class="aux-row">
-            <span>LEN:</span>
-            <input type="number" min="1" max="32" class="aux-input track-len-input" data-track="${tIdx}" value="${track.currentLength}">
-            <span>EUCLID:</span>
-            <button class="track-mini-btn euclid-gen-btn" data-track="${tIdx}" title="Generate Euclidean Pulses">GEN</button>
+            <label class="visually-hidden" for="len-${tIdx}">${track.name} pattern length in steps</label>
+            <span aria-hidden="true">LEN:</span>
+            <input type="number" min="1" max="32" id="len-${tIdx}" class="aux-input track-len-input" data-track="${tIdx}" value="${track.currentLength}">
+            <span aria-hidden="true">EUCLID:</span>
+            <button class="track-mini-btn euclid-gen-btn" data-track="${tIdx}"
+                    title="Generate Euclidean Pulses"
+                    aria-label="Generate a Euclidean rhythm for ${track.name}">GEN</button>
           </div>
         `;
 
@@ -1988,11 +2395,12 @@
         // Bind Mute & Solo
         document.getElementById(`mute-${tIdx}`).addEventListener('click', () => {
           track.mute = !track.mute;
+          updateTicker(`TRACK [${track.name}] ${track.mute ? 'MUTED BY COMMITTEE ORDER' : 'RETURNED TO SERVICE'}.`);
           renderAllTracks();
         });
         document.getElementById(`solo-${tIdx}`).addEventListener('click', () => {
           track.solo = !track.solo;
-          bureau.solos[tIdx] = track.solo;
+          updateTicker(`TRACK [${track.name}] ${track.solo ? 'ISOLATED FOR AUDIT' : 'REJOINED THE ENSEMBLE'}.`);
           renderAllTracks();
         });
       });
@@ -2015,6 +2423,17 @@
           generateEuclidean(tIdx);
         });
       });
+
+      // Restore focus to the cell the user was on before the DOM was rebuilt.
+      if (hadFocus) {
+        const restored = container.querySelector(
+          `.step-cell[data-track="${focusTrack}"][data-step="${focusStep}"]`
+        );
+        if (restored) {
+          restored.tabIndex = 0;
+          restored.focus({ preventScroll: true });
+        }
+      }
     }
 
     // Bjorklund Euclidean Rhythm generator
@@ -2103,6 +2522,7 @@
     document.getElementById('fxCrush').addEventListener('input', (e) => {
       const val = parseFloat(e.target.value);
       bureau.fx.crush = val;
+      bureau.updateCrushCurve(val);
       document.getElementById('fxCrushVal').innerText = `${Math.round(val * 100)}%`;
     });
 
@@ -2166,34 +2586,52 @@
 
     // --- Transport & Controls ---
     const playBtn = document.getElementById('playBtn');
-    function togglePlayback() {
-      bureau.initAudio();
-      if (!bureau.isPlaying) {
-        bureau.start();
+    const PLAY_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+    const STOP_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+
+    function renderPlayButton() {
+      if (bureau.isPlaying) {
         playBtn.classList.add('running');
-        playBtn.innerHTML = `
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-          <span>HALT [SPACE]</span>
-        `;
+        playBtn.setAttribute('aria-pressed', 'true');
+        playBtn.setAttribute('aria-label', 'Stop the sequencer');
+        playBtn.innerHTML = `${STOP_ICON}<span>HALT [SPACE]</span>`;
+      } else {
+        playBtn.classList.remove('running');
+        playBtn.setAttribute('aria-pressed', 'false');
+        playBtn.setAttribute('aria-label', 'Start the sequencer');
+        playBtn.innerHTML = `${PLAY_ICON}<span>EXECUTE [SPACE]</span>`;
+      }
+    }
+
+    function togglePlayback() {
+      if (!bureau.isPlaying) {
+        if (!bureau.start()) {
+          updateTicker("NO AUDIO DEVICE AVAILABLE: THE BUREAU CONTINUES IN SILENCE.");
+          return;
+        }
         updateTicker("TRANSMISSION ACTIVE: UNREASONABLE METRICS DISPATCHED.");
       } else {
         bureau.stop();
-        playBtn.classList.remove('running');
-        playBtn.innerHTML = `
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <span>EXECUTE [SPACE]</span>
-        `;
         updateTicker("FACILITY HALTED: RECORDING IDLE AUDIT MEASURES.");
       }
+      renderPlayButton();
     }
 
     playBtn.addEventListener('click', togglePlayback);
 
+    /**
+     * Global space-bar transport. Form controls and step cells handle Space
+     * (and Enter) themselves, so the shortcut must stand down when the event
+     * originates from anything focusable that already has a meaning for it.
+     */
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
-        e.preventDefault();
-        togglePlayback();
-      }
+      if (e.code !== 'Space') return;
+      const t = e.target;
+      if (!t) return;
+      if (/^(INPUT|SELECT|TEXTAREA|BUTTON|A)$/.test(t.tagName)) return;
+      if (t.classList && t.classList.contains('step-cell')) return;
+      e.preventDefault();
+      togglePlayback();
     });
 
     document.getElementById('tempoInput').addEventListener('change', (e) => {
@@ -2235,52 +2673,107 @@
     });
 
     // --- WAV Export UI Dialog Logic ---
+    //
+    // The modal is a plain <div>, so the behaviours a native <dialog> would
+    // give for free are implemented explicitly: focus moves in on open, Tab is
+    // trapped inside, Escape closes, and focus returns to the invoking button.
     const exportModal = document.getElementById('exportModal');
-    document.getElementById('exportModalBtn').addEventListener('click', () => {
-      exportModal.style.display = 'flex';
+    const exportModalBtn = document.getElementById('exportModalBtn');
+    const exportProgressWrap = document.getElementById('exportProgressWrap');
+    const FOCUSABLE = 'button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
+    let lastFocusedBeforeModal = null;
+
+    function setExportProgress(pct) {
+      const clamped = Math.max(0, Math.min(100, Math.round(pct)));
+      document.getElementById('exportProgress').style.width = `${clamped}%`;
+      exportProgressWrap.setAttribute('aria-valuenow', String(clamped));
+    }
+
+    function openExportModal() {
+      lastFocusedBeforeModal = document.activeElement;
+      exportModal.hidden = false;
+      const first = exportModal.querySelector(FOCUSABLE);
+      if (first) first.focus();
+    }
+
+    function closeExportModal() {
+      exportModal.hidden = true;
+      if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') {
+        lastFocusedBeforeModal.focus();
+      }
+      lastFocusedBeforeModal = null;
+    }
+
+    exportModalBtn.addEventListener('click', openExportModal);
+    document.getElementById('cancelExportBtn').addEventListener('click', closeExportModal);
+
+    // Click on the backdrop (but not the dialog itself) dismisses.
+    exportModal.addEventListener('mousedown', (e) => {
+      if (e.target === exportModal) closeExportModal();
     });
 
-    document.getElementById('cancelExportBtn').addEventListener('click', () => {
-      exportModal.style.display = 'none';
+    // Escape to close + Tab containment.
+    exportModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeExportModal();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const nodes = Array.from(exportModal.querySelectorAll(FOCUSABLE));
+      if (nodes.length === 0) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     });
 
     document.getElementById('runExportBtn').addEventListener('click', async () => {
-      const bars = parseInt(document.getElementById('exportBars').value) || 4;
-      const progressEl = document.getElementById('exportProgress');
+      const bars = parseInt(document.getElementById('exportBars').value, 10) || 4;
       const statusText = document.getElementById('exportStatusText');
+      const runBtn = document.getElementById('runExportBtn');
 
+      runBtn.disabled = true;
+      setExportProgress(0);
       statusText.innerText = "ACCUMULATING POLYNOMIAL FRAMES...";
-      progressEl.style.width = "40%";
 
       try {
-        const wavBlob = await bureau.exportWav(bars, (pct) => {
-          progressEl.style.width = `${pct}%`;
-        });
+        const result = await bureau.exportWav(bars, setExportProgress);
 
-        progressEl.style.width = "100%";
-        statusText.innerText = "ENCODING 24-BIT PCM RIFF WAVE COMPLETE.";
+        setExportProgress(100);
+        statusText.innerText =
+          `ENCODING ${result.bitDepth}-BIT PCM RIFF WAVE COMPLETE. SEED ${result.seed}.`;
 
         // Download file trigger
-        const url = URL.createObjectURL(wavBlob);
+        const url = URL.createObjectURL(result.blob);
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-        a.download = `BUREAU_UNREASONABLE_${bureau.bpm}BPM_${timestamp}.wav`;
+        a.download = `BUREAU_UNREASONABLE_${bureau.bpm}BPM_${result.bitDepth}BIT_${timestamp}.wav`;
         document.body.appendChild(a);
         a.click();
+
         setTimeout(() => {
           URL.revokeObjectURL(url);
           document.body.removeChild(a);
-          exportModal.style.display = 'none';
-          progressEl.style.width = "0%";
+          closeExportModal();
+          setExportProgress(0);
+          runBtn.disabled = false;
           statusText.innerText = "READY FOR EXPORT";
           updateTicker("HIGH-RES MASTER EXPORTED TO ARCHIVE STORAGE.");
         }, 1200);
 
       } catch (err) {
         console.error(err);
-        statusText.innerText = "RENDER FAILED: INTERNAL METRIC OVERFLOW.";
+        runBtn.disabled = false;
+        setExportProgress(0);
+        statusText.innerText = `RENDER FAILED: ${(err && err.message) || 'INTERNAL METRIC OVERFLOW'}.`;
       }
     });
 

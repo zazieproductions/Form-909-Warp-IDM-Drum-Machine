@@ -1,0 +1,37 @@
+# Form 909-WARP — repository hygiene
+#
+# The project itself has no build output. This file exists to keep the working
+# tree clean when contributors run local tooling, and to prevent the rendered
+# WAV bounces the app produces from ever being committed.
+
+# ── Rendered audio (the app downloads these to the user's machine) ──────────
+*.wav
+*.aiff
+*.flac
+BUREAU_UNREASONABLE_*
+
+# ── Node ───────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ── Editor / OS ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.code-workspace
+
+# ── Local environment ──────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Caches / coverage ──────────────────────────────────────────────────────
+.cache/
+coverage/
+*.log
