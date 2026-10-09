@@ -1,0 +1,60 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Pages artefact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate before deploying
+        run: npm run validate
+
+      - name: Assemble the site
+        # The app is one file whose name contains spaces. Publish it as
+        # index.html so Pages serves it at the root with no URL encoding.
+        run: |
+          mkdir -p _site
+          cp "Form-909 Warp IDM Drum Machine.html" _site/index.html
+          # Preserve the original filename too, so deep links keep working.
+          cp "Form-909 Warp IDM Drum Machine.html" "_site/Form-909 Warp IDM Drum Machine.html"
+          cp README.md _site/README.md
+          ls -la _site
+
+      - name: Upload Pages artefact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,32 @@
+{
+  "name": "form-909-warp",
+  "version": "1.1.0",
+  "description": "The Bureau of Unreasonable Rhythms — a zero-dependency, browser-native IDM drum machine and polyrhythmic sequencer built on the Web Audio API.",
+  "private": true,
+  "type": "module",
+  "keywords": [
+    "web-audio",
+    "drum-machine",
+    "sequencer",
+    "idm",
+    "polyrhythm",
+    "euclidean-rhythm",
+    "synthesis",
+    "creative-coding",
+    "single-file-app"
+  ],
+  "author": "zazieproductions",
+  "license": "MIT",
+  "scripts": {
+    "validate": "node tools/validate.mjs",
+    "links": "node tools/check-links.mjs",
+    "check": "npm run validate && npm run links",
+    "serve": "node tools/serve.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "comments": {
+    "dependencies": "None by design. See docs/ARCHITECTURE.md § Why zero dependencies."
+  }
+}

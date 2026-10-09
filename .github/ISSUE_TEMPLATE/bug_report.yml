@@ -1,0 +1,119 @@
+name: Bug report
+description: Something in Form 909-WARP does not work as documented.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a report.
+
+        **Audio bugs are the most valuable reports this project receives**, and
+        they are the hardest to describe. "The bounce is missing hits that play
+        live" is a perfectly good bug report — you do not need to diagnose it.
+
+        Please check the [known issues](https://github.com/zazieproductions/Form-909-Warp-IDM-Drum-Machine/blob/main/docs/ACCESSIBILITY.md#8-known-gaps)
+        before filing accessibility items.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened
+      description: A clear, one-paragraph description.
+      placeholder: The bounce is missing hits that fire during live playback.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps, starting from a fresh page load.
+      placeholder: |
+        1. Load Case 06: Snares 7/8 Break-Stutter
+        2. Set global probability to 60%
+        3. Export 4 patterns
+        4. Compare the bounce against live playback
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What you expected, and — for audio bugs — what you expected to hear.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What happened instead. For audio, describe what you hear.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Transport / scheduling
+        - Voices / synthesis
+        - Master bus / effects
+        - Sequencer grid
+        - Presets
+        - Export
+        - User interface
+        - Accessibility
+        - Documentation
+        - Tooling / CI
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Chrome 131.0.6778.86
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: macOS 15.1
+    validations:
+      required: true
+
+  - type: input
+    id: preset
+    attributes:
+      label: Preset and BPM
+      description: Most timing bugs are tempo-dependent.
+      placeholder: Case 01: Confield Lattice, 168 BPM
+
+  - type: input
+    id: at
+    attributes:
+      label: Assistive technology
+      description: Only if the report is accessibility-related.
+      placeholder: VoiceOver / NVDA 2024.4 / Dragon
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: Open DevTools and paste anything logged. Errors are logged with the original error object.
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I am running the latest version
+        - label: I have checked that this is not a known issue
+        - label: I have included the steps to reproduce

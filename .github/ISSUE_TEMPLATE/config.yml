@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/zazieproductions/Form-909-Warp-IDM-Drum-Machine/discussions
+    about: Ask a question, share a pattern, or discuss the instrument.
+  - name: Documentation
+    url: https://github.com/zazieproductions/Form-909-Warp-IDM-Drum-Machine/blob/main/docs/ARCHITECTURE.md
+    about: Architecture, sound design, API, patterns, export, testing, performance and accessibility.
+  - name: Roadmap
+    url: https://github.com/zazieproductions/Form-909-Warp-IDM-Drum-Machine/blob/main/docs/ROADMAP.md
+    about: Planned work, good first issues, and what has been declined.
+  - name: Report a security vulnerability
+    url: https://github.com/zazieproductions/Form-909-Warp-IDM-Drum-Machine/security/advisories/new
+    about: Please report privately, not as a public issue.

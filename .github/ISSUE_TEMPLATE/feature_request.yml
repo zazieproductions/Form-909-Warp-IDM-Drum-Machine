@@ -1,0 +1,72 @@
+name: Feature request
+description: Suggest a new capability for Form 909-WARP.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check the [roadmap](https://github.com/zazieproductions/Form-909-Warp-IDM-Drum-Machine/blob/main/docs/ROADMAP.md)
+        first — including the [explicitly rejected](https://github.com/zazieproductions/Form-909-Warp-IDM-Drum-Machine/blob/main/docs/ROADMAP.md#6-explicitly-rejected)
+        list, which records suggestions along with the reasoning for declining
+        them.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What can you not do, or what is frustrating? Describe the situation, not the solution.
+      placeholder: I cannot save a pattern, so closing the tab loses everything.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What you would like to see. Sketch it if you can.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about, and why they are worse.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Sequencer
+        - Voices / synthesis
+        - Master bus / effects
+        - Export
+        - Presets / content
+        - User interface
+        - Accessibility
+        - Performance
+        - Documentation
+        - Tooling / CI
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: |
+        This project has three hard rules: zero runtime dependencies, one
+        self-contained file with no build step, and parity between live
+        playback and the offline bounce. Does your proposal fit within them?
+      placeholder: Fits — it needs no dependencies and no build step.
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be willing to work on this
+        - label: This is on the roadmap and I want to claim it

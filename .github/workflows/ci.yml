@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Verify no runtime dependencies
+        run: |
+          deps=$(node -e "const p=require('./package.json'); console.log(Object.keys(p.dependencies||{}).length)")
+          echo "Runtime dependencies: $deps"
+          if [ "$deps" != "0" ]; then
+            echo "::error::This project must have zero runtime dependencies. Found $deps."
+            exit 1
+          fi
+
+      - name: Static integrity checks
+        run: npm run validate
+
+      - name: Documentation link check
+        run: npm run links
+
+  single-file:
+    name: Single-file integrity
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Confirm the artefact is self-contained
+        run: |
+          f="Form-909 Warp IDM Drum Machine.html"
+          echo "Size: $(wc -c < "$f") bytes"
+          # Only external references permitted: the three webfonts.
+          external=$(grep -oE 'src="https?://[^"]+"' "$f" || true)
+          if [ -n "$external" ]; then
+            echo "::error::External script sources found. The app must be self-contained:"
+            echo "$external"
+            exit 1
+          fi
+          # No external stylesheets other than Google Fonts.
+          bad=$(grep -oE '<link[^>]+href="https?://[^"]+"' "$f" | grep -v 'fonts.googleapis.com\|fonts.gstatic.com' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::Unexpected external stylesheet:"
+            echo "$bad"
+            exit 1
+          fi
+          echo "Self-contained: no external scripts, only webfont stylesheets."
+
+      - name: Confirm there is no build output to commit
+        run: |
+          # The artefact is the source. Fail if a bundler has left anything behind.
+          for d in dist build out .next .parcel-cache; do
+            if [ -d "$d" ]; then
+              echo "::error::Found a '$d' directory. This project has no build step."
+              exit 1
+            fi
+          done
+          echo "No build directories present."
