@@ -24,6 +24,8 @@ Offline 24-bit WAV rendering. Zero dependencies, zero build step, one file.
 
 [**zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine**](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/) · [**Direct Web Tool Link**](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)
 
+👉 **[Open it live in your browser](https://8080-imy6mydufmrufmrufm0dp3in1.e2b.app)** — the full drum machine, running right now. No install, no build, just click and play.
+
 </div>
 
 ---
