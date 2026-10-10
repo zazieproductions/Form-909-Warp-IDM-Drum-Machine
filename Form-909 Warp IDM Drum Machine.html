@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="dark">
-  <meta name="description" content="Form 909-WARP — a zero-dependency IDM drum machine with 21 curated patterns, style-aware generation, six synthesis voices, live session recording and offline 24-bit WAV export.">
+  <meta name="description" content="Form 909-WARP — a zero-dependency IDM drum machine with 21 curated patterns, style-aware generation, seven synthesis voices, live session recording and offline 24-bit WAV export.">
   <meta name="author" content="zazieproductions">
   <meta property="og:type" content="website">
   <meta property="og:title" content="The Bureau of Unreasonable Rhythms — Form 909-WARP">
@@ -951,26 +951,26 @@
         <div class="knob-grid">
           <div class="dial-unit">
             <label for="fxCrush">BIT CRUSH</label>
-            <input type="range" id="fxCrush" min="0" max="1" step="0.01" value="0.15">
-            <span class="dial-val" id="fxCrushVal">15%</span>
+            <input type="range" id="fxCrush" min="0" max="1" step="0.01" value="0">
+            <span class="dial-val" id="fxCrushVal">0%</span>
           </div>
           <div class="dial-unit">
             <label for="fxDrive">DRIVE SAT</label>
-            <input type="range" id="fxDrive" min="0" max="1" step="0.01" value="0.25">
-            <span class="dial-val" id="fxDriveVal">25%</span>
+            <input type="range" id="fxDrive" min="0" max="1" step="0.01" value="0">
+            <span class="dial-val" id="fxDriveVal">0%</span>
           </div>
           <div class="dial-unit">
             <label for="fxHumanize">TIME JITTER</label>
-            <input type="range" id="fxHumanize" min="0" max="25" step="1" value="4">
-            <span class="dial-val" id="fxHumanizeVal">4ms</span>
+            <input type="range" id="fxHumanize" min="0" max="25" step="1" value="0">
+            <span class="dial-val" id="fxHumanizeVal">0ms</span>
           </div>
         </div>
 
         <div class="knob-grid" style="margin-top:12px;">
           <div class="dial-unit">
             <label for="fxCutoff">FILTER CUTOFF</label>
-            <input type="range" id="fxCutoff" min="150" max="18000" step="10" value="16500">
-            <span class="dial-val" id="fxCutoffVal">16.5k</span>
+            <input type="range" id="fxCutoff" min="150" max="18000" step="10" value="18000">
+            <span class="dial-val" id="fxCutoffVal">18k</span>
           </div>
           <div class="dial-unit">
             <label for="fxDelayTime">DELAY TIME</label>
@@ -979,8 +979,8 @@
           </div>
           <div class="dial-unit">
             <label for="fxDelayFeedback">FEEDBACK</label>
-            <input type="range" id="fxDelayFeedback" min="0" max="0.85" step="0.01" value="0.32">
-            <span class="dial-val" id="fxDelayFeedbackVal">32%</span>
+            <input type="range" id="fxDelayFeedback" min="0" max="0.85" step="0.01" value="0">
+            <span class="dial-val" id="fxDelayFeedbackVal">0%</span>
           </div>
         </div>
       </section>
@@ -1049,7 +1049,7 @@
           <span style="font-size:9px; color:var(--text-dim);" id="inspectorNote">Shift-click any step for Ratchet burst</span>
         </div>
 
-        <div class="knob-grid-4">
+        <div class="knob-grid-4" id="inspectorRow1">
           <div class="dial-unit">
             <label for="stepVel">VELOCITY</label>
             <input type="range" id="stepVel" min="0" max="127" value="100">
@@ -1069,6 +1069,29 @@
             <label for="stepPitch">PITCH P-LOCK</label>
             <input type="range" id="stepPitch" min="-24" max="24" value="0">
             <span class="dial-val" id="stepPitchVal">0 st</span>
+          </div>
+        </div>
+
+        <div class="knob-grid-4" id="inspectorRow2" style="display:none;">
+          <div class="dial-unit">
+            <label for="stepTimbre">TIMBRE</label>
+            <input type="range" id="stepTimbre" min="0" max="100" value="50">
+            <span class="dial-val" id="stepTimbreVal">50%</span>
+          </div>
+          <div class="dial-unit">
+            <label for="stepMod">MODULATION</label>
+            <input type="range" id="stepMod" min="0" max="100" value="50">
+            <span class="dial-val" id="stepModVal">50%</span>
+          </div>
+          <div class="dial-unit">
+            <label for="stepDrift">DRIFT</label>
+            <input type="range" id="stepDrift" min="0" max="100" value="30">
+            <span class="dial-val" id="stepDriftVal">30%</span>
+          </div>
+          <div class="dial-unit">
+            <label for="stepFilterEnv">FILTER ENV</label>
+            <input type="range" id="stepFilterEnv" min="0" max="100" value="50">
+            <span class="dial-val" id="stepFilterEnvVal">50%</span>
           </div>
         </div>
       </div>
@@ -1123,7 +1146,8 @@
         type: 'FM SUB-PUNCH',
         steps: 16,
         color: '#38bdf8',
-        defaultGain: 0.85
+        defaultGain: 0.85,
+        synthParams: { tone: 'punch', clickAmount: 0.5, decay: 0.38, fmDepth: 350 }
       },
       {
         id: 'sn',
@@ -1131,7 +1155,8 @@
         type: 'DUAL RES-NOISE',
         steps: 16,
         color: '#f59e0b',
-        defaultGain: 0.75
+        defaultGain: 0.75,
+        synthParams: { tone: 'wire', bodyFreq: 185, noiseColor: 'bright', snap: 0.7 }
       },
       {
         id: 'ch',
@@ -1139,7 +1164,8 @@
         type: 'METALLIC 6-OP',
         steps: 16,
         color: '#10b981',
-        defaultGain: 0.65
+        defaultGain: 0.65,
+        synthParams: { tone: 'metallic', decay: 0.065, harmonicity: 1.0, noiseMix: 0.1 }
       },
       {
         id: 'perc',
@@ -1147,7 +1173,8 @@
         type: 'RING MOD FM',
         steps: 12, // Polyrhythm default
         color: '#d946ef',
-        defaultGain: 0.70
+        defaultGain: 0.70,
+        synthParams: { tone: 'clang', carrierFreq: 440, modRatio: 2.87, modDepth: 700, decay: 0.14 }
       },
       {
         id: 'glitch',
@@ -1155,7 +1182,8 @@
         type: 'NOISE BURST GRAIN',
         steps: 14, // Polyrhythm default
         color: '#ef4444',
-        defaultGain: 0.68
+        defaultGain: 0.68,
+        synthParams: { tone: 'grain', density: 0.5, pitchRange: 2, filterQ: 8 }
       },
       {
         id: 'sub',
@@ -1163,7 +1191,29 @@
         type: 'SQUARE SQUELCH',
         steps: 16,
         color: '#06b6d4',
-        defaultGain: 0.78
+        defaultGain: 0.78,
+        synthParams: { tone: 'acid', filterFreq: 8, filterQ: 5.5, decay: 0.28, slide: 0 }
+      },
+      {
+        id: 'synth',
+        name: 'SYNTH / FLUCTUATING TONE',
+        type: 'MODULAR DRIFT',
+        steps: 16,
+        color: '#a855f7',
+        defaultGain: 0.6,
+        synthParams: { 
+          tone: 'drift', 
+          oscillator: 'sawtooth',
+          lfoRate: 0.3,
+          lfoDepth: 0.5,
+          filterLfo: 0.4,
+          pitchLfo: 0.2,
+          driftAmount: 0.3,
+          attack: 0.05,
+          decay: 0.4,
+          sustain: 0.3,
+          release: 0.5
+        }
       }
     ];
 
@@ -1193,14 +1243,14 @@
         this.lookahead = 25.0; // ms
         this.scheduleAheadTime = 0.1; // seconds
 
-        // FX Settings
+        // FX Settings - clean defaults, user adds dirt as needed
         this.fx = {
-          crush: 0.15,
-          drive: 0.25,
-          humanize: 4, // ms
-          cutoff: 16500,
+          crush: 0,
+          drive: 0,
+          humanize: 0, // ms
+          cutoff: 18000,
           delayTime: 0.18,
-          delayFeedback: 0.32,
+          delayFeedback: 0,
           globalProb: 1.0,
           globalRatchet: 0.2,
           swing: 0.12
@@ -1423,7 +1473,12 @@
               vel: 100,
               ratchet: 1, // 1 = normal, 2, 3, 4 = drills
               prob: 100, // %
-              pitchOffset: 0 // semitones
+              pitchOffset: 0, // semitones
+              // Synth-specific params for improvisation
+              timbre: 0.5,       // 0-1: timbre/morph control
+              modulation: 0.5,   // 0-1: modulation depth
+              drift: 0.3,        // 0-1: random drift amount
+              filterEnv: 0.5     // 0-1: filter envelope amount
             });
           }
           return {
@@ -1442,55 +1497,72 @@
         const ctx = targetCtx;
         const velNorm = (stepData.vel / 127);
         const pitchShift = Math.pow(2, stepData.pitchOffset / 12);
+        
+        // Improv/timbre parameters (0-1 range) - for timbral variety and improvisation
+        const timbre = stepData.timbre ?? 0.5;
+        const modulation = stepData.modulation ?? 0.5;
+        const drift = stepData.drift ?? 0.3;
+        const filterEnv = stepData.filterEnv ?? 0.5;
 
         // Note: bit-crush is applied on the master bus, not per voice. Threading it
         // through each generator meant six signatures carried an argument nobody read.
         switch (trackIdx) {
           case 0: // BD: FM Pitch Sweep Punch + Click
-            this.synthKick(ctx, destNode, time, velNorm, pitchShift);
+            this.synthKick(ctx, destNode, time, velNorm, pitchShift, timbre, modulation, drift);
             break;
           case 1: // SN: Dual Filtered Noise & Resonant Membrane
-            this.synthSnare(ctx, destNode, time, velNorm, pitchShift);
+            this.synthSnare(ctx, destNode, time, velNorm, pitchShift, timbre, modulation, drift);
             break;
           case 2: // CH: Metallic Frequency Modulated Slices
-            this.synthHat(ctx, destNode, time, velNorm, pitchShift);
+            this.synthHat(ctx, destNode, time, velNorm, pitchShift, timbre, modulation, drift);
             break;
           case 3: // PERC: Ring-mod Industrial Clang
-            this.synthPerc(ctx, destNode, time, velNorm, pitchShift);
+            this.synthPerc(ctx, destNode, time, velNorm, pitchShift, timbre, modulation, drift);
             break;
           case 4: // GLITCH: Micro granular bit noise burst
-            this.synthGlitch(ctx, destNode, time, velNorm, pitchShift);
+            this.synthGlitch(ctx, destNode, time, velNorm, pitchShift, timbre, modulation, drift);
             break;
           case 5: // SUB: Acidic Saw-Square Squelch
-            this.synthSub(ctx, destNode, time, velNorm, pitchShift);
+            this.synthSub(ctx, destNode, time, velNorm, pitchShift, timbre, modulation, drift, filterEnv);
+            break;
+          case 6: // SYNTH: Fluctuating Modular Drift Tone
+            this.synthFlux(ctx, destNode, time, velNorm, pitchShift, timbre, modulation, drift, filterEnv, stepData);
             break;
         }
       }
 
-      // BD Synthesizer
-      synthKick(ctx, dest, time, vel, pitchShift) {
+      // BD Synthesizer - timbre: 0=deep 808, 0.5=punchy 909, 1=hard techno
+      synthKick(ctx, dest, time, vel, pitchShift, timbre = 0.5, modulation = 0.5, drift = 0.3) {
         const osc = ctx.createOscillator();
         const oscMod = ctx.createOscillator();
         const modGain = ctx.createGain();
         const gain = ctx.createGain();
 
         const baseFreq = 54 * pitchShift;
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(baseFreq * 5.2, time);
-        osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, time + 0.035);
-        osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.75, time + 0.32);
+        
+        // Timbre morph: sine -> triangle -> square for more harmonics
+        osc.type = timbre < 0.33 ? 'sine' : (timbre < 0.66 ? 'triangle' : 'square');
+        
+        // Pitch envelope depth based on timbre
+        const pitchStart = baseFreq * (4 + timbre * 3); // 4x to 7x
+        const pitchMid = baseFreq * (1.2 + timbre * 0.8); // 1.2x to 2x
+        const pitchEnd = baseFreq * (0.5 + timbre * 0.5); // 0.5x to 1x
+        
+        osc.frequency.setValueAtTime(pitchStart, time);
+        osc.frequency.exponentialRampToValueAtTime(pitchMid, time + 0.02 + timbre * 0.03);
+        osc.frequency.exponentialRampToValueAtTime(pitchEnd, time + 0.2 + timbre * 0.3);
 
-        // FM click transient
-        oscMod.type = 'triangle';
-        oscMod.frequency.setValueAtTime(320 * pitchShift, time);
+        // FM click transient - depth controlled by modulation
+        oscMod.type = modulation < 0.5 ? 'triangle' : 'sawtooth';
+        oscMod.frequency.setValueAtTime(320 * pitchShift * (1 + modulation), time);
         oscMod.frequency.exponentialRampToValueAtTime(30, time + 0.04);
 
-        modGain.gain.setValueAtTime(350 * vel, time);
+        modGain.gain.setValueAtTime(350 * vel * (0.5 + modulation), time);
         modGain.gain.exponentialRampToValueAtTime(0.01, time + 0.045);
         oscMod.connect(modGain);
         modGain.connect(osc.frequency);
 
-        // Punch click noise burst
+        // Punch click noise burst - amount based on timbre
         const click = ctx.createBufferSource();
         const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.008), ctx.sampleRate);
         const data = buffer.getChannelData(0);
@@ -1498,14 +1570,29 @@
         click.buffer = buffer;
 
         const clickGain = ctx.createGain();
-        clickGain.gain.setValueAtTime(0.6 * vel, time);
+        clickGain.gain.setValueAtTime(0.6 * vel * (0.5 + timbre), time);
         clickGain.gain.linearRampToValueAtTime(0, time + 0.008);
         click.connect(clickGain);
         clickGain.connect(gain);
 
-        // Amp envelope
+        // Amp envelope - decay based on timbre
+        const decayTime = 0.25 + timbre * 0.3;
         gain.gain.setValueAtTime(vel * 1.1, time);
-        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.38);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + decayTime);
+
+        // Sub oscillator for extra weight (timbre > 0.5)
+        if (timbre > 0.5) {
+          const subOsc = ctx.createOscillator();
+          const subGain = ctx.createGain();
+          subOsc.type = 'sine';
+          subOsc.frequency.value = baseFreq * 0.5;
+          subGain.gain.setValueAtTime(vel * 0.3 * (timbre - 0.5) * 2, time);
+          subGain.gain.exponentialRampToValueAtTime(0.0001, time + decayTime * 1.5);
+          subOsc.connect(subGain);
+          subGain.connect(dest);
+          subOsc.start(time);
+          subOsc.stop(time + decayTime * 1.5);
+        }
 
         osc.connect(gain);
         gain.connect(dest);
@@ -1513,43 +1600,55 @@
         osc.start(time);
         oscMod.start(time);
         click.start(time);
-        osc.stop(time + 0.4);
+        osc.stop(time + decayTime + 0.1);
         oscMod.stop(time + 0.05);
         click.stop(time + 0.01);
       }
 
-      // Snare Synthesizer
-      synthSnare(ctx, dest, time, vel, pitchShift) {
+      // Snare Synthesizer - timbre: 0=deep/woody, 0.5=classic, 1=metallic/ringy
+// modulation: controls noise color and filter resonance
+      synthSnare(ctx, dest, time, vel, pitchShift, timbre = 0.5, modulation = 0.5, drift = 0.3) {
         // Tonal body
         const osc = ctx.createOscillator();
         const oscGain = ctx.createGain();
         const toneFreq = 185 * pitchShift;
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(toneFreq * 1.9, time);
-        osc.frequency.exponentialRampToValueAtTime(toneFreq, time + 0.07);
+        
+        // Timbre affects oscillator type and pitch envelope
+        osc.type = timbre < 0.33 ? 'sine' : (timbre < 0.66 ? 'triangle' : 'square');
+        const pitchStart = toneFreq * (1.5 + timbre * 1.0);
+        const pitchEnd = toneFreq * (0.8 + timbre * 0.4);
+        osc.frequency.setValueAtTime(pitchStart, time);
+        osc.frequency.exponentialRampToValueAtTime(pitchEnd, time + 0.05 + timbre * 0.05);
 
-        oscGain.gain.setValueAtTime(0.6 * vel, time);
-        oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
+        oscGain.gain.setValueAtTime(0.6 * vel * (0.7 + timbre * 0.6), time);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.1 + timbre * 0.15);
         osc.connect(oscGain);
 
-        // Snappy metallic noise
+        // Snappy metallic noise - color controlled by modulation
         const noiseLen = Math.floor(ctx.sampleRate * 0.22);
         const noiseBuffer = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
         const nData = noiseBuffer.getChannelData(0);
         for (let i = 0; i < noiseLen; i++) {
-          nData[i] = (Math.random() * 2 - 1);
+          // Modulation controls noise color: white -> pink -> metallic
+          let sample = (Math.random() * 2 - 1);
+          if (modulation > 0.5) {
+            // Add some metallic resonance via comb filtering simulation
+            sample *= 1 + Math.sin(i * 0.1) * (modulation - 0.5) * 2;
+          }
+          nData[i] = sample;
         }
         const noiseSource = ctx.createBufferSource();
         noiseSource.buffer = noiseBuffer;
 
         const noiseFilter = ctx.createBiquadFilter();
         noiseFilter.type = 'bandpass';
-        noiseFilter.frequency.setValueAtTime(3200 * pitchShift, time);
-        noiseFilter.Q.value = 2.4;
+        // Filter frequency based on timbre (brighter = more metallic)
+        noiseFilter.frequency.setValueAtTime((2500 + timbre * 3000) * pitchShift, time);
+        noiseFilter.Q.value = 1.5 + modulation * 4; // Higher Q for more ring
 
         const noiseGain = ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.9 * vel, time);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+        noiseGain.gain.setValueAtTime(0.9 * vel * (0.6 + modulation * 0.8), time);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.15 + timbre * 0.15);
 
         noiseSource.connect(noiseFilter);
         noiseFilter.connect(noiseGain);
@@ -1562,120 +1661,406 @@
 
         osc.start(time);
         noiseSource.start(time);
-        osc.stop(time + 0.18);
-        noiseSource.stop(time + 0.23);
+        osc.stop(time + 0.2);
+        noiseSource.stop(time + 0.25);
       }
 
       // Hat Synthesizer (Metallic 6-op cluster)
-      synthHat(ctx, dest, time, vel, pitchShift) {
-        const ratios = [2, 3.01, 4.15, 5.4, 6.8, 8.2];
+// timbre: 0=closed/short, 0.5=classic, 1=open/splashy
+// modulation: adds noise mix and detuning for texture
+      synthHat(ctx, dest, time, vel, pitchShift, timbre = 0.5, modulation = 0.5, drift = 0.3) {
+        // Base ratios - timbre adds more inharmonic partials
+        const baseRatios = [2, 3.01, 4.15, 5.4, 6.8, 8.2];
+        const extraRatios = timbre > 0.5 ? [1.4, 2.7, 3.9, 5.1, 6.3, 7.6, 9.1, 10.4] : [];
+        const ratios = [...baseRatios, ...extraRatios.slice(0, Math.floor(timbre * 4))];
+        
         const fundamental = 420 * pitchShift;
         const hatMix = ctx.createGain();
 
         const bpf = ctx.createBiquadFilter();
         bpf.type = 'highpass';
-        bpf.frequency.setValueAtTime(6800, time);
+        // Cutoff based on timbre - more open = lower cutoff
+        bpf.frequency.setValueAtTime(8000 - timbre * 3000, time);
+        bpf.Q.value = 1 + modulation * 3;
 
-        ratios.forEach(r => {
+        ratios.forEach((r, i) => {
           const osc = ctx.createOscillator();
-          osc.type = 'square';
+          // Modulation adds detuning for metallic shimmer
+          const detune = (Math.random() - 0.5) * modulation * 50;
+          osc.type = modulation > 0.7 ? 'sawtooth' : 'square';
           osc.frequency.value = fundamental * r;
-          osc.connect(hatMix);
+          osc.detune.value = detune;
+          // Amplitude scaling for upper partials
+          const amp = 1 / (1 + i * 0.15);
+          const oscGain = ctx.createGain();
+          oscGain.gain.value = amp;
+          osc.connect(oscGain);
+          oscGain.connect(hatMix);
           osc.start(time);
-          osc.stop(time + 0.07);
+          // Decay based on timbre
+          osc.stop(time + 0.05 + timbre * 0.25);
         });
+
+        // Add noise component for texture (modulation controlled)
+        if (modulation > 0.3) {
+          const noiseLen = Math.floor(ctx.sampleRate * (0.03 + timbre * 0.1));
+          const noiseBuffer = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+          const nData = noiseBuffer.getChannelData(0);
+          for (let i = 0; i < noiseLen; i++) {
+            nData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (noiseLen * 0.1));
+          }
+          const noiseSource = ctx.createBufferSource();
+          noiseSource.buffer = noiseBuffer;
+          
+          const noiseFilter = ctx.createBiquadFilter();
+          noiseFilter.type = 'highpass';
+          noiseFilter.frequency.value = 6000;
+          
+          const noiseGain = ctx.createGain();
+          noiseGain.gain.setValueAtTime(0.15 * vel * modulation, time);
+          noiseGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.04 + timbre * 0.1);
+          
+          noiseSource.connect(noiseFilter);
+          noiseFilter.connect(noiseGain);
+          noiseGain.connect(hatMix);
+          noiseSource.start(time);
+          noiseSource.stop(time + 0.05 + timbre * 0.15);
+        }
 
         const env = ctx.createGain();
         env.gain.setValueAtTime(0.4 * vel, time);
-        env.gain.exponentialRampToValueAtTime(0.0001, time + 0.065);
+        env.gain.exponentialRampToValueAtTime(0.0001, time + 0.05 + timbre * 0.3);
 
         hatMix.connect(bpf);
         bpf.connect(env);
         env.connect(dest);
       }
 
-      // Perc Synthesizer (Metallic Clang FM)
-      synthPerc(ctx, dest, time, vel, pitchShift) {
+      // Perc Synthesizer (Metallic Clang FM / Ring Mod)
+// timbre: 0=woody/block, 0.5=metallic clang, 1=bell-like
+// modulation: FM depth and harmonicity ratio
+      synthPerc(ctx, dest, time, vel, pitchShift, timbre = 0.5, modulation = 0.5, drift = 0.3) {
         const carrier = ctx.createOscillator();
         const modulator = ctx.createOscillator();
         const modGain = ctx.createGain();
         const amp = ctx.createGain();
 
         const cFreq = 440 * pitchShift;
-        carrier.type = 'sine';
+        
+        // Timbre morphs carrier waveform
+        carrier.type = timbre < 0.33 ? 'sine' : (timbre < 0.66 ? 'triangle' : 'square');
         carrier.frequency.setValueAtTime(cFreq, time);
-        carrier.frequency.exponentialRampToValueAtTime(cFreq * 0.45, time + 0.12);
+        carrier.frequency.exponentialRampToValueAtTime(cFreq * (0.3 + timbre * 0.3), time + 0.1 + timbre * 0.1);
 
-        modulator.type = 'sawtooth';
-        modulator.frequency.setValueAtTime(cFreq * 2.87, time);
+        // Modulation controls FM ratio and depth
+        const modRatio = 1.5 + modulation * 4.5; // 1.5 to 6
+        modulator.type = modulation > 0.6 ? 'sawtooth' : 'triangle';
+        modulator.frequency.setValueAtTime(cFreq * modRatio, time);
+        
+        // Add slight drift to modulator for organic feel
+        if (drift > 0.2) {
+          modulator.frequency.exponentialRampToValueAtTime(cFreq * modRatio * (1 + (Math.random() - 0.5) * drift * 0.1), time + 0.1);
+        }
 
-        modGain.gain.setValueAtTime(700 * vel, time);
-        modGain.gain.exponentialRampToValueAtTime(1, time + 0.11);
+        modGain.gain.setValueAtTime(500 * vel * (0.5 + modulation), time);
+        modGain.gain.exponentialRampToValueAtTime(1, time + 0.1);
         modulator.connect(modGain);
         modGain.connect(carrier.frequency);
 
+        // Add second modulator for complex timbres (timbre > 0.6)
+        if (timbre > 0.6) {
+          const mod2 = ctx.createOscillator();
+          const mod2Gain = ctx.createGain();
+          mod2.type = 'sine';
+          mod2.frequency.value = cFreq * 0.5;
+          mod2Gain.gain.setValueAtTime(100 * vel * (timbre - 0.6) * 2.5, time);
+          mod2Gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+          mod2.connect(mod2Gain);
+          mod2Gain.connect(carrier.frequency);
+          mod2.start(time);
+          mod2.stop(time + 0.2);
+        }
+
         amp.gain.setValueAtTime(vel * 0.7, time);
-        amp.gain.exponentialRampToValueAtTime(0.0001, time + 0.14);
+        amp.gain.exponentialRampToValueAtTime(0.0001, time + 0.1 + timbre * 0.2);
 
         carrier.connect(amp);
         amp.connect(dest);
 
         carrier.start(time);
         modulator.start(time);
-        carrier.stop(time + 0.15);
+        carrier.stop(time + 0.2);
         modulator.stop(time + 0.15);
       }
 
-      // Glitch Synthesizer (Broken micro-granule click)
-      synthGlitch(ctx, dest, time, vel, pitchShift) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        const filter = ctx.createBiquadFilter();
-
-        osc.type = Math.random() > 0.5 ? 'sawtooth' : 'triangle';
-        const startFreq = (Math.random() * 4000 + 800) * pitchShift;
-        osc.frequency.setValueAtTime(startFreq, time);
-        osc.frequency.exponentialRampToValueAtTime(120, time + 0.035);
-
-        filter.type = 'bandpass';
-        filter.frequency.value = (Math.random() * 5000 + 1200);
-        filter.Q.value = 8;
-
-        gain.gain.setValueAtTime(vel * 0.85, time);
-        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.038);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(dest);
-
-        osc.start(time);
-        osc.stop(time + 0.04);
+      // Glitch Synthesizer (Broken micro-granule click / Digital artifacts)
+// timbre: 0=digital clicks, 0.5=granular noise, 1=bit-crushed tones
+// modulation: density and pitch range of grains
+      synthGlitch(ctx, dest, time, vel, pitchShift, timbre = 0.5, modulation = 0.5, drift = 0.3) {
+        const numGrains = 1 + Math.floor(modulation * 4); // 1-5 grains
+        
+        for (let g = 0; g < numGrains; g++) {
+          const grainTime = time + g * (0.01 + Math.random() * 0.02);
+          const grainDur = 0.01 + Math.random() * 0.03 * (1 + modulation);
+          
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const filter = ctx.createBiquadFilter();
+          
+          // Timbre selects synthesis method
+          if (timbre < 0.33) {
+            // Digital clicks / sample rate reduction artifacts
+            osc.type = ['square', 'sawtooth', 'triangle'][Math.floor(Math.random() * 3)];
+            const startFreq = (Math.random() * 6000 + 500) * pitchShift;
+            osc.frequency.setValueAtTime(startFreq, grainTime);
+            osc.frequency.exponentialRampToValueAtTime(80, grainTime + grainDur);
+            
+            filter.type = 'lowpass';
+            filter.frequency.value = 8000;
+            filter.Q.value = 2;
+          } else if (timbre < 0.66) {
+            // Granular noise bursts
+            osc.type = 'sawtooth';
+            const startFreq = (Math.random() * 4000 + 800) * pitchShift;
+            osc.frequency.setValueAtTime(startFreq, grainTime);
+            osc.frequency.exponentialRampToValueAtTime(120, grainTime + grainDur);
+            
+            filter.type = 'bandpass';
+            filter.frequency.value = (Math.random() * 5000 + 1200);
+            filter.Q.value = 4 + modulation * 8;
+          } else {
+            // Bit-crushed / aliased tones
+            osc.type = 'square';
+            const startFreq = (Math.random() * 2000 + 200) * pitchShift;
+            osc.frequency.setValueAtTime(startFreq, grainTime);
+            // Add aliasing via rapid frequency jumps
+            const jumps = 3 + Math.floor(modulation * 5);
+            for (let j = 0; j < jumps; j++) {
+              const jumpTime = grainTime + (grainDur / jumps) * j;
+              osc.frequency.setValueAtTime((Math.random() * 3000 + 300) * pitchShift, jumpTime);
+            }
+            
+            filter.type = 'highpass';
+            filter.frequency.value = 500;
+            filter.Q.value = 1;
+          }
+          
+          // Drift adds randomness to each grain
+          const driftAmt = drift * 0.5;
+          gain.gain.setValueAtTime(vel * 0.7 * (0.5 + Math.random() * driftAmt), grainTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, grainTime + grainDur);
+          
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(dest);
+          
+          osc.start(grainTime);
+          osc.stop(grainTime + grainDur);
+        }
       }
 
       // Sub Synthesizer (Square / Acid bass note)
-      synthSub(ctx, dest, time, vel, pitchShift) {
+// timbre: 0=deep sine sub, 0.5=classic 303 saw, 1=aggressive square
+// modulation: filter envelope amount and resonance
+// filterEnv: filter envelope depth (0-1)
+      synthSub(ctx, dest, time, vel, pitchShift, timbre = 0.5, modulation = 0.5, drift = 0.3, filterEnv = 0.5) {
         const osc = ctx.createOscillator();
         const filter = ctx.createBiquadFilter();
         const gain = ctx.createGain();
 
-        osc.type = 'sawtooth';
         const base = 55 * pitchShift;
+        
+        // Timbre selects oscillator type and harmonics
+        osc.type = timbre < 0.33 ? 'sine' : (timbre < 0.66 ? 'sawtooth' : 'square');
         osc.frequency.setValueAtTime(base, time);
+        
+        // Add sub-oscillator for weight
+        if (timbre > 0.3) {
+          const subOsc = ctx.createOscillator();
+          const subGain = ctx.createGain();
+          subOsc.type = 'sine';
+          subOsc.frequency.value = base * 0.5;
+          subGain.gain.setValueAtTime(vel * 0.3 * (timbre - 0.3) * 1.5, time);
+          subGain.gain.exponentialRampToValueAtTime(0.001, time + 0.4);
+          subOsc.connect(subGain);
+          subGain.connect(dest);
+          subOsc.start(time);
+          subOsc.stop(time + 0.5);
+        }
 
         filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(base * 8, time);
-        filter.frequency.exponentialRampToValueAtTime(base * 1.5, time + 0.22);
-        filter.Q.value = 5.5;
+        // Filter envelope - modulation controls depth
+        const filterStart = base * (4 + modulation * 12); // 4x to 16x
+        const filterEnd = base * (1 + timbre * 2); // 1x to 3x
+        filter.frequency.setValueAtTime(filterStart, time);
+        filter.frequency.exponentialRampToValueAtTime(filterEnd, time + 0.15 + filterEnv * 0.2);
+        filter.Q.value = 3 + modulation * 8; // 3 to 11
 
+        // Amplitude envelope
+        const decayTime = 0.2 + timbre * 0.3 + filterEnv * 0.2;
         gain.gain.setValueAtTime(vel * 0.8, time);
-        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.28);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + decayTime);
+
+        // Drift adds slight pitch instability
+        if (drift > 0.2) {
+          osc.frequency.setValueAtTime(base * (1 + (Math.random() - 0.5) * drift * 0.02), time + 0.01);
+        }
 
         osc.connect(filter);
         filter.connect(gain);
         gain.connect(dest);
 
         osc.start(time);
-        osc.stop(time + 0.3);
+        osc.stop(time + decayTime + 0.1);
+      }
+
+      // Flux Synthesizer (Fluctuating Modular Drift Tone)
+      // timbre: oscillator morph (sine->triangle->saw->square)
+      // modulation: LFO depth for filter/pitch/amplitude
+      // drift: random walk amount for organic movement
+      // filterEnv: filter envelope amount
+      // stepData: contains ratchet, prob, etc for rhythmic variation
+      synthFlux(ctx, dest, time, vel, pitchShift, timbre = 0.5, modulation = 0.5, drift = 0.3, filterEnv = 0.5, stepData = {}) {
+        // Ratchet support for rhythmic bursts
+        const ratchet = stepData.ratchet || 1;
+        const isRatchet = ratchet > 1;
+        const baseVel = vel * (isRatchet ? 0.7 : 1.0);
+        
+        // Base frequency with pitch shift
+        const baseFreq = 110 * pitchShift; // A2 as base
+        
+        // Timbre selects oscillator type
+        let oscType = 'sawtooth';
+        if (timbre < 0.25) oscType = 'sine';
+        else if (timbre < 0.5) oscType = 'triangle';
+        else if (timbre < 0.75) oscType = 'sawtooth';
+        else oscType = 'square';
+        
+        // Create main oscillator
+        const osc = ctx.createOscillator();
+        osc.type = oscType;
+        osc.frequency.value = baseFreq;
+        
+        // Add sub-oscillator for weight
+        const subOsc = ctx.createOscillator();
+        subOsc.type = 'sine';
+        subOsc.frequency.value = baseFreq * 0.5;
+        
+        // Create filter
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        
+        // Create VCA
+        const vca = ctx.createGain();
+        
+        // --- LFOs for modulation ---
+        // Filter LFO
+        if (modulation > 0.1) {
+          const filterLFO = ctx.createOscillator();
+          const filterLFOGain = ctx.createGain();
+          filterLFO.type = ['sine', 'triangle', 'sawtooth', 'square'][Math.floor(Math.random() * 4)];
+          // Slow LFO rate: 0.05 - 2 Hz
+          filterLFO.frequency.value = 0.05 + Math.random() * 1.95;
+          filterLFOGain.gain.value = modulation * 800 * filterEnv; // Filter frequency modulation depth
+          filterLFO.connect(filterLFOGain);
+          filterLFOGain.connect(filter.frequency);
+          filterLFO.start(time);
+          filterLFO.stop(time + 8); // Long duration for evolving texture
+        }
+        
+        // Pitch LFO (vibrato)
+        if (modulation > 0.2) {
+          const pitchLFO = ctx.createOscillator();
+          const pitchLFOGain = ctx.createGain();
+          pitchLFO.type = 'sine';
+          pitchLFO.frequency.value = 3 + Math.random() * 5; // 3-8 Hz vibrato
+          pitchLFOGain.gain.value = modulation * 50 * drift; // Pitch modulation depth in cents
+          pitchLFO.connect(pitchLFOGain);
+          pitchLFOGain.connect(osc.frequency);
+          pitchLFOGain.connect(subOsc.frequency);
+          pitchLFO.start(time);
+          pitchLFO.stop(time + 8);
+        }
+        
+        // Amplitude LFO (tremolo)
+        if (modulation > 0.3) {
+          const ampLFO = ctx.createOscillator();
+          const ampLFOGain = ctx.createGain();
+          ampLFO.type = 'triangle';
+          ampLFO.frequency.value = 0.5 + Math.random() * 2; // 0.5-2.5 Hz
+          ampLFOGain.gain.value = modulation * 0.3;
+          ampLFO.connect(ampLFOGain);
+          ampLFOGain.connect(vca.gain);
+          ampLFO.start(time);
+          ampLFO.stop(time + 8);
+        }
+        
+        // --- Drift: Random walk for organic movement ---
+        if (drift > 0.1) {
+          const driftLFO = ctx.createOscillator();
+          const driftGain = ctx.createGain();
+          driftLFO.type = 'sine';
+          driftLFO.frequency.value = 0.02 + Math.random() * 0.08; // Very slow: 0.02-0.1 Hz
+          driftGain.gain.value = drift * 200; // Slow frequency drift
+          driftLFO.connect(driftGain);
+          driftGain.connect(osc.frequency);
+          driftGain.connect(subOsc.frequency);
+          driftLFO.start(time);
+          driftLFO.stop(time + 8);
+        }
+        
+        // --- Filter envelope ---
+        const filterStartFreq = baseFreq * (2 + filterEnv * 10); // 2x to 12x
+        const filterEndFreq = baseFreq * (0.8 + timbre * 2); // 0.8x to 2.8x
+        filter.frequency.setValueAtTime(filterStartFreq, time);
+        filter.frequency.exponentialRampToValueAtTime(filterEndFreq, time + 0.3 + filterEnv * 0.5);
+        filter.Q.value = 1 + modulation * 8; // 1 to 9
+        
+        // --- Amplitude envelope (ADSR-style) ---
+        const attackTime = 0.01 + timbre * 0.1; // 10-110ms
+        const decayTime = 0.2 + filterEnv * 0.5; // 200-700ms
+        const sustainLevel = 0.3 + modulation * 0.4; // 30-70%
+        const releaseTime = 0.5 + drift * 1.0; // 500-1500ms
+        
+        vca.gain.setValueAtTime(0, time);
+        vca.gain.linearRampToValueAtTime(baseVel, time + attackTime);
+        vca.gain.exponentialRampToValueAtTime(baseVel * sustainLevel, time + attackTime + decayTime);
+        
+        // For ratchet notes, shorten the envelope
+        const noteDur = isRatchet ? 0.15 : (2 + Math.random() * 3); // Short for ratchet, long for held
+        vca.gain.setValueAtTime(baseVel * sustainLevel, time + attackTime + decayTime);
+        vca.gain.exponentialRampToValueAtTime(0.001, time + noteDur);
+        
+        // --- Routing ---
+        osc.connect(filter);
+        subOsc.connect(filter);
+        filter.connect(vca);
+        vca.connect(dest);
+        
+        // Start oscillators
+        osc.start(time);
+        subOsc.start(time);
+        
+        // Stop after note duration + release
+        const totalDur = noteDur + releaseTime;
+        osc.stop(time + totalDur);
+        subOsc.stop(time + totalDur);
+        
+        // Add harmonic exciter for bright timbres
+        if (timbre > 0.6 && modulation > 0.3) {
+          const exciter = ctx.createBiquadFilter();
+          exciter.type = 'peaking';
+          exciter.frequency.value = 3000;
+          exciter.Q.value = 2;
+          exciter.gain.value = 6 * (timbre - 0.6) * 2.5;
+          
+          const exciterGain = ctx.createGain();
+          exciterGain.gain.value = 0.1 * modulation;
+          
+          vca.connect(exciter);
+          exciter.connect(exciterGain);
+          exciterGain.connect(dest);
+        }
       }
 
       // --- Precise Scheduler Engine ---
@@ -1971,7 +2356,7 @@
 
       // --- Mutagen Generator ---
       mutateRhythms() {
-        this.tracks.forEach((track) => {
+        this.tracks.forEach((track, tIdx) => {
           track.steps.forEach((step, i) => {
             // Randomly flip or drill
             if (Math.random() < 0.22) {
@@ -1982,10 +2367,17 @@
                 step.ratchet = [1, 2, 3, 4][Math.floor(Math.random() * 4)];
               }
               if (Math.random() < 0.25) {
-                step.pitchOffset = [-12, -7, -5, 0, 3, 7, 12, 19][Math.floor(Math.random() * 8)];
+                step.pitchOffset = [-19, -12, -7, -5, -3, 0, 3, 5, 7, 12, 19, 24][Math.floor(Math.random() * 12)];
               }
               if (Math.random() < 0.3) {
                 step.prob = Math.floor(Math.random() * 45) + 55;
+              }
+              // Mutate synth params for synth track
+              if (tIdx === 6) {
+                if (Math.random() < 0.4) step.timbre = Math.random();
+                if (Math.random() < 0.4) step.modulation = Math.random();
+                if (Math.random() < 0.4) step.drift = Math.random() * 0.5;
+                if (Math.random() < 0.4) step.filterEnv = Math.random();
               }
             }
           });
@@ -2285,9 +2677,13 @@
       confield: {
         bpm: 168,
         lengths: [16, 16, 16, 12, 14, 16],
-        crush: 0.28,
-        drive: 0.35,
+        crush: 0,
+        drive: 0,
         swing: 0.16,
+        humanize: 4,
+        cutoff: 18000,
+        delayTime: 0.18,
+        delayFeedback: 0,
         data: [
           // BD
           [{i:0, r:1, p:0},{i:3, r:2, p:0},{i:7, r:1, p:3},{i:10, r:1, p:0},{i:12, r:3, p:-5}],
@@ -2306,9 +2702,13 @@
       drukqs: {
         bpm: 192,
         lengths: [16, 16, 16, 16, 16, 16],
-        crush: 0.2,
-        drive: 0.45,
+        crush: 0,
+        drive: 0,
         swing: 0.05,
+        humanize: 2,
+        cutoff: 18000,
+        delayTime: 0.15,
+        delayFeedback: 0,
         data: [
           [{i:0, r:1},{i:2, r:2},{i:6, r:1},{i:8, r:3},{i:10, r:4},{i:12, r:1}],
           [{i:4, r:2},{i:10, r:3},{i:12, r:4},{i:14, r:4},{i:15, r:4}],
@@ -2321,9 +2721,13 @@
       square: {
         bpm: 178,
         lengths: [16, 16, 16, 11, 13, 16],
-        crush: 0.12,
-        drive: 0.38,
+        crush: 0,
+        drive: 0,
         swing: 0.2,
+        humanize: 6,
+        cutoff: 18000,
+        delayTime: 0.2,
+        delayFeedback: 0,
         data: [
           [{i:0, r:1},{i:6, r:1},{i:8, r:2},{i:11, r:1},{i:14, r:2}],
           [{i:4, r:1},{i:9, r:2},{i:12, r:1},{i:15, r:3}],
@@ -2336,9 +2740,13 @@
       subliminal: {
         bpm: 142,
         lengths: [13, 13, 16, 7, 9, 13],
-        crush: 0.3,
-        drive: 0.22,
+        crush: 0,
+        drive: 0,
         swing: 0.1,
+        humanize: 8,
+        cutoff: 18000,
+        delayTime: 0.25,
+        delayFeedback: 0.15,
         data: [
           [{i:0, r:1},{i:4, r:2},{i:7, r:1},{i:11, r:2}],
           [{i:3, r:1},{i:8, r:2},{i:12, r:3}],
@@ -2351,9 +2759,13 @@
       gonk: {
         bpm: 156,
         lengths: [16, 16, 16, 12, 16, 16],
-        crush: 0.35,
-        drive: 0.4,
+        crush: 0,
+        drive: 0,
         swing: 0.08,
+        humanize: 3,
+        cutoff: 18000,
+        delayTime: 0.18,
+        delayFeedback: 0,
         data: [
           [{i:0, r:1},{i:5, r:1},{i:8, r:2},{i:13, r:1}],
           [{i:4, r:1},{i:10, r:2},{i:12, r:1}],
@@ -2366,9 +2778,13 @@
       vnares: {
         bpm: 210,
         lengths: [14, 14, 14, 7, 14, 14], // 7/8 time divided into 14 sixteenths
-        crush: 0.42,
-        drive: 0.5,
+        crush: 0,
+        drive: 0,
         swing: 0.0,
+        humanize: 1,
+        cutoff: 18000,
+        delayTime: 0.12,
+        delayFeedback: 0,
         data: [
           [{i:0, r:1},{i:3, r:2},{i:6, r:3},{i:8, r:1},{i:11, r:4}],
           [{i:2, r:2},{i:5, r:3},{i:9, r:4},{i:12, r:4},{i:13, r:4}],
@@ -2381,9 +2797,13 @@
       raster: {
         bpm: 128,
         lengths: [16, 16, 16, 16, 16, 16],
-        crush: 0.05,
-        drive: 0.15,
+        crush: 0,
+        drive: 0,
         swing: 0.0,
+        humanize: 10,
+        cutoff: 18000,
+        delayTime: 0.35,
+        delayFeedback: 0.25,
         data: [
           [{i:0, r:1},{i:10, r:1}],
           [{i:8, r:1}],
@@ -2396,9 +2816,13 @@
       boiler: {
         bpm: 165,
         lengths: [16, 16, 16, 16, 16, 16],
-        crush: 0.38,
-        drive: 0.65,
+        crush: 0,
+        drive: 0,
         swing: 0.22,
+        humanize: 2,
+        cutoff: 18000,
+        delayTime: 0.18,
+        delayFeedback: 0,
         data: [
           [{i:0, r:1},{i:4, r:1},{i:8, r:1},{i:12, r:1},{i:14, r:2}],
           [{i:4, r:1},{i:12, r:2},{i:15, r:3}],
@@ -2411,17 +2835,25 @@
       empty: {
         bpm: 160,
         lengths: [16, 16, 16, 16, 16, 16],
-        crush: 0.1,
-        drive: 0.2,
+        crush: 0,
+        drive: 0,
         swing: 0.0,
+        humanize: 0,
+        cutoff: 18000,
+        delayTime: 0.18,
+        delayFeedback: 0,
         data: [[], [], [], [], [], []]
       },
       shardgarden: {
         bpm: 134,
         lengths: [16, 16, 16, 13, 11, 16],
-        crush: 0.14,
-        drive: 0.21,
+        crush: 0,
+        drive: 0,
         swing: 0.18,
+        humanize: 8,
+        cutoff: 18000,
+        delayTime: 0.28,
+        delayFeedback: 0.18,
         data: [
           [{i:0, v:116},{i:5, r:2, p:-5},{i:11, v:92},{i:14, r:3, p:3}],
           [{i:3, r:1, p:0},{i:8, r:2, p:7},{i:13, r:3, pr:72}],
@@ -2434,9 +2866,13 @@
       fractureline: {
         bpm: 176,
         lengths: [16, 16, 13, 7, 13, 16],
-        crush: 0.32,
-        drive: 0.44,
+        crush: 0,
+        drive: 0,
         swing: 0.04,
+        humanize: 3,
+        cutoff: 18000,
+        delayTime: 0.18,
+        delayFeedback: 0,
         data: [
           [{i:0, v:120},{i:3, r:2},{i:7, v:92},{i:10, r:3, p:-5},{i:13, r:2}],
           [{i:2, r:2, p:3},{i:6, v:112},{i:9, r:4, pr:82},{i:14, r:3},{i:15, r:2}],
@@ -2449,9 +2885,13 @@
       elasticclock: {
         bpm: 148,
         lengths: [13, 16, 12, 11, 9, 16],
-        crush: 0.08,
-        drive: 0.24,
+        crush: 0,
+        drive: 0,
         swing: 0.2,
+        humanize: 12,
+        cutoff: 18000,
+        delayTime: 0.25,
+        delayFeedback: 0.12,
         data: [
           [{i:0, v:112},{i:4, r:2, p:-3},{i:8, v:88},{i:11, r:2}],
           [{i:4, r:2},{i:11, r:1, p:5},{i:15, r:3, pr:78}],
@@ -2464,9 +2904,13 @@
       granule: {
         bpm: 116,
         lengths: [16, 13, 16, 12, 7, 16],
-        crush: 0.22,
-        drive: 0.12,
+        crush: 0,
+        drive: 0,
         swing: 0.08,
+        humanize: 15,
+        cutoff: 18000,
+        delayTime: 0.3,
+        delayFeedback: 0.2,
         data: [
           [{i:0, v:105, pr:90},{i:11, r:2, p:-7, pr:74}],
           [{i:6, r:2, p:5, pr:76},{i:12, v:72, pr:68}],
@@ -2479,9 +2923,13 @@
       hypergrid: {
         bpm: 226,
         lengths: [16, 14, 16, 7, 9, 16],
-        crush: 0.38,
-        drive: 0.5,
+        crush: 0,
+        drive: 0,
         swing: 0.02,
+        humanize: 1,
+        cutoff: 18000,
+        delayTime: 0.1,
+        delayFeedback: 0,
         data: [
           [{i:0, v:120},{i:3, r:2},{i:4},{i:7, r:3},{i:8},{i:11, r:2},{i:12},{i:15, r:4}],
           [{i:1, r:2},{i:4, r:3},{i:7, r:4},{i:10, r:2},{i:13, r:4}],
@@ -2494,9 +2942,13 @@
       wonkcurrent: {
         bpm: 108,
         lengths: [16, 16, 12, 11, 13, 16],
-        crush: 0.1,
-        drive: 0.3,
+        crush: 0,
+        drive: 0,
         swing: 0.28,
+        humanize: 18,
+        cutoff: 18000,
+        delayTime: 0.3,
+        delayFeedback: 0.22,
         data: [
           [{i:0, v:115},{i:6, r:2, p:-5},{i:11, v:82}],
           [{i:4, r:1, p:3},{i:12, r:2, pr:80}],
@@ -2509,9 +2961,13 @@
       phasefold: {
         bpm: 162,
         lengths: [15, 13, 16, 11, 14, 9],
-        crush: 0.19,
-        drive: 0.31,
+        crush: 0,
+        drive: 0,
         swing: 0.12,
+        humanize: 6,
+        cutoff: 18000,
+        delayTime: 0.22,
+        delayFeedback: 0.1,
         data: [
           [{i:0, v:112},{i:5, r:2, p:-5},{i:9, v:90},{i:13, r:3}],
           [{i:2, r:2, p:5},{i:7, v:108},{i:11, r:3, pr:82}],
@@ -2524,9 +2980,13 @@
       brokenmirror: {
         bpm: 136,
         lengths: [16, 12, 16, 7, 11, 16],
-        crush: 0.26,
-        drive: 0.34,
+        crush: 0,
+        drive: 0,
         swing: 0.16,
+        humanize: 8,
+        cutoff: 18000,
+        delayTime: 0.25,
+        delayFeedback: 0.15,
         data: [
           [{i:0, v:118},{i:3, r:2, p:-5},{i:8, v:104},{i:11, r:3},{i:14, r:2}],
           [{i:2, r:2, p:3},{i:6, v:110},{i:9, r:3, pr:76}],
@@ -2539,9 +2999,13 @@
       bitrot: {
         bpm: 184,
         lengths: [16, 16, 13, 9, 7, 16],
-        crush: 0.62,
-        drive: 0.58,
+        crush: 0.15, // bitrot is the one preset that keeps a little crush for character
+        drive: 0,
         swing: 0.03,
+        humanize: 1,
+        cutoff: 12000,
+        delayTime: 0.15,
+        delayFeedback: 0,
         data: [
           [{i:0, v:120},{i:4, r:2},{i:6, r:4, pr:85},{i:11, r:3},{i:14, r:4}],
           [{i:2, r:2},{i:7, r:3},{i:10, r:4, pr:80},{i:13, r:3},{i:15, r:4}],
@@ -2554,9 +3018,13 @@
       glasswing: {
         bpm: 120,
         lengths: [16, 16, 16, 13, 9, 16],
-        crush: 0.06,
-        drive: 0.12,
+        crush: 0,
+        drive: 0,
         swing: 0.1,
+        humanize: 12,
+        cutoff: 18000,
+        delayTime: 0.4,
+        delayFeedback: 0.3,
         data: [
           [{i:0, v:96, pr:86},{i:10, v:68, pr:72}],
           [{i:7, r:2, p:5, pr:70},{i:15, v:76, pr:76}],
@@ -2569,9 +3037,13 @@
       sidechannel: {
         bpm: 172,
         lengths: [14, 14, 16, 11, 13, 14],
-        crush: 0.3,
-        drive: 0.4,
+        crush: 0,
+        drive: 0,
         swing: 0.05,
+        humanize: 3,
+        cutoff: 18000,
+        delayTime: 0.18,
+        delayFeedback: 0,
         data: [
           [{i:0, v:116},{i:3, r:2},{i:7, v:90},{i:10, r:3}],
           [{i:2, r:2},{i:5, r:3},{i:9, r:4},{i:12, r:3}],
@@ -2584,9 +3056,13 @@
       nullisland: {
         bpm: 140,
         lengths: [13, 11, 16, 7, 9, 13],
-        crush: 0.18,
-        drive: 0.22,
+        crush: 0,
+        drive: 0,
         swing: 0.11,
+        humanize: 10,
+        cutoff: 18000,
+        delayTime: 0.3,
+        delayFeedback: 0.2,
         data: [
           [{i:0, v:106, pr:92},{i:7, r:2, p:-5, pr:78}],
           [{i:3, r:2, p:3, pr:80},{i:8, v:76, pr:70}],
@@ -2605,19 +3081,44 @@
       bureau.bpm = p.bpm;
       document.getElementById('tempoInput').value = p.bpm;
 
-      bureau.fx.crush = p.crush;
-      document.getElementById('fxCrush').value = p.crush;
-      document.getElementById('fxCrushVal').innerText = `${Math.round(p.crush * 100)}%`;
-      if (bureau.crushShaper) bureau.updateCrushCurve(p.crush);
+      bureau.fx.crush = p.crush ?? 0;
+      document.getElementById('fxCrush').value = p.crush ?? 0;
+      document.getElementById('fxCrushVal').innerText = `${Math.round((p.crush ?? 0) * 100)}%`;
+      if (bureau.crushShaper) bureau.updateCrushCurve(p.crush ?? 0);
 
-      bureau.fx.drive = p.drive;
-      document.getElementById('fxDrive').value = p.drive;
-      document.getElementById('fxDriveVal').innerText = `${Math.round(p.drive * 100)}%`;
-      if (bureau.driveShaper) bureau.updateDriveCurve(p.drive);
+      bureau.fx.drive = p.drive ?? 0;
+      document.getElementById('fxDrive').value = p.drive ?? 0;
+      document.getElementById('fxDriveVal').innerText = `${Math.round((p.drive ?? 0) * 100)}%`;
+      if (bureau.driveShaper) bureau.updateDriveCurve(p.drive ?? 0);
 
-      bureau.fx.swing = p.swing;
-      document.getElementById('masterSwing').value = Math.round(p.swing * 100);
-      document.getElementById('masterSwingVal').innerText = `${Math.round(p.swing * 100)}%`;
+      bureau.fx.swing = p.swing ?? 0;
+      document.getElementById('masterSwing').value = Math.round((p.swing ?? 0) * 100);
+      document.getElementById('masterSwingVal').innerText = `${Math.round((p.swing ?? 0) * 100)}%`;
+
+      bureau.fx.humanize = p.humanize ?? 0;
+      document.getElementById('fxHumanize').value = p.humanize ?? 0;
+      document.getElementById('fxHumanizeVal').innerText = `${p.humanize ?? 0}ms`;
+
+      bureau.fx.cutoff = p.cutoff ?? 18000;
+      document.getElementById('fxCutoff').value = p.cutoff ?? 18000;
+      document.getElementById('fxCutoffVal').innerText = (p.cutoff ?? 18000) >= 1000 ? `${((p.cutoff ?? 18000)/1000).toFixed(1)}k` : `${Math.round(p.cutoff ?? 18000)}`;
+      if (bureau.masterFilter && bureau.audioCtx) {
+        bureau.masterFilter.frequency.setValueAtTime(p.cutoff ?? 18000, bureau.audioCtx.currentTime);
+      }
+
+      bureau.fx.delayTime = p.delayTime ?? 0.18;
+      document.getElementById('fxDelayTime').value = p.delayTime ?? 0.18;
+      document.getElementById('fxDelayTimeVal').innerText = `${Math.round((p.delayTime ?? 0.18) * 1000)}ms`;
+      if (bureau.delayNode && bureau.audioCtx) {
+        bureau.delayNode.delayTime.setValueAtTime(p.delayTime ?? 0.18, bureau.audioCtx.currentTime);
+      }
+
+      bureau.fx.delayFeedback = p.delayFeedback ?? 0;
+      document.getElementById('fxDelayFeedback').value = p.delayFeedback ?? 0;
+      document.getElementById('fxDelayFeedbackVal').innerText = `${Math.round((p.delayFeedback ?? 0) * 100)}%`;
+      if (bureau.delayFeedback && bureau.audioCtx) {
+        bureau.delayFeedback.gain.setValueAtTime(p.delayFeedback ?? 0, bureau.audioCtx.currentTime);
+      }
 
       // Wipe current
       bureau.tracks.forEach((track, idx) => {
@@ -2895,49 +3396,49 @@
     const GENERATOR_PROFILES = {
       braindance: {
         label: 'BRAINDANCE', bpm: [138, 178],
-        lengths: [[16, 16, 16, 13, 11, 16], [16, 14, 16, 12, 14, 9], [15, 13, 16, 11, 13, 16]],
-        density: [0.22, 0.17, 0.5, 0.26, 0.22, 0.24], ratchet: [0.12, 0.2, 0.14, 0.2, 0.42, 0.08],
-        pitch: [0.12, 0.18, 0.16, 0.62, 0.72, 0.34], probabilityLock: 0.32,
+        lengths: [[16, 16, 16, 13, 11, 16, 16], [16, 14, 16, 12, 14, 9, 16], [15, 13, 16, 11, 13, 16, 16]],
+        density: [0.22, 0.17, 0.5, 0.26, 0.22, 0.24, 0.18], ratchet: [0.12, 0.2, 0.14, 0.2, 0.42, 0.08, 0.15],
+        pitch: [0.12, 0.18, 0.16, 0.62, 0.72, 0.34, 0.4], probabilityLock: 0.32,
         swing: [0.04, 0.24], humanize: [2, 12], globalProb: [0.78, 1], globalRatchet: [0.08, 0.38],
         crush: [0.08, 0.3], drive: [0.12, 0.4], accent: 0.8, velocity: [62, 122]
       },
       breakcore: {
         label: 'BREAKCORE', bpm: [176, 236],
-        lengths: [[16, 16, 16, 12, 16, 16], [14, 14, 16, 7, 13, 14], [16, 13, 16, 11, 9, 16]],
-        density: [0.4, 0.36, 0.7, 0.39, 0.48, 0.27], ratchet: [0.34, 0.42, 0.3, 0.38, 0.72, 0.12],
-        pitch: [0.18, 0.28, 0.18, 0.58, 0.72, 0.32], probabilityLock: 0.43,
+        lengths: [[16, 16, 16, 12, 16, 16, 16], [14, 14, 16, 7, 13, 14, 16], [16, 13, 16, 11, 9, 16, 16]],
+        density: [0.4, 0.36, 0.7, 0.39, 0.48, 0.27, 0.2], ratchet: [0.34, 0.42, 0.3, 0.38, 0.72, 0.12, 0.25],
+        pitch: [0.18, 0.28, 0.18, 0.58, 0.72, 0.32, 0.35], probabilityLock: 0.43,
         swing: [0, 0.12], humanize: [0, 8], globalProb: [0.72, 0.98], globalRatchet: [0.28, 0.72],
         crush: [0.22, 0.58], drive: [0.32, 0.68], accent: 0.56, velocity: [68, 127]
       },
       glitch: {
         label: 'GLITCH COLLAGE', bpm: [104, 190],
-        lengths: [[13, 11, 16, 7, 9, 13], [16, 13, 16, 12, 7, 16], [15, 13, 16, 11, 14, 9]],
-        density: [0.14, 0.15, 0.42, 0.34, 0.43, 0.19], ratchet: [0.12, 0.18, 0.32, 0.32, 0.68, 0.1],
-        pitch: [0.28, 0.34, 0.35, 0.78, 0.9, 0.55], probabilityLock: 0.68,
+        lengths: [[13, 11, 16, 7, 9, 13, 16], [16, 13, 16, 12, 7, 16, 16], [15, 13, 16, 11, 14, 9, 16]],
+        density: [0.14, 0.15, 0.42, 0.34, 0.43, 0.19, 0.3], ratchet: [0.12, 0.18, 0.32, 0.32, 0.68, 0.1, 0.4],
+        pitch: [0.28, 0.34, 0.35, 0.78, 0.9, 0.55, 0.6], probabilityLock: 0.68,
         swing: [0, 0.2], humanize: [5, 22], globalProb: [0.58, 0.9], globalRatchet: [0.14, 0.58],
         crush: [0.25, 0.72], drive: [0.16, 0.56], accent: 0.24, velocity: [40, 112]
       },
       polyrhythm: {
         label: 'POLYRHYTHM', bpm: [124, 184],
-        lengths: [[13, 11, 16, 7, 9, 13], [15, 13, 16, 11, 14, 9], [16, 14, 16, 13, 7, 12]],
-        density: [0.23, 0.18, 0.46, 0.3, 0.28, 0.27], ratchet: [0.1, 0.18, 0.19, 0.26, 0.48, 0.09],
-        pitch: [0.12, 0.22, 0.2, 0.72, 0.78, 0.42], probabilityLock: 0.38,
+        lengths: [[13, 11, 16, 7, 9, 13, 16], [15, 13, 16, 11, 14, 9, 16], [16, 14, 16, 13, 7, 12, 16]],
+        density: [0.23, 0.18, 0.46, 0.3, 0.28, 0.27, 0.22], ratchet: [0.1, 0.18, 0.19, 0.26, 0.48, 0.09, 0.18],
+        pitch: [0.12, 0.22, 0.2, 0.72, 0.78, 0.42, 0.45], probabilityLock: 0.38,
         swing: [0.02, 0.22], humanize: [2, 14], globalProb: [0.75, 1], globalRatchet: [0.08, 0.42],
         crush: [0.06, 0.38], drive: [0.12, 0.4], accent: 0.72, velocity: [56, 120]
       },
       ambient: {
         label: 'SPARSE / AMBIENT', bpm: [78, 142],
-        lengths: [[16, 16, 16, 13, 11, 16], [13, 11, 16, 7, 9, 13], [16, 13, 16, 12, 14, 16]],
-        density: [0.1, 0.1, 0.3, 0.16, 0.18, 0.2], ratchet: [0.04, 0.08, 0.1, 0.14, 0.28, 0.04],
-        pitch: [0.18, 0.2, 0.2, 0.7, 0.76, 0.52], probabilityLock: 0.58,
+        lengths: [[16, 16, 16, 13, 11, 16, 16], [13, 11, 16, 7, 9, 13, 16], [16, 13, 16, 12, 14, 16, 16]],
+        density: [0.1, 0.1, 0.3, 0.16, 0.18, 0.2, 0.15], ratchet: [0.04, 0.08, 0.1, 0.14, 0.28, 0.04, 0.08],
+        pitch: [0.18, 0.2, 0.2, 0.7, 0.76, 0.52, 0.35], probabilityLock: 0.58,
         swing: [0.02, 0.18], humanize: [3, 18], globalProb: [0.7, 0.98], globalRatchet: [0.02, 0.2],
         crush: [0.02, 0.18], drive: [0.04, 0.22], accent: 0.9, velocity: [38, 94]
       },
       drill: {
         label: 'DRILL FRACTURE', bpm: [178, 220],
-        lengths: [[14, 14, 14, 7, 14, 14], [16, 14, 16, 7, 13, 14], [14, 16, 16, 11, 13, 14]],
-        density: [0.3, 0.28, 0.56, 0.25, 0.37, 0.23], ratchet: [0.26, 0.34, 0.22, 0.3, 0.62, 0.1],
-        pitch: [0.12, 0.24, 0.18, 0.6, 0.76, 0.4], probabilityLock: 0.46,
+        lengths: [[14, 14, 14, 7, 14, 14, 16], [16, 14, 16, 7, 13, 14, 16], [14, 16, 16, 11, 13, 14, 16]],
+        density: [0.3, 0.28, 0.56, 0.25, 0.37, 0.23, 0.18], ratchet: [0.26, 0.34, 0.22, 0.3, 0.62, 0.1, 0.3],
+        pitch: [0.12, 0.24, 0.18, 0.6, 0.76, 0.4, 0.3], probabilityLock: 0.46,
         swing: [0, 0.08], humanize: [0, 8], globalProb: [0.72, 0.96], globalRatchet: [0.24, 0.62],
         crush: [0.18, 0.48], drive: [0.24, 0.58], accent: 0.52, velocity: [62, 127]
       }
@@ -2986,6 +3487,11 @@
           step.vel = 100;
           step.prob = 100;
           step.pitchOffset = 0;
+          // Initialize synth params
+          step.timbre = 0.5;
+          step.modulation = 0.5;
+          step.drift = 0.3;
+          step.filterEnv = 0.5;
         });
 
         for (let stepIndex = 0; stepIndex < track.currentLength; stepIndex++) {
@@ -2999,6 +3505,7 @@
           if (tIdx === 3) roleBias = Math.sin((stepIndex / track.currentLength) * Math.PI * 2) * 0.1;
           if (tIdx === 4) roleBias = stepIndex % 3 === 1 ? 0.09 : -0.02;
           if (tIdx === 5) roleBias = halfBeat === 0 ? 0.2 : beat === 2 ? 0.06 : -0.04;
+          if (tIdx === 6) roleBias = stepIndex % 8 === 0 ? 0.25 : stepIndex % 4 === 2 ? 0.1 : -0.05; // Synth: sparser, on downbeats
           const hitChance = Math.max(0.025, Math.min(0.94,
             profile.density[tIdx] + (roleBias * profile.accent)));
           if (Math.random() >= hitChance) continue;
@@ -3014,12 +3521,20 @@
           if (Math.random() < profile.pitch[tIdx]) {
             step.pitchOffset = pitchChoices[Math.floor(Math.random() * pitchChoices.length)];
           }
+          
+          // Randomize synth params for active steps on synth track
+          if (tIdx === 6) {
+            step.timbre = Math.random();
+            step.modulation = 0.3 + Math.random() * 0.5;
+            step.drift = 0.2 + Math.random() * 0.4;
+            step.filterEnv = 0.3 + Math.random() * 0.5;
+          }
         }
 
-        // Even a sparse profile should produce a playable six-voice idea rather
+        // Even a sparse profile should produce a playable seven-voice idea rather
         // than leaving an entire lane accidentally empty on a short cycle.
         if (!track.steps.slice(0, track.currentLength).some(step => step.active)) {
-          const anchors = [[0, 8, 4], [4, 12, 2], [0, 4, 8], [1, 3, 5], [2, 5, 1], [0, 8, 4]][tIdx]
+          const anchors = [[0, 8, 4], [4, 12, 2], [0, 4, 8], [1, 3, 5], [2, 5, 1], [0, 8, 4], [0, 8, 16]][tIdx]
             .filter(index => index < track.currentLength);
           const fallbackIndex = anchors.length
             ? anchors[Math.floor(Math.random() * anchors.length)]
@@ -3033,11 +3548,17 @@
           if (Math.random() < profile.pitch[tIdx]) {
             fallbackStep.pitchOffset = pitchChoices[Math.floor(Math.random() * pitchChoices.length)];
           }
+          if (tIdx === 6) {
+            fallbackStep.timbre = Math.random();
+            fallbackStep.modulation = 0.3 + Math.random() * 0.5;
+            fallbackStep.drift = 0.2 + Math.random() * 0.4;
+            fallbackStep.filterEnv = 0.3 + Math.random() * 0.5;
+          }
         }
       });
 
       renderAllTracks();
-      updateTicker(`GENERATED ${profile.label} PATTERN: ${bureau.bpm} BPM // SIX LANES RECOMPOSED.`);
+      updateTicker(`GENERATED ${profile.label} PATTERN: ${bureau.bpm} BPM // SEVEN LANES RECOMPOSED.`);
     }
 
     function selectStep(tIdx, sIdx) {
@@ -3054,6 +3575,21 @@
       document.getElementById('stepProbVal').innerText = `${step.prob}%`;
       document.getElementById('stepPitch').value = step.pitchOffset;
       document.getElementById('stepPitchVal').innerText = `${step.pitchOffset > 0 ? '+' : ''}${step.pitchOffset} st`;
+      
+      // Show/hide synth parameters row for synth track (index 6)
+      const isSynthTrack = tIdx === 6;
+      document.getElementById('inspectorRow2').style.display = isSynthTrack ? 'grid' : 'none';
+      
+      if (isSynthTrack) {
+        document.getElementById('stepTimbre').value = Math.round((step.timbre ?? 0.5) * 100);
+        document.getElementById('stepTimbreVal').innerText = `${Math.round((step.timbre ?? 0.5) * 100)}%`;
+        document.getElementById('stepMod').value = Math.round((step.modulation ?? 0.5) * 100);
+        document.getElementById('stepModVal').innerText = `${Math.round((step.modulation ?? 0.5) * 100)}%`;
+        document.getElementById('stepDrift').value = Math.round((step.drift ?? 0.3) * 100);
+        document.getElementById('stepDriftVal').innerText = `${Math.round((step.drift ?? 0.3) * 100)}%`;
+        document.getElementById('stepFilterEnv').value = Math.round((step.filterEnv ?? 0.5) * 100);
+        document.getElementById('stepFilterEnvVal').innerText = `${Math.round((step.filterEnv ?? 0.5) * 100)}%`;
+      }
     }
 
     function updateTicker(msg) {
@@ -3092,6 +3628,39 @@
       bureau.tracks[tIdx].steps[sIdx].pitchOffset = val;
       document.getElementById('stepPitchVal').innerText = `${val > 0 ? '+' : ''}${val} st`;
       renderAllTracks();
+    });
+
+    // Synth parameter listeners (for track 6 - SYNTH/FLUX)
+    document.getElementById('stepTimbre').addEventListener('input', (e) => {
+      if (!bureau.selectedStep) return;
+      const { tIdx, sIdx } = bureau.selectedStep;
+      const val = parseInt(e.target.value) / 100;
+      bureau.tracks[tIdx].steps[sIdx].timbre = val;
+      document.getElementById('stepTimbreVal').innerText = `${Math.round(val * 100)}%`;
+    });
+
+    document.getElementById('stepMod').addEventListener('input', (e) => {
+      if (!bureau.selectedStep) return;
+      const { tIdx, sIdx } = bureau.selectedStep;
+      const val = parseInt(e.target.value) / 100;
+      bureau.tracks[tIdx].steps[sIdx].modulation = val;
+      document.getElementById('stepModVal').innerText = `${Math.round(val * 100)}%`;
+    });
+
+    document.getElementById('stepDrift').addEventListener('input', (e) => {
+      if (!bureau.selectedStep) return;
+      const { tIdx, sIdx } = bureau.selectedStep;
+      const val = parseInt(e.target.value) / 100;
+      bureau.tracks[tIdx].steps[sIdx].drift = val;
+      document.getElementById('stepDriftVal').innerText = `${Math.round(val * 100)}%`;
+    });
+
+    document.getElementById('stepFilterEnv').addEventListener('input', (e) => {
+      if (!bureau.selectedStep) return;
+      const { tIdx, sIdx } = bureau.selectedStep;
+      const val = parseInt(e.target.value) / 100;
+      bureau.tracks[tIdx].steps[sIdx].filterEnv = val;
+      document.getElementById('stepFilterEnvVal').innerText = `${Math.round(val * 100)}%`;
     });
 
     // --- Global FX UI Bindings ---
