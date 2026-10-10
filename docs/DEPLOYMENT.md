@@ -89,6 +89,24 @@ The application uses **no absolute paths** — there are no internal links, no
 fetch calls and no asset references — so it works at any base path with no
 `<base>` tag and no configuration.
 
+### Current live state
+
+The repository's Pages source is still **branch `main`, path `/`** rather than
+**GitHub Actions**, so the workflow above builds its artefact but its *Deploy*
+step fails (`actions/deploy-pages` needs the source set to GitHub Actions).
+What is actually being served is the branch, built by Jekyll — and Jekyll
+promotes `README.md` to the site index. That means:
+
+| URL | Serves |
+|---|---|
+| [`/Form-909%20Warp%20IDM%20Drum%20Machine.html`](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html) | **The instrument.** This is the URL the README links to. |
+| `/` | This repository's README, rendered as a web page. |
+
+To make the root serve the app as designed: **Settings → Pages → Source:
+GitHub Actions**, then re-run *Deploy to GitHub Pages*. The deep link above
+keeps working either way, because the workflow preserves the original filename
+alongside `index.html`.
+
 ### Required permissions
 
 ```yaml

@@ -9,12 +9,16 @@
 Six synthesis voices. Polyrhythmic lanes. Per-step parameter locks.
 Offline 24-bit WAV rendering. Zero dependencies, zero build step, one file.
 
-[![Live demo](https://img.shields.io/badge/demo-open%20in%20browser-38bdf8?style=for-the-badge)](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/)
+[![Live demo](https://img.shields.io/badge/demo-open%20in%20browser-38bdf8?style=for-the-badge)](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-10b981?style=for-the-badge)](#why-zero-dependencies)
 [![Build](https://img.shields.io/badge/build-none%20required-64748b?style=for-the-badge)](#quick-start)
 [![Engine](https://img.shields.io/badge/engine-web%20audio%20api-f59e0b?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
 [![License](https://img.shields.io/badge/license-MIT-94a3b8?style=for-the-badge)](LICENSE)
 [![Lines of code](https://img.shields.io/badge/loc-2.7k-94a3b8?style=for-the-badge)](#project-scale)
+
+**▶ [Open the live instrument](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)**
+
+*No download, no install — the same single file, served from GitHub Pages.*
 
 </div>
 
@@ -72,7 +76,21 @@ usually treat as edge cases:
 
 ## Quick start
 
-There are three ways in, and none of them involve a toolchain.
+**Fastest route: [open the live instrument on GitHub Pages →](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)**
+
+It is the same file that is in this repository, published by GitHub Pages on
+every push to `main`.
+
+> **Which URL is the app?** The link above. The bare site root
+> (`https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/`)
+> currently renders this README instead: Pages is publishing the `main` branch
+> through Jekyll, which promotes `README.md` to the site index, and the
+> `Deploy to GitHub Pages` workflow — which would publish the app as
+> `index.html` — is failing at its deploy step. See
+> [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+If you would rather run it yourself, there are three ways in, and none of them
+involve a toolchain.
 
 ### 1. Open the file
 
