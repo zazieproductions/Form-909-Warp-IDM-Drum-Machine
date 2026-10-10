@@ -43,6 +43,28 @@ jobs:
       - name: Documentation link check
         run: npm run links
 
+  test:
+    name: Test suite (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      # The suite runs the app's inline script under tools/test/harness.mjs —
+      # a fake DOM + fake Web Audio. It needs no browser and no dependencies.
+      - name: Run the test suite
+        run: npm test
+
   single-file:
     name: Single-file integrity
     runs-on: ubuntu-latest

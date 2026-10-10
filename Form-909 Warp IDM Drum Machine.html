@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="dark">
-  <meta name="description" content="Form 909-WARP — a zero-dependency IDM drum machine with 21 curated patterns, style-aware generation, six synthesis voices, live session recording and offline 24-bit WAV export.">
+  <meta name="description" content="Form 909-WARP — a zero-dependency IDM drum machine with 22 curated patterns, style-aware generation, eight synthesis voices, live session recording and offline 24-bit WAV export.">
   <meta name="author" content="zazieproductions">
   <meta property="og:type" content="website">
   <meta property="og:title" content="The Bureau of Unreasonable Rhythms — Form 909-WARP">
-  <meta property="og:description" content="A zero-dependency IDM drum machine with 21 curated patterns, style-aware generation, live session recording and offline 24-bit WAV export.">
+  <meta property="og:description" content="A zero-dependency IDM drum machine with 22 curated patterns, style-aware generation, eight synthesis voices, live session recording and offline 24-bit WAV export.">
   <title>The Bureau of Unreasonable Rhythms — Experimental Metric Facility</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -764,6 +764,125 @@
       color: #94a3b8;
     }
 
+    /* Per-step parameter locks (step inspector) */
+    .locks-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-top: 8px;
+    }
+
+    .lock-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .lock-row .lock-toggle {
+      flex: 0 0 auto;
+      min-width: 72px;
+    }
+
+    .lock-row .lock-slider {
+      flex: 1;
+      min-width: 40px;
+    }
+
+    .lock-val {
+      min-width: 36px;
+      text-align: right;
+    }
+
+    /* A cell carrying parameter locks gets a corner marker. */
+    .step-cell.has-locks {
+      position: relative;
+    }
+
+    .step-cell.has-locks::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      right: 1px;
+      width: 3px;
+      height: 3px;
+      background: var(--cyan);
+    }
+
+    /* Modulation matrix rows */
+    .mod-row {
+      border-top: 1px solid #1e293b;
+      padding-top: 4px;
+      margin-top: 4px;
+    }
+
+    .mod-row:first-child {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .mod-row .btn-row {
+      margin-top: 2px;
+    }
+
+    .mod-row input[type="range"] {
+      flex: 1;
+      min-width: 40px;
+    }
+
+    .mod-tag {
+      font-size: 9px;
+      color: var(--text-dim);
+      min-width: 30px;
+    }
+
+    /* Session Archive: button rows, snapshot slots, mini selects */
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .snapshot-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 6px;
+    }
+
+    .snapshot-slot-label {
+      font-size: 9px;
+      color: var(--text-dim);
+      min-width: 44px;
+      letter-spacing: 0.5px;
+    }
+
+    .track-mini-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    /* Scoped so the MUTE/SOLO active styling above is untouched. */
+    #snapshotGrid .track-mini-btn.active,
+    #autosaveBtn.active {
+      background: #0f766e;
+      border-color: #2dd4bf;
+      color: #ccfbf1;
+    }
+
+    select.mini-select {
+      background: #090c0f;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      padding: 2px 4px;
+      font-family: var(--mono);
+      font-size: 9px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
     /* ---------------------------------------------------------------------
        Accessibility: keyboard focus ring
        `:focus-visible` (not `:focus`) so pointer users do not see outlines.
@@ -906,7 +1025,7 @@
       <section class="module-box">
         <div class="module-title">
           <span>CURATED DISSONANCE ARCHIVE</span>
-          <span class="badge">21 PROTOCOLS</span>
+          <span class="badge">22 PROTOCOLS</span>
         </div>
         <div class="preset-selector">
           <label class="visually-hidden" for="presetSelect">Curated dissonance archive: choose a case file</label>
@@ -932,6 +1051,7 @@
             <option value="glasswing">Case 19: Glasswing (120 BPM · Airy and granular)</option>
             <option value="sidechannel">Case 20: Side Channel (172 BPM · Drill cross-currents)</option>
             <option value="nullisland">Case 21: Null Island (140 BPM · Unstable sparse poly)</option>
+            <option value="granlab">Case 22: Granular Lab (152 BPM · Grain + resonator lanes)</option>
           </select>
           <div class="shortcut-legend">
             <span>Click Step = Toggle</span>
@@ -1010,6 +1130,138 @@
         </div>
       </section>
 
+      <!-- Session Archive: persistence, snapshots, undo/redo, morph -->
+      <section class="module-box">
+        <div class="module-title">
+          <span>SESSION ARCHIVE</span>
+          <span style="color:var(--cyan);">PERSISTENCE</span>
+        </div>
+        <div class="btn-row">
+          <button class="track-mini-btn" id="saveFileBtn" title="Download the full session as a .f909.json file">SAVE FILE</button>
+          <button class="track-mini-btn" id="loadFileBtn" title="Load a .f909.json session file">LOAD FILE</button>
+          <button class="track-mini-btn" id="copySessionBtn" title="Copy the session to the clipboard as JSON">COPY</button>
+          <button class="track-mini-btn" id="pasteSessionBtn" title="Load a session from JSON on the clipboard">PASTE</button>
+          <button class="track-mini-btn" id="shareUrlBtn" title="Encode the session into the URL fragment">SHARE URL</button>
+          <button class="track-mini-btn" id="autosaveBtn" aria-pressed="true" title="Automatically persist the session to local storage">AUTOSAVE ON</button>
+        </div>
+        <div class="btn-row">
+          <button class="track-mini-btn" id="undoBtn" title="Undo the last edit (Ctrl+Z)">UNDO ^Z</button>
+          <button class="track-mini-btn" id="redoBtn" title="Redo the last undone edit (Ctrl+Shift+Z or Ctrl+Y)">REDO ^Y</button>
+        </div>
+        <div class="snapshot-grid" id="snapshotGrid" role="group" aria-label="Pattern snapshot slots"></div>
+        <div class="aux-row" style="margin-top:8px;">
+          <span aria-hidden="true">MORPH&rarr;</span>
+          <label class="visually-hidden" for="morphSlotSelect">Snapshot slot to morph towards</label>
+          <select id="morphSlotSelect" class="mini-select" title="Snapshot slot to morph towards">
+            <option value="A">SLOT A</option>
+            <option value="B">SLOT B</option>
+            <option value="C">SLOT C</option>
+            <option value="D">SLOT D</option>
+          </select>
+          <label class="visually-hidden" for="morphSlider">Morph amount towards the selected snapshot slot</label>
+          <input type="range" id="morphSlider" min="0" max="100" value="0" style="flex:1;" title="Morph the current pattern towards the selected snapshot slot">
+          <span class="dial-val" id="morphVal">0%</span>
+        </div>
+        <input type="file" id="sessionFileInput" accept=".json,application/json" hidden>
+      </section>
+
+      <!-- Track Chain: per-lane filter, distortion, delay send and pan -->
+      <section class="module-box" id="trackFxPanel">
+        <div class="module-title">
+          <span>TRACK CHAIN</span>
+          <span style="color:var(--cyan);" id="trackFxLaneName">BD</span>
+        </div>
+        <div class="dial-unit">
+          <label for="tfCutoff">FILTER CUTOFF</label>
+          <input type="range" id="tfCutoff" min="150" max="20000" value="18000">
+          <span class="dial-val" id="tfCutoffVal">18.0k</span>
+        </div>
+        <div class="dial-unit">
+          <label for="tfRes">RESONANCE</label>
+          <input type="range" id="tfRes" min="0.1" max="30" step="0.1" value="0.7">
+          <span class="dial-val" id="tfResVal">0.7</span>
+        </div>
+        <div class="dial-unit">
+          <label for="tfDrive">DISTORTION</label>
+          <input type="range" id="tfDrive" min="0" max="100" value="0">
+          <span class="dial-val" id="tfDriveVal">0%</span>
+        </div>
+        <div class="dial-unit">
+          <label for="tfDelaySend">DELAY SEND</label>
+          <input type="range" id="tfDelaySend" min="0" max="100" value="0">
+          <span class="dial-val" id="tfDelaySendVal">0%</span>
+        </div>
+        <div class="dial-unit">
+          <label for="tfPan">STEREO PAN</label>
+          <input type="range" id="tfPan" min="-100" max="100" value="0">
+          <span class="dial-val" id="tfPanVal">C</span>
+        </div>
+        <div class="dial-unit">
+          <label for="tfEngine">ENGINE</label>
+          <select id="tfEngine" class="mini-select" style="width:100%;" title="Synthesis engine override for this lane">
+            <option value="default">DEFAULT VOICE</option>
+            <option value="wavetable">WAVETABLE</option>
+            <option value="ringmod">RING MOD</option>
+            <option value="fshift">FREQ SHIFT</option>
+          </select>
+        </div>
+        <div class="dial-unit">
+          <label for="tfEngineParam" id="tfEngineParamLabel">ENGINE PARAM</label>
+          <input type="range" id="tfEngineParam" min="0" max="100" value="50">
+          <span class="dial-val" id="tfEngineParamVal">50%</span>
+        </div>
+      </section>
+
+      <!-- Modulation Matrix: five assignable sources -->
+      <section class="module-box" id="modMatrixPanel">
+        <div class="module-title">
+          <span>MODULATION MATRIX</span>
+          <span style="color:var(--cyan);">5 SOURCES</span>
+        </div>
+        <div id="modSourceList" role="group" aria-label="Modulation sources"></div>
+      </section>
+
+      <!-- Generative Lab: cellular automata, Markov walks, transforms -->
+      <section class="module-box" id="genLabPanel">
+        <div class="module-title">
+          <span>GENERATIVE LAB</span>
+          <span style="color:var(--cyan);">RULES</span>
+        </div>
+        <div class="btn-row">
+          <label class="visually-hidden" for="genLaneSelect">Lane for generative operations</label>
+          <select id="genLaneSelect" class="mini-select" title="Lane for generative operations">
+            <option value="all">ALL LANES</option>
+            <option value="0">KICK</option>
+            <option value="1">SNARE</option>
+            <option value="2">HAT</option>
+            <option value="3">CONK</option>
+            <option value="4">GLITCH</option>
+            <option value="5">SUB</option>
+            <option value="6">GRAN</option>
+            <option value="7">PLUCK</option>
+          </select>
+          <span class="mod-tag">RULE</span>
+          <label class="visually-hidden" for="genRuleInput">Wolfram rule number, 0 to 255</label>
+          <input type="number" id="genRuleInput" min="0" max="255" value="90" style="width:52px;" title="Wolfram rule (0–255)">
+        </div>
+        <div class="btn-row">
+          <button class="track-mini-btn" id="genCaBtn" title="Advance the selected lane(s) one cellular-automaton generation under the rule">EVOLVE CA</button>
+          <button class="track-mini-btn" id="genMarkovBtn" title="Regenerate the selected lane(s) from a Markov transition walk">MARKOV</button>
+          <span class="mod-tag">BIAS</span>
+          <label class="visually-hidden" for="genBias">Markov correlation bias</label>
+          <input type="range" id="genBias" min="-100" max="100" value="0" style="flex:1;" title="Markov bias: + stretches runs, − alternates">
+          <span class="dial-val" id="genBiasVal">0</span>
+        </div>
+        <div class="btn-row">
+          <button class="track-mini-btn gen-transform-btn" data-transform="invert" title="Invert every step in the selected lane(s)">INVERT</button>
+          <button class="track-mini-btn gen-transform-btn" data-transform="rotate-" title="Rotate the pattern one step left">&larr; ROT</button>
+          <button class="track-mini-btn gen-transform-btn" data-transform="rotate+" title="Rotate the pattern one step right">ROT &rarr;</button>
+          <button class="track-mini-btn gen-transform-btn" data-transform="euclidify" title="Re-spread the same hit count evenly">EUCLIDIFY</button>
+          <button class="track-mini-btn gen-transform-btn" data-transform="densify" title="Fill in random gaps">DENSIFY</button>
+          <button class="track-mini-btn gen-transform-btn" data-transform="sparse" title="Drop random hits">SPARSE</button>
+        </div>
+      </section>
+
     </aside>
 
     <!-- Right Rack: The Multi-Track Unreasonable Sequencer -->
@@ -1057,8 +1309,15 @@
           </div>
           <div class="dial-unit">
             <label for="stepRatch">RATCHET (BURST)</label>
-            <input type="range" id="stepRatch" min="1" max="4" value="1">
+            <input type="range" id="stepRatch" min="1" max="16" value="1">
             <span class="dial-val" id="stepRatchVal">1x</span>
+            <label class="visually-hidden" for="stepRatchCurve">Ratchet spacing curve</label>
+            <select id="stepRatchCurve" class="mini-select" title="Ratchet spacing curve">
+              <option value="even">EVEN SPACING</option>
+              <option value="accel">ACCEL</option>
+              <option value="decel">DECEL</option>
+              <option value="scatter">SCATTER</option>
+            </select>
           </div>
           <div class="dial-unit">
             <label for="stepProb">PROBABILITY</label>
@@ -1070,7 +1329,12 @@
             <input type="range" id="stepPitch" min="-24" max="24" value="0">
             <span class="dial-val" id="stepPitchVal">0 st</span>
           </div>
+          <div class="dial-unit">
+            <label for="stepCondition">CONDITION</label>
+            <select id="stepCondition" class="mini-select" style="width:100%;" title="Firing condition for this step"></select>
+          </div>
         </div>
+        <div id="stepLocks" class="locks-grid" role="group" aria-label="Per-step synthesis parameter locks"></div>
       </div>
 
     </section>
@@ -1164,6 +1428,22 @@
         steps: 16,
         color: '#06b6d4',
         defaultGain: 0.78
+      },
+      {
+        id: 'gran',
+        name: 'GRAN / MICRO-GRAIN PERCUSSION',
+        type: 'GRAIN BURST',
+        steps: 16,
+        color: '#fbbf24',
+        defaultGain: 0.72
+      },
+      {
+        id: 'pluck',
+        name: 'PLUCK / KARPLUS-STRONG RESONATOR',
+        type: 'PHYSICAL RESONATOR',
+        steps: 16,
+        color: '#c084fc',
+        defaultGain: 0.75
       }
     ];
 
@@ -1178,6 +1458,386 @@
       "GLITCH SHREDDER TEMPERATURE STABILIZED AT 4400 OHMS. BEAT RESISTANCE MINIMAL.",
       "AUTECHRE CONFORMANCE AUDIT: TIMBRE DEVIATION DETECTED IN QUADRANT C."
     ];
+
+    // --- Extended step model -------------------------------------------------
+    //
+    // Beyond the original five per-step values (active, vel, ratchet, prob,
+    // pitchOffset) a step now carries:
+    //
+    //   ratchetCurve  'even' | 'accel' | 'decel' | 'scatter' — how the ratchet
+    //                 sub-triggers are spaced inside the step
+    //   condition     'none' | 'prev' | 'prevCycle' | 'alt2' | 'alt4' |
+    //                 'track:<i>' — a gate evaluated before probability
+    //   locks         six synthesis parameter locks (FREQ, FM DEPTH, DECAY,
+    //                 CUTOFF, RES, DISTORT), each { on, value }
+    //
+    // Every field defaults to an inert value, so patterns authored before
+    // these existed behave identically. The defaults are also the migration
+    // target for older session files (see migrateSessionDoc).
+
+    const LOCK_DEFS = [
+      { key: 'freq',   label: 'FREQ',    min: -100, max: 100,   step: 1,    def: 0,     fmt: (v) => `${v > 0 ? '+' : ''}${v}c` },
+      { key: 'fm',     label: 'FM DEPTH', min: 0,   max: 2,     step: 0.05, def: 1,     fmt: (v) => `${Math.round(v * 100)}%` },
+      { key: 'decay',  label: 'DECAY',   min: 0.1, max: 4,     step: 0.05, def: 1,     fmt: (v) => `${v.toFixed(2)}x` },
+      { key: 'cutoff', label: 'CUTOFF',  min: 200, max: 18000,  step: 50,   def: 12000, fmt: (v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${Math.round(v)}` },
+      { key: 'res',    label: 'RES',     min: 0.5, max: 20,     step: 0.1,  def: 1,     fmt: (v) => `${v.toFixed(1)}` },
+      { key: 'dist',   label: 'DISTORT', min: 0,   max: 1,      step: 0.01, def: 0.3,   fmt: (v) => `${Math.round(v * 100)}%` }
+    ];
+
+    const RATCHET_CURVES = [
+      { id: 'even',    label: 'EVEN' },
+      { id: 'accel',   label: 'ACCEL' },
+      { id: 'decel',   label: 'DECEL' },
+      { id: 'scatter', label: 'SCATTER' }
+    ];
+
+    const CONDITION_DEFS = [
+      { id: 'none',      label: 'NONE' },
+      { id: 'prev',      label: 'PREV STEP' },
+      { id: 'prevCycle', label: 'PREV CYCLE' },
+      { id: 'alt2',      label: 'ALT 1/2' },
+      { id: 'alt4',      label: 'ALT 1/4' }
+    ];
+
+    // --- Modulation matrix -------------------------------------------------
+    //
+    // Five assignable modulation sources. Each source is { type, rate, shape,
+    // depth, dest, polarity, on }:
+    //
+    //   type     'lfo' (OscillatorNode) | 'sh' (sample & hold) | 'walk'
+    //            (smoothed random walk) | 'env' (envelope follower on the
+    //            master bus)
+    //   rate     0.05–12 Hz (LFO frequency; steps/sec for sh/walk)
+    //   shape    LFO waveform (sine/triangle/square/sawtooth)
+    //   depth    0–1, scaled per destination (see MOD_DESTS)
+    //   dest     a MOD_DESTS id — master bus or per-track chain parameter
+    //   polarity 'bipolar' (±depth around the base value) or 'unipolar'
+    //            (0…depth above it)
+    //   on       whether the source is connected at all
+    //
+    // S&H and walk values live in one-second looped buffers (64 held steps,
+    // seeded LCG content, memoised per context) played back at rate/64, so
+    // the offline render is bit-reproducible. The envelope follower taps
+    // the master bus input through an absolute-value shaper and a lowpass.
+
+    const MOD_SOURCE_DEFS = [
+      { type: 'lfo',  rate: 2,   shape: 'sine',     depth: 0, dest: 'master.cutoff',        polarity: 'bipolar',  on: false },
+      { type: 'sh',   rate: 4,   shape: 'sine',     depth: 0, dest: 'master.delayTime',     polarity: 'bipolar',  on: false },
+      { type: 'walk', rate: 1,   shape: 'sine',     depth: 0, dest: 'track.0.pan',          polarity: 'bipolar',  on: false },
+      { type: 'env',  rate: 1,   shape: 'sine',     depth: 0, dest: 'track.0.cutoff',       polarity: 'unipolar', on: false },
+      { type: 'lfo',  rate: 0.5, shape: 'square',   depth: 0, dest: 'master.delayFeedback', polarity: 'bipolar',  on: false }
+    ];
+
+    const MOD_TYPES = [
+      { id: 'lfo',  label: 'LFO' },
+      { id: 'sh',   label: 'S&H' },
+      { id: 'walk', label: 'WALK' },
+      { id: 'env',  label: 'ENV' }
+    ];
+
+    const MOD_SHAPES = [
+      { id: 'sine',     label: 'SINE' },
+      { id: 'triangle', label: 'TRI' },
+      { id: 'square',   label: 'SQR' },
+      { id: 'sawtooth', label: 'SAW' }
+    ];
+
+    /** All assignable destinations, with the depth scale for each. */
+    function buildModDests() {
+      const dests = [
+        { id: 'master.cutoff',        label: 'MASTER CUTOFF',        scale: 4000 },
+        { id: 'master.delayTime',     label: 'MASTER DELAY TIME',    scale: 0.1 },
+        { id: 'master.delayFeedback', label: 'MASTER DELAY FEEDBACK', scale: 0.3 },
+        { id: 'master.drivePre',      label: 'MASTER DRIVE',         scale: 0.5 }
+      ];
+      TRACK_CONFIGS.forEach((cfg, i) => {
+        const lane = cfg.name.split(' /')[0];
+        dests.push(
+          { id: `track.${i}.cutoff`,    label: `${lane} CUTOFF`,    scale: 4000 },
+          { id: `track.${i}.res`,       label: `${lane} RESONANCE`, scale: 3 },
+          { id: `track.${i}.drivePre`,  label: `${lane} DRIVE`,     scale: 0.5 },
+          { id: `track.${i}.delaySend`, label: `${lane} SEND`,      scale: 0.5 },
+          { id: `track.${i}.pan`,       label: `${lane} PAN`,       scale: 1 }
+        );
+      });
+      return dests;
+    }
+    const MOD_DESTS = buildModDests();
+
+    /** A fresh, inert modulation source. */
+    function makeModSource() {
+      return { type: 'lfo', rate: 2, shape: 'sine', depth: 0, dest: 'master.cutoff', polarity: 'bipolar', on: false };
+    }
+
+    /** A fresh step with every extended field at its inert default. */
+    function makeStep() {
+      const locks = {};
+      for (const def of LOCK_DEFS) locks[def.key] = { on: false, value: def.def };
+      return {
+        active: false,
+        vel: 100,
+        ratchet: 1,
+        ratchetCurve: 'even',
+        prob: 100,
+        pitchOffset: 0,
+        condition: 'none',
+        locks
+      };
+    }
+
+    /** Per-track signal-chain defaults (filter open, no drive, no send, centre). */
+    function makeTrackFx() {
+      return { cutoff: 18000, res: 0.7, drive: 0, delaySend: 0, pan: 0 };
+    }
+
+    const clampNum = (v, min, max) => Math.min(max, Math.max(min, v));
+    const clampInt = (v, min, max) => Math.round(clampNum(Math.round(Number(v) || 0), min, max));
+
+    /**
+     * A deterministic 0..1 hash for a (track, step, salt) cell. Morphing uses
+     * it so that a given morph amount always resolves the same way — no
+     * flicker when the slider is re-set to the same value.
+     */
+    function cellHash(tIdx, sIdx, salt) {
+      return BureauEngine.mulberry32((tIdx * 1013 + sIdx * 31 + salt * 7919 + 0x9e3779b9) >>> 0)();
+    }
+
+    /** Deep clone via JSON — the session contains only JSON-safe values. */
+    function deepClone(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+
+    /**
+     * Sub-trigger offsets (seconds, relative to the step start) for a ratchet
+     * burst. Shared verbatim by the live scheduler and the offline render, so
+     * a bounce is the performance, not an approximation of it.
+     *
+     *   even     uniform spacing (the original behaviour)
+     *   accel    gaps grow — the burst lands harder towards the step's end
+     *   decel    gaps shrink — the burst bunches up behind the beat
+     *   scatter  even spacing with seeded jitter, re-sorted (unstable)
+     *
+     * Every offset stays inside [0, stepDur) — each curve is strictly below
+     * 1 by construction — and the first trigger is always the step itself, so
+     * the downbeat never moves. `scatter` draws from rand; the other curves
+     * are pure.
+     */
+    function ratchetOffsets(count, curve, stepDur, rand = Math.random) {
+      const offsets = [];
+      for (let r = 0; r < count; r++) {
+        const t = count > 0 ? r / count : 0;
+        let pos;
+        if (curve === 'accel') pos = t * t;
+        else if (curve === 'decel') pos = 1 - (1 - t) * (1 - t);
+        else if (curve === 'scatter') pos = (r + (rand() - 0.5) * 0.9) / count;
+        else pos = t;
+        offsets.push(clampNum(pos, 0, 1) * stepDur);
+      }
+      if (curve === 'scatter') offsets.sort((a, b) => a - b);
+      return offsets;
+    }
+
+    /**
+     * Evaluate one step's firing condition against the per-track histories.
+     * Pure: no state is written here, so the live scheduler and the offline
+     * render resolve conditions identically.
+     *
+     *   prev        the previous step of this lane fired on its last pass
+     *   prevCycle   this step fired one full lane cycle ago — a latch: it
+     *               repeats while the chain holds and dies with it
+     *   alt2/alt4   this step fires only on every 2nd / 4th lane cycle
+     *   track:<i>   track i fires on this very step (resolved by fixed point)
+     *
+     * The lane's cycle number is floor(globalStep / length). Lane positions
+     * are visited in order and each is written once per cycle, so at
+     * evaluation time fired[laneIdx] still holds the previous cycle's value.
+     */
+    function evaluateCondition(condition, tracks, tIdx, laneIdx, globalStep, plans, histories) {
+      const track = tracks[tIdx];
+      const history = histories[tIdx];
+      switch (condition) {
+        case 'prev': {
+          const len = track.currentLength;
+          const prevIdx = (laneIdx - 1 + len) % len;
+          return history.fired[prevIdx];
+        }
+        case 'prevCycle':
+          return history.fired[laneIdx];
+        case 'alt2':
+          return Math.floor(globalStep / track.currentLength) % 2 === 0;
+        case 'alt4':
+          return Math.floor(globalStep / track.currentLength) % 4 === 0;
+        default:
+          if (condition.startsWith('track:')) {
+            const other = parseInt(condition.slice(6), 10);
+            return !!(plans[other] && plans[other].fire);
+          }
+          return true;
+      }
+    }
+
+    /**
+     * The shared step planner: decides, for every track, whether the step at
+     * `globalStep` fires and with how many ratchet sub-triggers. Used verbatim
+     * by the live scheduler and the offline render, so a bounce is the
+     * performance, not an approximation of it.
+     *
+     * Phase A draws the stochastic gates (probability, ratchet injection)
+     * exactly once per track, in lane order. Phase B resolves the conditional
+     * triggers to a fixed point, so inter-track conditions (`track:<i>`) can
+     * reference each other without evaluation-order bias; a cycle of
+     * conditions that only wait on each other resolves to silence.
+     *
+     * @returns {Array<{fire: boolean, ratchet: number, audible: boolean}>}
+     */
+    function computeStepPlans(tracks, fx, globalStep, rand, histories) {
+      const anySolo = tracks.some((t) => t.solo);
+
+      // Phase A — stochastic gates, drawn once per track in lane order.
+      const gates = tracks.map((track, tIdx) => {
+        if (track.mute || (anySolo && !track.solo)) {
+          return { audible: false, passed: false, ratchet: 1, laneIdx: 0, step: null };
+        }
+        const laneIdx = globalStep % track.currentLength;
+        const step = track.steps[laneIdx];
+        const passed = step.active && rand() * 100 <= step.prob * fx.globalProb;
+        let ratchet = step.ratchet;
+        if (passed && fx.globalRatchet > 0 && ratchet === 1 && rand() < fx.globalRatchet * 0.4) {
+          ratchet = rand() > 0.5 ? 2 : 4;
+        }
+        return { audible: true, passed, ratchet, laneIdx, step };
+      });
+
+      // Phase B — conditional triggers, fixed-pointed without further draws.
+      const plans = tracks.map(() => ({ fire: false, ratchet: 1, audible: false }));
+      for (let pass = 0; pass <= tracks.length; pass++) {
+        let changed = false;
+        tracks.forEach((track, tIdx) => {
+          const gate = gates[tIdx];
+          let fire = gate.audible && gate.passed;
+          if (fire && gate.step.condition !== 'none') {
+            fire = evaluateCondition(gate.step.condition, tracks, tIdx, gate.laneIdx, globalStep, plans, histories);
+          }
+          const plan = { fire, ratchet: gate.ratchet, audible: gate.audible };
+          if (plan.fire !== plans[tIdx].fire) changed = true;
+          plans[tIdx] = plan;
+        });
+        if (!changed) break;
+      }
+      return plans;
+    }
+
+    // --- Generative lab ------------------------------------------------------
+    //
+    // Pure, deterministic-with-injected-rand helpers behind the GENERATIVE
+    // LAB panel: Wolfram cellular automata, Markov transition walks and
+    // rule-based pattern transforms. Live-only gestures (like the other
+    // generators) draw from Math.random; the helpers take `rand` so tests
+    // can seed them.
+
+    /**
+     * One Wolfram elementary-CA generation over a cyclic 3-cell
+     * neighbourhood. `rule` is 0–255; the output cell is bit
+     * (left<<2 | self<<1 | right) of the rule.
+     */
+    function caNextGeneration(activeStates, rule) {
+      const n = activeStates.length;
+      const next = new Array(n);
+      for (let i = 0; i < n; i++) {
+        const left = activeStates[(i - 1 + n) % n] ? 1 : 0;
+        const self = activeStates[i] ? 1 : 0;
+        const right = activeStates[(i + 1) % n] ? 1 : 0;
+        next[i] = ((rule >> ((left << 2) | (self << 1) | right)) & 1) === 1;
+      }
+      return next;
+    }
+
+    /**
+     * An order-1 Markov walk over {off, on} with +1 smoothing. `bias` in
+     * [-1, 1] controls correlation: +1 stretches runs (sparser, longer
+     * gaps), −1 alternates (denser, choppier).
+     */
+    function markovGenerate(length, rand, bias = 0) {
+      const b = clampNum(bias, -1, 1);
+      const pStayOff = clampNum(0.65 + b * 0.25, 0.05, 0.95);
+      const pStayOn = clampNum(0.55 - b * 0.2, 0.05, 0.95);
+      let state = rand() < 0.5 ? 0 : 1;
+      const out = new Array(length);
+      for (let i = 0; i < length; i++) {
+        out[i] = state === 1;
+        const roll = rand();
+        if (state === 0) state = roll < pStayOff ? 0 : 1;
+        else state = roll < pStayOn ? 1 : 0;
+      }
+      return out;
+    }
+
+    /**
+     * Rule-based transforms over a lane's active states (within its current
+     * length). INVERT / ROTATE± / EUCLIDIFY (re-spread the same hit count
+     * evenly) / DENSIFY / SPARSE.
+     */
+    function transformPattern(activeStates, transformId, rand = Math.random) {
+      const n = activeStates.length;
+      switch (transformId) {
+        case 'invert':
+          return activeStates.map((s) => !s);
+        case 'rotate+':
+          return activeStates.map((_, i) => activeStates[(i - 1 + n) % n]);
+        case 'rotate-':
+          return activeStates.map((_, i) => activeStates[(i + 1) % n]);
+        case 'euclidify': {
+          const hits = activeStates.filter(Boolean).length;
+          return euclideanPattern(n, hits);
+        }
+        case 'densify':
+          return activeStates.map((s) => s || rand() < 0.35);
+        case 'sparse':
+          return activeStates.map((s) => s && rand() > 0.4);
+        default:
+          return activeStates.slice();
+      }
+    }
+
+    // --- base64url (RFC 4648 §5), dependency-free ---------------------------
+    //
+    // Used to pack a session into the URL fragment. Implemented by hand so the
+    // app needs neither btoa() (absent in some embedded contexts) nor a
+    // library; the alphabet is URL-safe so no percent-encoding is required.
+    const B64URL_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+    function base64UrlEncode(bytes) {
+      let out = '';
+      for (let i = 0; i < bytes.length; i += 3) {
+        const b0 = bytes[i];
+        const b1 = i + 1 < bytes.length ? bytes[i + 1] : 0;
+        const b2 = i + 2 < bytes.length ? bytes[i + 2] : 0;
+        out += B64URL_CHARS[b0 >> 2];
+        out += B64URL_CHARS[((b0 & 3) << 4) | (b1 >> 4)];
+        if (i + 1 < bytes.length) out += B64URL_CHARS[((b1 & 15) << 2) | (b2 >> 6)];
+        if (i + 2 < bytes.length) out += B64URL_CHARS[b2 & 63];
+      }
+      return out;
+    }
+
+    function base64UrlDecode(str) {
+      const lookup = new Map([...B64URL_CHARS].map((c, i) => [c, i]));
+      const clean = String(str).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+      const bytes = [];
+      let acc = 0;
+      let bits = 0;
+      for (const ch of clean) {
+        const v = lookup.get(ch);
+        if (v === undefined) throw new Error('Invalid base64url character.');
+        acc = (acc << 6) | v;
+        bits += 6;
+        if (bits >= 8) {
+          bits -= 8;
+          bytes.push((acc >> bits) & 0xff);
+        }
+      }
+      return new Uint8Array(bytes);
+    }
 
     // --- State Storage ---
     class BureauEngine {
@@ -1209,6 +1869,28 @@
         // Tracks data
         this.tracks = [];
         this.selectedStep = null; // { tIdx, sIdx }
+
+        // Session archive: pattern snapshots (A–D), undo/redo stacks and the
+        // localStorage autosave flag. See the SESSION ARCHIVE panel and
+        // docs/PATTERNS.md §9 for the serialisation schema.
+        this.snapshots = { A: null, B: null, C: null, D: null };
+        this.undoStack = [];
+        this.redoStack = [];
+        this.autosave = true;
+        // UI hook fired whenever the undo/redo stacks change.
+        this.onHistoryChange = null;
+
+        // Conditional-trigger memory: what each lane position last fired.
+        // Transient state — deliberately not serialised; reset by
+        // resetHistories().
+        this.histories = [];
+        this.resetHistories();
+
+        // The lane the TRACK CHAIN panel edits (follows the selected step).
+        this.focusTrack = 0;
+
+        // Modulation matrix: five assignable sources (see MOD_SOURCE_DEFS).
+        this.mod = { sources: MOD_SOURCE_DEFS.map((s) => ({ ...s })) };
 
         // Web Audio node cache for the offline render graph (see `exportWav`).
         this._crushCurve = null;
@@ -1281,69 +1963,473 @@
         return true;
       }
 
+      /**
+       * Build the complete signal graph for any AudioContext — the live one
+       * or an OfflineAudioContext. One construction, used by both, is what
+       * keeps live playback and the bounce behaviourally identical.
+       *
+       * Master bus (unchanged signal path):
+       *   busIn → crush → master filter → drive → limiter → master gain
+       *   master filter → delay ⇄ feedback → delay wet → drive
+       *
+       * Per-track chain (new): voice → input → filter → drive → pan → out
+       * → busIn, and pan → delay send → master delay. Defaults are neutral
+       * (filter open at 18 kHz, no drive, no send, centre), so every existing
+       * pattern sounds exactly as it did.
+       *
+       * @returns {{busIn, trackChains: Array, masterGain, …}} the graph nodes.
+       */
+      buildAudioGraph(ctx) {
+        const graph = { ctx };
+
+        // ---- Master bus ----
+        graph.busIn = ctx.createGain();
+
+        // Bit-crush / amplitude quantiser, once on the bus rather than per
+        // voice: a dense 4x ratchet can fire hundreds of voices per bar, and
+        // each WaveShaper curve allocation is 44 100 float32 samples.
+        graph.crushShaper = ctx.createWaveShaper();
+        graph.crushShaper.curve = this.makeCrushCurve(this.fx.crush);
+        graph.crushShaper.oversample = 'none';
+
+        graph.masterFilter = ctx.createBiquadFilter();
+        graph.masterFilter.type = 'lowpass';
+        graph.masterFilter.frequency.value = this.fx.cutoff;
+        graph.masterFilter.Q.value = 1.8;
+
+        graph.driveShaper = ctx.createWaveShaper();
+        graph.driveShaper.curve = this.makeDriveCurve(this.fx.drive);
+        graph.driveShaper.oversample = '4x';
+
+        graph.delayNode = ctx.createDelay();
+        graph.delayNode.delayTime.value = this.fx.delayTime;
+        graph.delayFeedback = ctx.createGain();
+        graph.delayFeedback.gain.value = this.fx.delayFeedback;
+        graph.delayWet = ctx.createGain();
+        graph.delayWet.gain.value = 0.28;
+
+        graph.delayNode.connect(graph.delayFeedback);
+        graph.delayFeedback.connect(graph.delayNode);
+        graph.delayNode.connect(graph.delayWet);
+
+        graph.limiter = ctx.createDynamicsCompressor();
+        graph.limiter.threshold.value = -3.5;
+        graph.limiter.knee.value = 6;
+        graph.limiter.ratio.value = 12;
+        graph.limiter.attack.value = 0.003;
+        graph.limiter.release.value = 0.08;
+
+        // Live playback trims 0.88 after the limiter; the bounce must too.
+        graph.masterGain = ctx.createGain();
+        graph.masterGain.gain.value = 0.88;
+
+        graph.busIn.connect(graph.crushShaper);
+        graph.crushShaper.connect(graph.masterFilter);
+        // drivePre sits before the master drive shaper so the modulation
+        // matrix (and future automation) can ride the drive amount. Unity by
+        // default — the signal path is unchanged.
+        graph.drivePre = ctx.createGain();
+        graph.drivePre.gain.value = 1;
+
+        graph.masterFilter.connect(graph.drivePre);
+        graph.masterFilter.connect(graph.delayNode);
+        graph.delayWet.connect(graph.drivePre);
+        graph.drivePre.connect(graph.driveShaper);
+        graph.driveShaper.connect(graph.limiter);
+        graph.limiter.connect(graph.masterGain);
+
+        // ---- Per-track chains ----
+        graph.trackChains = this.tracks.map((track) => {
+          const input = ctx.createGain();
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          const drivePre = ctx.createGain();
+          drivePre.gain.value = 1;
+          const driveShaper = ctx.createWaveShaper();
+          driveShaper.oversample = '2x';
+          const pan = ctx.createStereoPanner();
+          const out = ctx.createGain();
+          const delaySend = ctx.createGain();
+
+          input.connect(filter);
+          filter.connect(drivePre);
+          drivePre.connect(driveShaper);
+          driveShaper.connect(pan);
+          pan.connect(out);
+          pan.connect(delaySend);
+          out.connect(graph.busIn);
+          delaySend.connect(graph.delayNode);
+
+          const chain = { input, filter, drivePre, driveShaper, pan, out, delaySend };
+          this.applyTrackFx(track, chain);
+          return chain;
+        });
+
+        // Modulation matrix — built from state, so live and offline graphs
+        // modulate identically.
+        graph.modBundles = [];
+        this.rebuildModulation(graph);
+
+        return graph;
+      }
+
+      /** Write a track's fx parameters into its live chain nodes. */
+      applyTrackFx(track, chain) {
+        if (!track || !chain) return;
+        const fx = track.fx;
+        chain.filter.frequency.value = fx.cutoff;
+        chain.filter.Q.value = fx.res;
+        // A null curve is a true bypass in Web Audio, so drive 0 costs no
+        // shaping at all.
+        chain.driveShaper.curve = fx.drive > 0 ? BureauEngine.distCurve(fx.drive) : null;
+        chain.pan.pan.value = fx.pan;
+        chain.delaySend.gain.value = fx.delaySend;
+      }
+
+      /**
+       * Push engine state into the live audio graph (when initialised): the
+       * master bus parameters and every per-track chain. The offline graph
+       * needs no syncing — it is built from state at render time.
+       */
+      syncAudioParams() {
+        if (!this.audioCtx) return;
+        if (this.masterFilter) {
+          this.masterFilter.frequency.setValueAtTime(this.fx.cutoff, this.audioCtx.currentTime);
+        }
+        if (this.delayNode) {
+          this.delayNode.delayTime.setValueAtTime(this.fx.delayTime, this.audioCtx.currentTime);
+        }
+        if (this.delayFeedback) {
+          this.delayFeedback.gain.setValueAtTime(this.fx.delayFeedback, this.audioCtx.currentTime);
+        }
+        this.updateCrushCurve(this.fx.crush);
+        this.updateDriveCurve(this.fx.drive);
+        if (this.trackChains) {
+          this.trackChains.forEach((chain, i) => this.applyTrackFx(this.tracks[i], chain));
+        }
+        if (this.graph) this.rebuildModulation(this.graph);
+      }
+
+      // --- Modulation matrix ------------------------------------------------
+
+      /** Resolve a destination id to its AudioParam and depth scale. */
+      static resolveModDest(destId, graph) {
+        if (!destId || !graph) return null;
+        const dest = MOD_DESTS.find((d) => d.id === destId);
+        if (!dest) return null;
+        const parts = destId.split('.');
+        if (parts[0] === 'master') {
+          switch (parts[1]) {
+            case 'cutoff':        return { param: graph.masterFilter.frequency, scale: dest.scale };
+            case 'delayTime':     return { param: graph.delayNode.delayTime, scale: dest.scale };
+            case 'delayFeedback': return { param: graph.delayFeedback.gain, scale: dest.scale };
+            case 'drivePre':      return { param: graph.drivePre.gain, scale: dest.scale };
+          }
+        } else if (parts[0] === 'track') {
+          const chain = graph.trackChains[parseInt(parts[1], 10)];
+          if (!chain) return null;
+          switch (parts[2]) {
+            case 'cutoff':    return { param: chain.filter.frequency, scale: dest.scale };
+            case 'res':       return { param: chain.filter.Q, scale: dest.scale };
+            case 'drivePre':  return { param: chain.drivePre.gain, scale: dest.scale };
+            case 'delaySend': return { param: chain.delaySend.gain, scale: dest.scale };
+            case 'pan':       return { param: chain.pan.pan, scale: dest.scale };
+          }
+        }
+        return null;
+      }
+
+      /** Memoised |x| curve for the envelope follower. */
+      static absCurve() {
+        if (!BureauEngine._absCurve) {
+          const n = 1024;
+          const curve = new Float32Array(n);
+          for (let i = 0; i < n; i++) curve[i] = Math.abs((i / (n - 1)) * 2 - 1);
+          BureauEngine._absCurve = curve;
+        }
+        return BureauEngine._absCurve;
+      }
+
+      /** Memoised [-1,1] → [0,1] ramp for unipolar sources. */
+      static uniCurve() {
+        if (!BureauEngine._uniCurve) {
+          const n = 1024;
+          const curve = new Float32Array(n);
+          for (let i = 0; i < n; i++) curve[i] = ((i / (n - 1)) * 2 - 1 + 1) / 2;
+          BureauEngine._uniCurve = curve;
+        }
+        return BureauEngine._uniCurve;
+      }
+
+      /**
+       * The S&H / walk step buffers for a context: one second each, 64 held
+       * steps, seeded LCG content (bit-reproducible offline), memoised.
+       * Playback runs at rate/64, so `rate` is the step frequency in Hz.
+       */
+      modBuffersFor(ctx) {
+        if (!this._modBuffers) this._modBuffers = new WeakMap();
+        let entry = this._modBuffers.get(ctx);
+        if (!entry) {
+          const len = Math.max(64, Math.floor(ctx.sampleRate));
+          const hold = Math.max(1, Math.floor(len / 64));
+
+          const sh = ctx.createBuffer(1, hold * 64, ctx.sampleRate);
+          const sd = sh.getChannelData(0);
+          let s = 0x51ab105f >>> 0;
+          for (let step = 0; step < 64; step++) {
+            s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+            const value = (s / 0xffffffff) * 2 - 1;
+            for (let k = 0; k < hold; k++) sd[step * hold + k] = value;
+          }
+
+          const walk = ctx.createBuffer(1, hold * 64, ctx.sampleRate);
+          const wd = walk.getChannelData(0);
+          let w = 0x2545f491 >>> 0;
+          let value = 0;
+          let drift = 0;
+          for (let step = 0; step < 64; step++) {
+            w = (Math.imul(w, 1664525) + 1013904223) >>> 0;
+            const delta = ((w / 0xffffffff) * 2 - 1) * 0.22;
+            value = clampNum(value + delta, -1, 1);
+            drift += delta;
+            // Remove the accumulated drift so the loop is seamless.
+            const held = value - (step / 64) * drift;
+            for (let k = 0; k < hold; k++) wd[step * hold + k] = held;
+          }
+
+          entry = { sh, walk };
+          this._modBuffers.set(ctx, entry);
+        }
+        return entry;
+      }
+
+      /**
+       * Build one source's node bundle: source → polarity → depth → dest.
+       * @returns {{index, nodes, setParams}} — nodes for teardown, setParams
+       *   for live rate/depth/shape updates without a rebuild.
+       */
+      createModBundle(ctx, graph, src, index, dest) {
+        const nodes = [];
+        let source;
+        let setParams = () => {};
+
+        if (src.type === 'lfo') {
+          const osc = ctx.createOscillator();
+          osc.type = src.shape;
+          osc.frequency.value = src.rate;
+          osc.start(0);
+          source = osc;
+          nodes.push(osc);
+          setParams = (s) => {
+            osc.type = s.shape;
+            osc.frequency.value = s.rate;
+          };
+        } else if (src.type === 'sh' || src.type === 'walk') {
+          const buffer = src.type === 'sh'
+            ? this.modBuffersFor(ctx).sh
+            : this.modBuffersFor(ctx).walk;
+          const bs = ctx.createBufferSource();
+          bs.buffer = buffer;
+          bs.loop = true;
+          bs.playbackRate.value = src.rate / 64;
+          bs.start(0);
+          source = bs;
+          nodes.push(bs);
+          if (src.type === 'walk') {
+            const smooth = ctx.createBiquadFilter();
+            smooth.type = 'lowpass';
+            smooth.frequency.value = clampNum(src.rate * 16, 40, 12000);
+            bs.connect(smooth);
+            source = smooth;
+            nodes.push(smooth);
+            setParams = (s) => {
+              bs.playbackRate.value = s.rate / 64;
+              smooth.frequency.value = clampNum(s.rate * 16, 40, 12000);
+            };
+          } else {
+            setParams = (s) => { bs.playbackRate.value = s.rate / 64; };
+          }
+        } else if (src.type === 'env') {
+          // Envelope follower: master bus input → |x| → lowpass.
+          const abs = ctx.createWaveShaper();
+          abs.curve = BureauEngine.absCurve();
+          const lp = ctx.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 60;
+          lp.Q.value = 0.7;
+          graph.busIn.connect(abs);
+          abs.connect(lp);
+          source = lp;
+          nodes.push(abs, lp);
+        }
+
+        // Polarity: bipolar rides ±depth around the base value; unipolar
+        // maps the source to [0, 1] first.
+        let polarityNode = source;
+        if (src.polarity === 'unipolar') {
+          const uni = ctx.createWaveShaper();
+          uni.curve = BureauEngine.uniCurve();
+          source.connect(uni);
+          polarityNode = uni;
+          nodes.push(uni);
+        }
+
+        const depthGain = ctx.createGain();
+        depthGain.gain.value = src.depth * dest.scale;
+        polarityNode.connect(depthGain);
+        depthGain.connect(dest.param);
+        nodes.push(depthGain);
+
+        const updateDepth = (s) => { depthGain.gain.value = s.depth * dest.scale; };
+        const previous = setParams;
+        setParams = (s) => { previous(s); updateDepth(s); };
+
+        return { index, nodes, setParams };
+      }
+
+      /**
+       * Tear down and rebuild every connected modulation source from state.
+       * Called when the graph is built and whenever a structural source
+       * change lands (type, destination, polarity, on/off).
+       */
+      rebuildModulation(graph) {
+        if (!graph) return;
+        const ctx = graph.ctx;
+        if (graph.modBundles) {
+          graph.modBundles.forEach((bundle) => {
+            bundle.nodes.forEach((node) => {
+              try { node.disconnect(); } catch (err) { /* already torn down */ }
+            });
+            const osc = bundle.nodes.find((n) => n.nodeKind === 'oscillator' || n.nodeKind === 'bufferSource');
+            if (osc && typeof osc.stop === 'function') {
+              try { osc.stop(); } catch (err) { /* not started or already stopped */ }
+            }
+          });
+        }
+        const bundles = [];
+        this.mod.sources.forEach((src, index) => {
+          if (!src.on) return;
+          const dest = BureauEngine.resolveModDest(src.dest, graph);
+          if (!dest) return;
+          bundles.push(this.createModBundle(ctx, graph, src, index, dest));
+        });
+        graph.modBundles = bundles;
+      }
+
+      /** Push rate/depth/shape changes into the live bundles (no rebuild). */
+      updateModBundles(graph) {
+        if (!graph || !graph.modBundles) return;
+        graph.modBundles.forEach((bundle) => {
+          const src = this.mod.sources[bundle.index];
+          if (src) bundle.setParams(src);
+        });
+      }
+
+      // --- Generative lab (engine side) --------------------------------------
+
+      /**
+       * Advance the selected lane(s) one cellular-automaton generation under
+       * a Wolfram rule (0–255). Undoable.
+       */
+      evolveCA(laneId, rule) {
+        const indexes = this.labLaneIndexes(laneId);
+        const r = clampInt(rule, 0, 255);
+        indexes.forEach((tIdx) => {
+          const track = this.tracks[tIdx];
+          if (!track) return;
+          const current = track.steps.slice(0, track.currentLength).map((s) => s.active);
+          const next = caNextGeneration(current, r);
+          next.forEach((active, i) => { track.steps[i].active = active; });
+        });
+        this.pushHistory();
+        return indexes.length;
+      }
+
+      /**
+       * Regenerate the selected lane(s) from a seeded-walk Markov chain.
+       * bias ∈ [-1, 1] (from the lab slider). Undoable.
+       */
+      markovLane(laneId, bias) {
+        const indexes = this.labLaneIndexes(laneId);
+        indexes.forEach((tIdx) => {
+          const track = this.tracks[tIdx];
+          if (!track) return;
+          const states = markovGenerate(track.currentLength, Math.random, bias);
+          states.forEach((active, i) => {
+            const step = track.steps[i];
+            step.active = active;
+            if (active && Math.random() < 0.2) step.ratchet = 2;
+          });
+        });
+        this.pushHistory();
+        return indexes.length;
+      }
+
+      /**
+       * Apply a rule-based transform (invert / rotate± / euclidify /
+       * densify / sparse) to the selected lane(s). Undoable.
+       */
+      transformLane(laneId, transformId) {
+        const indexes = this.labLaneIndexes(laneId);
+        indexes.forEach((tIdx) => {
+          const track = this.tracks[tIdx];
+          if (!track) return;
+          const current = track.steps.slice(0, track.currentLength).map((s) => s.active);
+          const next = transformPattern(current, transformId, Math.random);
+          next.forEach((active, i) => { track.steps[i].active = active; });
+        });
+        this.pushHistory();
+        return indexes.length;
+      }
+
+      /** Resolve a lab lane id ('all' or a lane index) to lane indexes. */
+      labLaneIndexes(laneId) {
+        if (laneId === 'all') return this.tracks.map((_, i) => i);
+        const idx = parseInt(laneId, 10);
+        return Number.isInteger(idx) && idx >= 0 && idx < this.tracks.length ? [idx] : [];
+      }
+
+      /** Validate and normalise a serialised modulation matrix. */
+      static normalizeMod(mod) {
+        const list = Array.isArray(mod && mod.sources) ? mod.sources : [];
+        const sources = [];
+        for (let i = 0; i < MOD_SOURCE_DEFS.length; i++) {
+          const raw = list[i] || {};
+          sources.push({
+            type: MOD_TYPES.some((t) => t.id === raw.type) ? raw.type : 'lfo',
+            rate: clampNum(Number(raw.rate) || 0, 0.05, 12),
+            shape: MOD_SHAPES.some((s) => s.id === raw.shape) ? raw.shape : 'sine',
+            depth: clampNum(Number(raw.depth) || 0, 0, 1),
+            dest: MOD_DESTS.some((d) => d.id === raw.dest) ? raw.dest : 'master.cutoff',
+            polarity: raw.polarity === 'unipolar' ? 'unipolar' : 'bipolar',
+            on: !!raw.on
+          });
+        }
+        return { sources };
+      }
+
       setupMasterBus() {
         const ctx = this.audioCtx;
 
-        // Master Gain
-        this.masterGain = ctx.createGain();
-        this.masterGain.gain.value = 0.88;
+        // One graph construction for live and offline alike; the instance
+        // fields are simply the live graph's nodes.
+        this.graph = this.buildAudioGraph(ctx);
+        this.busIn = this.graph.busIn;
+        this.crushShaper = this.graph.crushShaper;
+        this.masterFilter = this.graph.masterFilter;
+        this.driveShaper = this.graph.driveShaper;
+        this.delayNode = this.graph.delayNode;
+        this.delayFeedback = this.graph.delayFeedback;
+        this.delayWet = this.graph.delayWet;
+        this.limiter = this.graph.limiter;
+        this.masterGain = this.graph.masterGain;
+        this.drivePre = this.graph.drivePre;
+        this.trackChains = this.graph.trackChains;
 
-        // Master Analyser
+        // Master Analyser — a readout, not part of the signal path.
         this.analyser = ctx.createAnalyser();
         this.analyser.fftSize = 512;
         this.analyser.smoothingTimeConstant = 0.75;
-
-        // Master Saturation / Drive Waveshaper
-        this.driveShaper = ctx.createWaveShaper();
-        this.updateDriveCurve(this.fx.drive);
-
-        // Bit-crush / amplitude quantiser.
-        // Deliberately placed once on the master bus rather than once per voice:
-        // a dense 4x ratchet can fire hundreds of voices per bar, and each
-        // WaveShaper curve allocation is 44 100 float32 samples.
-        this.crushShaper = ctx.createWaveShaper();
-        this.updateCrushCurve(this.fx.crush);
-
-        // Lowpass Filter
-        this.masterFilter = ctx.createBiquadFilter();
-        this.masterFilter.type = 'lowpass';
-        this.masterFilter.frequency.value = this.fx.cutoff;
-        this.masterFilter.Q.value = 1.8;
-
-        // Master Delay
-        this.delayNode = ctx.createDelay();
-        this.delayNode.delayTime.value = this.fx.delayTime;
-        this.delayFeedback = ctx.createGain();
-        this.delayFeedback.gain.value = this.fx.delayFeedback;
-        this.delayWet = ctx.createGain();
-        this.delayWet.gain.value = 0.28;
-
-        // Delay feedback loop
-        this.delayNode.connect(this.delayFeedback);
-        this.delayFeedback.connect(this.delayNode);
-        this.delayNode.connect(this.delayWet);
-
-        // Compressor / Brickwall
-        this.limiter = ctx.createDynamicsCompressor();
-        this.limiter.threshold.value = -3.5;
-        this.limiter.knee.value = 6;
-        this.limiter.ratio.value = 12;
-        this.limiter.attack.value = 0.003;
-        this.limiter.release.value = 0.08;
-
-        // Routing
-        // Track buses -> crushShaper -> masterFilter -> driveShaper -> limiter -> Analyser -> Destination
-        // And masterFilter -> delayNode -> delayWet -> driveShaper
-        this.busIn = ctx.createGain();
-        this.busIn.connect(this.crushShaper);
-        this.crushShaper.connect(this.masterFilter);
-
-        this.masterFilter.connect(this.driveShaper);
-        this.masterFilter.connect(this.delayNode);
-        this.delayWet.connect(this.driveShaper);
-
-        this.driveShaper.connect(this.limiter);
-        this.limiter.connect(this.masterGain);
         this.masterGain.connect(this.analyser);
         this.analyser.connect(ctx.destination);
       }
@@ -1353,7 +2439,12 @@
        * @param {number} amount 0..1 — `k` scales the transfer function's knee.
        * @returns {Float32Array} the 44 100-point transfer curve.
        */
-      updateDriveCurve(amount) {
+      /** Master drive curve (memoised on the rounded amount). Pure. */
+      makeDriveCurve(amount) {
+        if (!this._driveCurves) this._driveCurves = new Map();
+        const key = Math.round(amount * 1000);
+        const cached = this._driveCurves.get(key);
+        if (cached) return cached;
         const k = amount * 40;
         const n_samples = 44100;
         const curve = new Float32Array(n_samples);
@@ -1362,6 +2453,12 @@
           const x = (i * 2) / n_samples - 1;
           curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
         }
+        this._driveCurves.set(key, curve);
+        return curve;
+      }
+
+      updateDriveCurve(amount) {
+        const curve = this.makeDriveCurve(amount);
         if (this.driveShaper) {
           this.driveShaper.curve = curve;
           // 4x oversampling keeps the harmonics this curve generates from
@@ -1386,7 +2483,8 @@
        * @param {number} amount 0..1
        * @returns {Float32Array} the quantisation transfer curve.
        */
-      updateCrushCurve(amount) {
+      /** Bit-crush curve (memoised on the bit depth). Pure — no node state. */
+      makeCrushCurve(amount) {
         const CRUSH_MIN_BITS = 3;
         const CRUSH_MAX_BITS = 16;
         const n_samples = 44100;
@@ -1406,25 +2504,23 @@
           this._crushBits = bits;
           this._crushCurve = curve;
         }
+        return this._crushCurve;
+      }
 
+      updateCrushCurve(amount) {
+        const curve = this.makeCrushCurve(amount);
         if (this.crushShaper) {
-          this.crushShaper.curve = this._crushCurve;
+          this.crushShaper.curve = curve;
           this.crushShaper.oversample = 'none';
         }
-        return this._crushCurve;
+        return curve;
       }
 
       initTracks() {
         this.tracks = TRACK_CONFIGS.map((cfg) => {
           const steps = [];
           for (let i = 0; i < 32; i++) {
-            steps.push({
-              active: false,
-              vel: 100,
-              ratchet: 1, // 1 = normal, 2, 3, 4 = drills
-              prob: 100, // %
-              pitchOffset: 0 // semitones
-            });
+            steps.push(makeStep());
           }
           return {
             ...cfg,
@@ -1432,43 +2528,206 @@
             steps: steps,
             mute: false,
             solo: false,
-            cursor: 0
+            cursor: 0,
+            // Per-track synthesis engine override and signal-chain settings.
+            // 'default' keeps the lane's curated voice; engineParam is the
+            // engine's single morph/amount control (see the TRACK CHAIN panel).
+            engine: 'default',
+            engineParam: 0.5,
+            fx: makeTrackFx()
           };
         });
       }
 
+      /** Forget all conditional-trigger memory (called on preset load). */
+      resetHistories() {
+        this.histories = this.tracks.map(() => ({
+          fired: new Array(32).fill(false)
+        }));
+      }
+
+      /**
+       * Record what each lane position fired at `globalStep`. Runs after the
+       * plans are computed (never inside the planner) so the histories always
+       * describe completed evaluations.
+       */
+      updateHistories(globalStep, plans) {
+        this.tracks.forEach((track, tIdx) => {
+          const history = this.histories[tIdx];
+          if (!history) return;
+          const laneIdx = globalStep % track.currentLength;
+          history.fired[laneIdx] = !!(plans[tIdx] && plans[tIdx].fire);
+        });
+      }
+
       // --- Sound Generators (Web Audio Synthesizers) ---
-      playTrackSound(trackIdx, time, stepData, targetCtx = this.audioCtx, destNode = this.busIn) {
+      /**
+       * Dispatch one trigger to a voice generator.
+       *
+       * `rand` is the randomness source for everything stochastic inside the
+       * voice (noise buffers, glitch timbre). Live playback passes
+       * `Math.random` (the default); the offline render passes its seeded
+       * mulberry32 stream, which is what makes a bounce bit-reproducible.
+       * Before this parameter existed the generators called `Math.random()`
+       * directly, so two renders of the same seed were never identical.
+       */
+      /**
+       * Resolve a step's parameter locks into effective synthesis parameters.
+       * With every lock off this returns the inert defaults, and the voices
+       * produce exactly the values they always have.
+       *
+       *   freqMul  relative detune as a frequency multiplier (±100 cents)
+       *   fmDepth  depth of the voice's frequency modulation / sweep (1 = as-is)
+       *   decay    envelope + stop-time multiplier (1 = as-is)
+       *   cutoff   per-voice lowpass frequency in Hz, or null when unlocked
+       *   res      per-voice lowpass resonance (Q), or null when unlocked
+       *   dist     per-voice distortion amount 0..1 (0 = unlocked)
+       */
+      static resolveStepParams(step) {
+        const locks = (step && step.locks) || {};
+        const freq = locks.freq || {};
+        const fm = locks.fm || {};
+        const decay = locks.decay || {};
+        const cutoff = locks.cutoff || {};
+        const res = locks.res || {};
+        const dist = locks.dist || {};
+        return {
+          freqMul: freq.on ? Math.pow(2, clampNum(Number(freq.value) || 0, -100, 100) / 1200) : 1,
+          fmDepth: fm.on ? clampNum(Number(fm.value) || 0, 0, 2) : 1,
+          decay: decay.on ? clampNum(Number(decay.value) || 0, 0.1, 4) : 1,
+          cutoff: cutoff.on ? clampNum(Number(cutoff.value) || 0, 200, 18000) : null,
+          res: res.on ? clampNum(Number(res.value) || 0, 0.5, 20) : null,
+          dist: dist.on ? clampNum(Number(dist.value) || 0, 0, 1) : 0
+        };
+      }
+
+      /**
+       * Insert the per-step lock chain — a lowpass for the cutoff/resonance
+       * locks, then a waveshaper for the distortion lock — between a voice
+       * output and its destination. Only called when at least one lock is
+       * engaged, so unlocked steps allocate nothing extra.
+       */
+      buildLockChain(ctx, source, params) {
+        let node = source;
+        if (params.cutoff !== null || params.res !== null) {
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = params.cutoff ?? 18000;
+          filter.Q.value = params.res ?? 0.7;
+          node.connect(filter);
+          node = filter;
+        }
+        if (params.dist > 0) {
+          const shaper = ctx.createWaveShaper();
+          shaper.curve = BureauEngine.distCurve(params.dist);
+          shaper.oversample = '2x';
+          node.connect(shaper);
+          node = shaper;
+        }
+        return node;
+      }
+
+      /**
+       * A memoised tanh waveshaper curve for the distortion lock, bounded to
+       * roughly unity gain so a locked step adds grit without clipping the
+       * bus. Keyed on the amount rounded to 1%, so the cache stays tiny.
+       */
+      static distCurve(amount) {
+        if (!BureauEngine._distCurves) BureauEngine._distCurves = new Map();
+        const key = Math.round(clampNum(Number(amount) || 0, 0, 1) * 100);
+        const cached = BureauEngine._distCurves.get(key);
+        if (cached) return cached;
+        const n = 1024;
+        const curve = new Float32Array(n);
+        const drive = 1 + key * 0.19; // 1 .. 20
+        const norm = Math.tanh(drive);
+        for (let i = 0; i < n; i++) {
+          const x = (i / (n - 1)) * 2 - 1;
+          curve[i] = (Math.tanh(x * drive) / norm) * (0.5 + key * 0.005);
+        }
+        BureauEngine._distCurves.set(key, curve);
+        return curve;
+      }
+
+      playTrackSound(trackIdx, time, stepData, targetCtx = this.audioCtx, destNode = null, rand = Math.random) {
         const ctx = targetCtx;
         const velNorm = (stepData.vel / 127);
-        const pitchShift = Math.pow(2, stepData.pitchOffset / 12);
+        const params = BureauEngine.resolveStepParams(stepData);
+        const pitchShift = Math.pow(2, stepData.pitchOffset / 12) * params.freqMul;
+        // Voices enter the per-track chain when one exists, else the raw bus.
+        const destination = destNode
+          || (this.trackChains && this.trackChains[trackIdx] ? this.trackChains[trackIdx].input : this.busIn);
+        const track = this.tracks[trackIdx];
+        const engine = track && track.engine ? track.engine : 'default';
+        const engineParam = track ? (track.engineParam ?? 0.5) : 0.5;
+
+        // Per-step locks (cutoff, resonance, distortion) insert a short chain
+        // between the voice and its destination. With no locks engaged the
+        // voice connects straight through: existing patterns allocate and
+        // sound exactly as before.
+        let voiceDest = destination;
+        let lockChain = null;
+        if (params.cutoff !== null || params.res !== null || params.dist > 0) {
+          voiceDest = ctx.createGain();
+          lockChain = this.buildLockChain(ctx, voiceDest, params);
+        }
+
+        // Per-track engine overrides. ringmod/fshift process the lane's voice
+        // output; wavetable replaces the voice entirely. With engine
+        // 'default' nothing is allocated and the lane sounds exactly as before.
+        let engineTap = null;
+        let engineOut = null;
+        if (engine === 'ringmod' || engine === 'fshift') {
+          engineTap = ctx.createGain();
+          const stopTime = time + 0.65 * params.decay;
+          engineOut = this.buildEngineProcessor(ctx, engineTap, engine, engineParam, pitchShift, stopTime);
+        }
+        const voiceTarget = engineTap || voiceDest;
 
         // Note: bit-crush is applied on the master bus, not per voice. Threading it
         // through each generator meant six signatures carried an argument nobody read.
-        switch (trackIdx) {
-          case 0: // BD: FM Pitch Sweep Punch + Click
-            this.synthKick(ctx, destNode, time, velNorm, pitchShift);
-            break;
-          case 1: // SN: Dual Filtered Noise & Resonant Membrane
-            this.synthSnare(ctx, destNode, time, velNorm, pitchShift);
-            break;
-          case 2: // CH: Metallic Frequency Modulated Slices
-            this.synthHat(ctx, destNode, time, velNorm, pitchShift);
-            break;
-          case 3: // PERC: Ring-mod Industrial Clang
-            this.synthPerc(ctx, destNode, time, velNorm, pitchShift);
-            break;
-          case 4: // GLITCH: Micro granular bit noise burst
-            this.synthGlitch(ctx, destNode, time, velNorm, pitchShift);
-            break;
-          case 5: // SUB: Acidic Saw-Square Squelch
-            this.synthSub(ctx, destNode, time, velNorm, pitchShift);
-            break;
+        if (engine === 'wavetable') {
+          this.synthWavetable(ctx, voiceTarget, time, velNorm, pitchShift, rand, params, engineParam);
+        } else {
+          switch (trackIdx) {
+            case 0: // BD: FM Pitch Sweep Punch + Click
+              this.synthKick(ctx, voiceTarget, time, velNorm, pitchShift, rand, params);
+              break;
+            case 1: // SN: Dual Filtered Noise & Resonant Membrane
+              this.synthSnare(ctx, voiceTarget, time, velNorm, pitchShift, rand, params);
+              break;
+            case 2: // CH: Metallic Frequency Modulated Slices
+              this.synthHat(ctx, voiceTarget, time, velNorm, pitchShift, rand, params);
+              break;
+            case 3: // PERC: Ring-mod Industrial Clang
+              this.synthPerc(ctx, voiceTarget, time, velNorm, pitchShift, rand, params);
+              break;
+            case 4: // GLITCH: Micro granular bit noise burst
+              this.synthGlitch(ctx, voiceTarget, time, velNorm, pitchShift, rand, params);
+              break;
+            case 5: // SUB: Acidic Saw-Square Squelch
+              this.synthSub(ctx, voiceTarget, time, velNorm, pitchShift, rand, params);
+              break;
+            case 6: // GRAN: Micro-grain percussion
+              this.synthGran(ctx, voiceTarget, time, velNorm, pitchShift, rand, params);
+              break;
+            case 7: // PLUCK: Karplus-Strong physical resonator
+              this.synthPluck(ctx, voiceTarget, time, velNorm, pitchShift, rand, params);
+              break;
+          }
         }
+
+        if (engineOut) engineOut.connect(voiceDest);
+        if (lockChain) lockChain.connect(destination);
       }
 
       // BD Synthesizer
-      synthKick(ctx, dest, time, vel, pitchShift) {
+      synthKick(ctx, dest, time, vel, pitchShift, rand = Math.random, params = null) {
+        const p = params || {};
+        const fmDepth = p.fmDepth ?? 1;
+        const decay = p.decay ?? 1;
+        const T = (d) => time + d * decay;
+
         const osc = ctx.createOscillator();
         const oscMod = ctx.createOscillator();
         const modGain = ctx.createGain();
@@ -1477,16 +2736,16 @@
         const baseFreq = 54 * pitchShift;
         osc.type = 'sine';
         osc.frequency.setValueAtTime(baseFreq * 5.2, time);
-        osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, time + 0.035);
-        osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.75, time + 0.32);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, T(0.035));
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.75, T(0.32));
 
-        // FM click transient
+        // FM click transient (FM depth lock scales the modulator peak)
         oscMod.type = 'triangle';
         oscMod.frequency.setValueAtTime(320 * pitchShift, time);
-        oscMod.frequency.exponentialRampToValueAtTime(30, time + 0.04);
+        oscMod.frequency.exponentialRampToValueAtTime(30, T(0.04));
 
-        modGain.gain.setValueAtTime(350 * vel, time);
-        modGain.gain.exponentialRampToValueAtTime(0.01, time + 0.045);
+        modGain.gain.setValueAtTime(350 * vel * fmDepth, time);
+        modGain.gain.exponentialRampToValueAtTime(0.01, T(0.045));
         oscMod.connect(modGain);
         modGain.connect(osc.frequency);
 
@@ -1494,18 +2753,18 @@
         const click = ctx.createBufferSource();
         const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.008), ctx.sampleRate);
         const data = buffer.getChannelData(0);
-        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / 80);
+        for (let i = 0; i < data.length; i++) data[i] = (rand() * 2 - 1) * Math.exp(-i / 80);
         click.buffer = buffer;
 
         const clickGain = ctx.createGain();
         clickGain.gain.setValueAtTime(0.6 * vel, time);
-        clickGain.gain.linearRampToValueAtTime(0, time + 0.008);
+        clickGain.gain.linearRampToValueAtTime(0, T(0.008));
         click.connect(clickGain);
         clickGain.connect(gain);
 
         // Amp envelope
         gain.gain.setValueAtTime(vel * 1.1, time);
-        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.38);
+        gain.gain.exponentialRampToValueAtTime(0.0001, T(0.38));
 
         osc.connect(gain);
         gain.connect(dest);
@@ -1513,31 +2772,36 @@
         osc.start(time);
         oscMod.start(time);
         click.start(time);
-        osc.stop(time + 0.4);
-        oscMod.stop(time + 0.05);
-        click.stop(time + 0.01);
+        osc.stop(T(0.4));
+        oscMod.stop(T(0.05));
+        click.stop(T(0.01));
       }
 
       // Snare Synthesizer
-      synthSnare(ctx, dest, time, vel, pitchShift) {
-        // Tonal body
+      synthSnare(ctx, dest, time, vel, pitchShift, rand = Math.random, params = null) {
+        const p = params || {};
+        const fmDepth = p.fmDepth ?? 1;
+        const decay = p.decay ?? 1;
+        const T = (d) => time + d * decay;
+
+        // Tonal body (FM depth lock scales the body's pitch-drop transient)
         const osc = ctx.createOscillator();
         const oscGain = ctx.createGain();
         const toneFreq = 185 * pitchShift;
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(toneFreq * 1.9, time);
-        osc.frequency.exponentialRampToValueAtTime(toneFreq, time + 0.07);
+        osc.frequency.setValueAtTime(fmDepth === 1 ? toneFreq * 1.9 : toneFreq * (1 + 0.9 * fmDepth), time);
+        osc.frequency.exponentialRampToValueAtTime(toneFreq, T(0.07));
 
         oscGain.gain.setValueAtTime(0.6 * vel, time);
-        oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, T(0.16));
         osc.connect(oscGain);
 
         // Snappy metallic noise
-        const noiseLen = Math.floor(ctx.sampleRate * 0.22);
+        const noiseLen = Math.max(1, Math.floor(ctx.sampleRate * 0.22 * decay));
         const noiseBuffer = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
         const nData = noiseBuffer.getChannelData(0);
         for (let i = 0; i < noiseLen; i++) {
-          nData[i] = (Math.random() * 2 - 1);
+          nData[i] = (rand() * 2 - 1);
         }
         const noiseSource = ctx.createBufferSource();
         noiseSource.buffer = noiseBuffer;
@@ -1549,7 +2813,7 @@
 
         const noiseGain = ctx.createGain();
         noiseGain.gain.setValueAtTime(0.9 * vel, time);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, T(0.22));
 
         noiseSource.connect(noiseFilter);
         noiseFilter.connect(noiseGain);
@@ -1562,12 +2826,17 @@
 
         osc.start(time);
         noiseSource.start(time);
-        osc.stop(time + 0.18);
-        noiseSource.stop(time + 0.23);
+        osc.stop(T(0.18));
+        noiseSource.stop(T(0.23));
       }
 
       // Hat Synthesizer (Metallic 6-op cluster)
-      synthHat(ctx, dest, time, vel, pitchShift) {
+      synthHat(ctx, dest, time, vel, pitchShift, rand = Math.random, params = null) {
+        const p = params || {};
+        const fmDepth = p.fmDepth ?? 1;
+        const decay = p.decay ?? 1;
+        const T = (d) => time + d * decay;
+
         const ratios = [2, 3.01, 4.15, 5.4, 6.8, 8.2];
         const fundamental = 420 * pitchShift;
         const hatMix = ctx.createGain();
@@ -1579,15 +2848,19 @@
         ratios.forEach(r => {
           const osc = ctx.createOscillator();
           osc.type = 'square';
-          osc.frequency.value = fundamental * r;
+          // FM depth lock scales the cluster's inharmonic offsets, i.e. the
+          // beating depth between the six partials.
+          osc.frequency.value = fmDepth === 1
+            ? fundamental * r
+            : fundamental * (Math.floor(r) + (r - Math.floor(r)) * fmDepth);
           osc.connect(hatMix);
           osc.start(time);
-          osc.stop(time + 0.07);
+          osc.stop(T(0.07));
         });
 
         const env = ctx.createGain();
         env.gain.setValueAtTime(0.4 * vel, time);
-        env.gain.exponentialRampToValueAtTime(0.0001, time + 0.065);
+        env.gain.exponentialRampToValueAtTime(0.0001, T(0.065));
 
         hatMix.connect(bpf);
         bpf.connect(env);
@@ -1595,7 +2868,12 @@
       }
 
       // Perc Synthesizer (Metallic Clang FM)
-      synthPerc(ctx, dest, time, vel, pitchShift) {
+      synthPerc(ctx, dest, time, vel, pitchShift, rand = Math.random, params = null) {
+        const p = params || {};
+        const fmDepth = p.fmDepth ?? 1;
+        const decay = p.decay ?? 1;
+        const T = (d) => time + d * decay;
+
         const carrier = ctx.createOscillator();
         const modulator = ctx.createOscillator();
         const modGain = ctx.createGain();
@@ -1604,56 +2882,71 @@
         const cFreq = 440 * pitchShift;
         carrier.type = 'sine';
         carrier.frequency.setValueAtTime(cFreq, time);
-        carrier.frequency.exponentialRampToValueAtTime(cFreq * 0.45, time + 0.12);
+        carrier.frequency.exponentialRampToValueAtTime(cFreq * 0.45, T(0.12));
 
         modulator.type = 'sawtooth';
         modulator.frequency.setValueAtTime(cFreq * 2.87, time);
 
-        modGain.gain.setValueAtTime(700 * vel, time);
-        modGain.gain.exponentialRampToValueAtTime(1, time + 0.11);
+        // FM depth lock scales the modulator peak.
+        modGain.gain.setValueAtTime(700 * vel * fmDepth, time);
+        modGain.gain.exponentialRampToValueAtTime(1, T(0.11));
         modulator.connect(modGain);
         modGain.connect(carrier.frequency);
 
         amp.gain.setValueAtTime(vel * 0.7, time);
-        amp.gain.exponentialRampToValueAtTime(0.0001, time + 0.14);
+        amp.gain.exponentialRampToValueAtTime(0.0001, T(0.14));
 
         carrier.connect(amp);
         amp.connect(dest);
 
         carrier.start(time);
         modulator.start(time);
-        carrier.stop(time + 0.15);
-        modulator.stop(time + 0.15);
+        carrier.stop(T(0.15));
+        modulator.stop(T(0.15));
       }
 
       // Glitch Synthesizer (Broken micro-granule click)
-      synthGlitch(ctx, dest, time, vel, pitchShift) {
+      synthGlitch(ctx, dest, time, vel, pitchShift, rand = Math.random, params = null) {
+        const p = params || {};
+        const fmDepth = p.fmDepth ?? 1;
+        const decay = p.decay ?? 1;
+        const T = (d) => time + d * decay;
+
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         const filter = ctx.createBiquadFilter();
 
-        osc.type = Math.random() > 0.5 ? 'sawtooth' : 'triangle';
-        const startFreq = (Math.random() * 4000 + 800) * pitchShift;
+        osc.type = rand() > 0.5 ? 'sawtooth' : 'triangle';
+        const startFreq = (rand() * 4000 + 800) * pitchShift;
         osc.frequency.setValueAtTime(startFreq, time);
-        osc.frequency.exponentialRampToValueAtTime(120, time + 0.035);
+        // FM depth lock scales the pitch-drop depth (1 = the original drop to 120 Hz).
+        const dropTarget = fmDepth === 1
+          ? 120
+          : Math.max(30, startFreq + (120 - startFreq) * fmDepth);
+        osc.frequency.exponentialRampToValueAtTime(dropTarget, T(0.035));
 
         filter.type = 'bandpass';
-        filter.frequency.value = (Math.random() * 5000 + 1200);
+        filter.frequency.value = (rand() * 5000 + 1200);
         filter.Q.value = 8;
 
         gain.gain.setValueAtTime(vel * 0.85, time);
-        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.038);
+        gain.gain.exponentialRampToValueAtTime(0.0001, T(0.038));
 
         osc.connect(filter);
         filter.connect(gain);
         gain.connect(dest);
 
         osc.start(time);
-        osc.stop(time + 0.04);
+        osc.stop(T(0.04));
       }
 
       // Sub Synthesizer (Square / Acid bass note)
-      synthSub(ctx, dest, time, vel, pitchShift) {
+      synthSub(ctx, dest, time, vel, pitchShift, rand = Math.random, params = null) {
+        const p = params || {};
+        const fmDepth = p.fmDepth ?? 1;
+        const decay = p.decay ?? 1;
+        const T = (d) => time + d * decay;
+
         const osc = ctx.createOscillator();
         const filter = ctx.createBiquadFilter();
         const gain = ctx.createGain();
@@ -1663,19 +2956,748 @@
         osc.frequency.setValueAtTime(base, time);
 
         filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(base * 8, time);
-        filter.frequency.exponentialRampToValueAtTime(base * 1.5, time + 0.22);
+        // FM depth lock scales the filter-sweep depth (1 = the original base*8 sweep).
+        const sweepStart = fmDepth === 1
+          ? base * 8
+          : base * 1.5 + (base * 8 - base * 1.5) * fmDepth;
+        filter.frequency.setValueAtTime(sweepStart, time);
+        filter.frequency.exponentialRampToValueAtTime(base * 1.5, T(0.22));
         filter.Q.value = 5.5;
 
         gain.gain.setValueAtTime(vel * 0.8, time);
-        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.28);
+        gain.gain.exponentialRampToValueAtTime(0.001, T(0.28));
 
         osc.connect(filter);
         filter.connect(gain);
         gain.connect(dest);
 
         osc.start(time);
-        osc.stop(time + 0.3);
+        osc.stop(T(0.3));
+      }
+
+      // Gran Synthesizer (Micro-grain percussion)
+      //
+      // A burst of short grains cut from one shared noise buffer. The buffer
+      // is built from a seeded LCG (not Math.random) and memoised per
+      // context, so offline renders stay bit-reproducible. Grain count is
+      // bounded (5–18) and every grain is short-lived.
+      synthGran(ctx, dest, time, vel, pitchShift, rand = Math.random, params = null) {
+        const p = params || {};
+        const decay = p.decay ?? 1;
+        const T = (d) => time + d * decay;
+
+        const buffer = this.granBufferFor(ctx);
+        const grainCount = Math.max(5, Math.min(18, Math.round(5 + vel * 13)));
+        const mix = ctx.createGain();
+        mix.gain.value = vel * 0.9;
+
+        const burstDur = T(0.06) - time;
+        for (let g = 0; g < grainCount; g++) {
+          const src = ctx.createBufferSource();
+          src.buffer = buffer;
+          src.playbackRate.value = 0.5 + rand() * 1.5;
+
+          const dur = (0.008 + rand() * 0.03) * decay;
+          const startAt = time + (g / grainCount) * burstDur;
+          const offset = rand() * Math.max(0, buffer.duration - dur - 0.01);
+
+          const gGain = ctx.createGain();
+          const peak = 0.4 + rand() * 0.6;
+          gGain.gain.setValueAtTime(0.0001, startAt);
+          gGain.gain.exponentialRampToValueAtTime(peak, startAt + dur * 0.2);
+          gGain.gain.exponentialRampToValueAtTime(0.0001, startAt + dur);
+
+          const gFilter = ctx.createBiquadFilter();
+          gFilter.type = 'bandpass';
+          gFilter.frequency.value = (400 + rand() * 4000) * pitchShift;
+          gFilter.Q.value = 1 + rand() * 4;
+
+          src.connect(gFilter);
+          gFilter.connect(gGain);
+          gGain.connect(mix);
+          src.start(startAt, offset, dur);
+          src.stop(startAt + dur + 0.005);
+        }
+        mix.connect(dest);
+      }
+
+      /** The shared granular noise buffer for a context (memoised, seeded). */
+      granBufferFor(ctx) {
+        if (!this._granBuffers) this._granBuffers = new WeakMap();
+        let buf = this._granBuffers.get(ctx);
+        if (!buf) {
+          const len = Math.floor(ctx.sampleRate * 0.25);
+          buf = ctx.createBuffer(1, len, ctx.sampleRate);
+          const data = buf.getChannelData(0);
+          let s = 0x9e3779b9 >>> 0;
+          for (let i = 0; i < len; i++) {
+            s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+            data[i] = (s / 0xffffffff) * 2 - 1;
+          }
+          this._granBuffers.set(ctx, buf);
+        }
+        return buf;
+      }
+
+      // Pluck Synthesizer (Karplus-Strong physical resonator)
+      //
+      // A looped noise burst recirculates through a damping lowpass: the
+      // classic plucked-string model. Feedback is capped at 0.995 so the
+      // loop can never run away, and the decay lock stretches the envelope.
+      synthPluck(ctx, dest, time, vel, pitchShift, rand = Math.random, params = null) {
+        const p = params || {};
+        const decay = p.decay ?? 1;
+        const T = (d) => time + d * decay;
+
+        const freq = Math.max(20, 82 * pitchShift);
+        const period = Math.max(2, Math.round(ctx.sampleRate / freq));
+        const noise = ctx.createBuffer(1, period * 2, ctx.sampleRate);
+        const data = noise.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = rand() * 2 - 1;
+
+        const src = ctx.createBufferSource();
+        src.buffer = noise;
+        src.loop = true;
+
+        const dampFilter = ctx.createBiquadFilter();
+        dampFilter.type = 'lowpass';
+        dampFilter.frequency.value = Math.min(8000, freq * (6 + rand() * 6));
+        dampFilter.Q.value = 0.7;
+
+        const feedback = ctx.createGain();
+        // Longer decay = more sustain, hard-capped below unity.
+        feedback.gain.value = Math.min(0.995, 0.955 + decay * 0.03);
+
+        const out = ctx.createGain();
+        out.gain.setValueAtTime(vel * 0.8, time);
+        out.gain.exponentialRampToValueAtTime(0.0001, T(0.5));
+
+        src.connect(dampFilter);
+        dampFilter.connect(feedback);
+        feedback.connect(dampFilter); // the Karplus-Strong loop
+        dampFilter.connect(out);
+        out.connect(dest);
+
+        src.start(time);
+        src.stop(T(0.55));
+      }
+
+      // Wavetable voice (per-track engine override)
+      //
+      // Two contrasting PeriodicWave spectra crossfaded by engineParam.
+      // The waves are memoised per context.
+      synthWavetable(ctx, dest, time, vel, pitchShift, rand = Math.random, params = null, engineParam = 0.5) {
+        const p = params || {};
+        const decay = p.decay ?? 1;
+        const T = (d) => time + d * decay;
+
+        const freq = 110 * pitchShift;
+        const waves = this.wavetablesFor(ctx);
+        const ep = clampNum(engineParam, 0, 1);
+
+        const mix = ctx.createGain();
+        const gA = ctx.createGain();
+        gA.gain.value = 1 - ep;
+        const gB = ctx.createGain();
+        gB.gain.value = ep;
+
+        const oscA = ctx.createOscillator();
+        oscA.setPeriodicWave(waves.a);
+        oscA.frequency.setValueAtTime(freq, time);
+        const oscB = ctx.createOscillator();
+        oscB.setPeriodicWave(waves.b);
+        oscB.frequency.setValueAtTime(freq, time);
+
+        const amp = ctx.createGain();
+        amp.gain.setValueAtTime(vel * 0.7, time);
+        amp.gain.exponentialRampToValueAtTime(0.0001, T(0.35));
+
+        oscA.connect(gA);
+        gA.connect(mix);
+        oscB.connect(gB);
+        gB.connect(mix);
+        mix.connect(amp);
+        amp.connect(dest);
+
+        oscA.start(time);
+        oscB.start(time);
+        oscA.stop(T(0.4));
+        oscB.stop(T(0.4));
+      }
+
+      /** Memoised PeriodicWave pair for a context. */
+      wavetablesFor(ctx) {
+        if (!this._wavetables) this._wavetables = new WeakMap();
+        let w = this._wavetables.get(ctx);
+        if (!w) {
+          const mk = (harmonics) => {
+            const real = new Float32Array(harmonics.length + 1);
+            const imag = new Float32Array(harmonics.length + 1);
+            harmonics.forEach((h, i) => { real[i + 1] = h; });
+            return ctx.createPeriodicWave(real, imag);
+          };
+          w = {
+            a: mk([0.6, 0.25, 0.12, 0.06, 0.03]),                          // soft
+            b: mk([0.4, 0.35, 0.28, 0.2, 0.15, 0.1, 0.07, 0.05, 0.03])    // bright
+          };
+          this._wavetables.set(ctx, w);
+        }
+        return w;
+      }
+
+      /**
+       * Per-track engine processors (ring modulation, frequency shifting).
+       * Returns the node the voice should feed; its output is the processed
+       * signal. Allocated only when the lane's engine is not 'default'.
+       *
+       *   ringmod  true ring modulation: a sine carrier drives the voice's
+       *            gain AudioParam (the multiplier), producing sidebands.
+       *            engineParam = carrier frequency, 40 Hz … 1 kHz (log).
+       *   fshift   single-sideband frequency shift: two delay taps modulated
+       *            in anti-phase by a sawtooth LFO and crossfaded by a
+       *            triangle at the same rate. engineParam = rate 0.5…30 Hz.
+       */
+      buildEngineProcessor(ctx, source, engine, engineParam, pitchShift, stopTime) {
+        if (engine === 'ringmod') {
+          const rm = ctx.createGain();
+          rm.gain.value = 1;
+          const carrier = ctx.createOscillator();
+          carrier.type = 'sine';
+          carrier.frequency.value = 40 * Math.pow(25, clampNum(engineParam, 0, 1)) * pitchShift;
+          const depth = ctx.createGain();
+          depth.gain.value = 0.85;
+          carrier.connect(depth);
+          depth.connect(rm.gain);
+          source.connect(rm);
+          carrier.start();
+          carrier.stop(stopTime);
+          return rm;
+        }
+        if (engine === 'fshift') {
+          const out = ctx.createGain();
+          const rate = 0.5 + clampNum(engineParam, 0, 1) * 29.5;
+          const lfo = ctx.createOscillator();
+          lfo.type = 'sawtooth';
+          lfo.frequency.value = rate;
+          const tri = ctx.createOscillator();
+          tri.type = 'triangle';
+          tri.frequency.value = rate;
+          const depth = ctx.createGain();
+          depth.gain.value = 0.0022; // ±2.2 ms of delay modulation
+          lfo.connect(depth);
+          const d1 = ctx.createDelay(0.02);
+          d1.delayTime.value = 0.004;
+          const d2 = ctx.createDelay(0.02);
+          d2.delayTime.value = 0.005;
+          depth.connect(d1.delayTime);
+          depth.connect(d2.delayTime);
+          const g1 = ctx.createGain();
+          g1.gain.value = 0.5;
+          const g2 = ctx.createGain();
+          g2.gain.value = 0.5;
+          const xf = ctx.createGain();
+          xf.gain.value = 0.5;
+          const xfInv = ctx.createGain();
+          xfInv.gain.value = -0.5;
+          tri.connect(xf);
+          tri.connect(xfInv);
+          xf.connect(g1.gain);
+          xfInv.connect(g2.gain);
+          source.connect(d1);
+          source.connect(d2);
+          d1.connect(g1);
+          d2.connect(g2);
+          g1.connect(out);
+          g2.connect(out);
+          lfo.start();
+          tri.start();
+          lfo.stop(stopTime);
+          tri.stop(stopTime);
+          return out;
+        }
+        return source;
+      }
+
+      // --- Session serialisation, migration, snapshots & history -----------
+      //
+      // The session schema (version 2) is documented in docs/PATTERNS.md §9.
+      // Older documents — the version-1 pattern schema and bare preset-shaped
+      // objects — are upgraded by migrateSessionDoc(); unknown or out-of-range
+      // values are clamped rather than trusted, so a hand-edited file can
+      // never put the engine into an invalid state.
+
+      /** Compact serialisable form of one step. */
+      serializeStep(step) {
+        const s = BureauEngine.normalizeStep(step);
+        const l = {};
+        for (const def of LOCK_DEFS) {
+          l[def.key] = [s.locks[def.key].on ? 1 : 0, s.locks[def.key].value];
+        }
+        return {
+          a: s.active ? 1 : 0,
+          v: s.vel,
+          r: s.ratchet,
+          rc: s.ratchetCurve,
+          pr: s.prob,
+          p: s.pitchOffset,
+          c: s.condition,
+          l
+        };
+      }
+
+      /** Compact serialisable form of one track. */
+      serializeTrack(track) {
+        return {
+          length: track.currentLength,
+          mute: !!track.mute,
+          solo: !!track.solo,
+          engine: track.engine || 'default',
+          engineParam: track.engineParam ?? 0.5,
+          fx: { ...track.fx },
+          steps: track.steps.map((s) => this.serializeStep(s))
+        };
+      }
+
+      /**
+       * Serialise the complete session: tempo, master fx, all tracks with
+       * their per-step locks, the modulation matrix and the arrangement.
+       * @returns {object} a version-2 session document.
+       */
+      serializeSession() {
+        return {
+          format: 'form909warp.session',
+          version: 2,
+          meta: { savedAt: new Date().toISOString() },
+          bpm: this.bpm,
+          fx: { ...this.fx },
+          tracks: this.tracks.map((t) => this.serializeTrack(t)),
+          mod: this.mod ? { sources: this.mod.sources.map((s) => ({ ...s })) } : null,
+          arrangement: this.arrangement
+            ? {
+                scenes: this.arrangement.scenes.map((s) => ({
+                  name: s.name, bars: s.bars, evolve: s.evolve,
+                  pattern: deepClone(s.pattern)
+                })),
+                automation: this.arrangement.automation.map((a) => ({ ...a }))
+              }
+            : null
+        };
+      }
+
+      /**
+       * Serialise just the pattern: tempo, master fx and the tracks. This is
+       * the unit stored in snapshot slots and arrangement scenes.
+       */
+      serializePattern() {
+        return {
+          bpm: this.bpm,
+          fx: { ...this.fx },
+          tracks: this.tracks.map((t) => this.serializeTrack(t))
+        };
+      }
+
+      /**
+       * Validate and normalise a single step from either the compact
+       * serialised form ({a, v, r, rc, pr, p, c, l}) or the live form. Every
+       * value is clamped into its documented range; missing fields fall back
+       * to the inert defaults.
+       */
+      static normalizeStep(s) {
+        s = s || {};
+        const raw = s.l || s.locks || {};
+        const locks = {};
+        for (const def of LOCK_DEFS) {
+          const entry = raw[def.key];
+          const on = Array.isArray(entry) ? !!entry[0] : !!(entry && entry.on);
+          const rawValue = Array.isArray(entry)
+            ? entry[1]
+            : (entry && entry.value !== undefined ? entry.value : def.def);
+          locks[def.key] = { on, value: clampNum(Number(rawValue) || 0, def.min, def.max) };
+        }
+        const curve = s.rc ?? s.ratchetCurve;
+        const condition = s.c ?? s.condition;
+        return {
+          active: !!(s.a ?? s.active),
+          vel: clampInt(s.v ?? s.vel ?? 100, 0, 127),
+          ratchet: clampInt(s.r ?? s.ratchet ?? 1, 1, 16),
+          ratchetCurve: RATCHET_CURVES.some((c) => c.id === curve) ? curve : 'even',
+          prob: clampInt(s.pr ?? s.prob ?? 100, 0, 100),
+          pitchOffset: clampInt(s.p ?? s.pitchOffset ?? 0, -24, 24),
+          condition: BureauEngine.normalizeCondition(condition),
+          locks
+        };
+      }
+
+      /** Validate a condition id, resolving inter-track references. */
+      static normalizeCondition(condition) {
+        if (typeof condition !== 'string') return 'none';
+        if (CONDITION_DEFS.some((c) => c.id === condition)) return condition;
+        if (condition.startsWith('track:')) {
+          const idx = parseInt(condition.slice(6), 10);
+          if (Number.isInteger(idx) && idx >= 0 && idx < TRACK_CONFIGS.length) return condition;
+        }
+        return 'none';
+      }
+
+      /** Validate and normalise one track entry of a session document. */
+      static normalizeTrack(t, idx) {
+        const cfg = TRACK_CONFIGS[idx];
+        t = t || {};
+        const fx = t.fx || {};
+        return {
+          length: clampInt(t.length ?? cfg?.steps ?? 16, 1, 32),
+          mute: !!t.mute,
+          solo: !!t.solo,
+          engine: typeof t.engine === 'string' ? t.engine : 'default',
+          engineParam: clampNum(Number(t.engineParam ?? 0.5), 0, 1),
+          fx: {
+            cutoff: clampNum(Number(fx.cutoff ?? 18000), 150, 20000),
+            res: clampNum(Number(fx.res ?? 0.7), 0.1, 30),
+            drive: clampNum(Number(fx.drive ?? 0), 0, 1),
+            delaySend: clampNum(Number(fx.delaySend ?? 0), 0, 1),
+            pan: clampNum(Number(fx.pan ?? 0), -1, 1)
+          },
+          steps: Array.from({ length: 32 }, (_, j) => BureauEngine.normalizeStep(t.steps?.[j]))
+        };
+      }
+
+      /** Validate and normalise a version-2 session document. */
+      static normalizeSession(doc) {
+        doc = doc || {};
+        const fx = doc.fx || {};
+        const tracks = [];
+        for (let i = 0; i < TRACK_CONFIGS.length; i++) {
+          tracks.push(BureauEngine.normalizeTrack(doc.tracks?.[i], i));
+        }
+        return {
+          format: 'form909warp.session',
+          version: 2,
+          meta: { savedAt: (doc.meta && doc.meta.savedAt) || null },
+          bpm: clampInt(doc.bpm ?? 168, 40, 360),
+          fx: {
+            crush: clampNum(Number(fx.crush ?? 0.15), 0, 1),
+            drive: clampNum(Number(fx.drive ?? 0.25), 0, 1),
+            humanize: clampInt(fx.humanize ?? 4, 0, 25),
+            cutoff: clampNum(Number(fx.cutoff ?? 16500), 150, 18000),
+            delayTime: clampNum(Number(fx.delayTime ?? 0.18), 0.03, 0.65),
+            delayFeedback: clampNum(Number(fx.delayFeedback ?? 0.32), 0, 0.85),
+            globalProb: clampNum(Number(fx.globalProb ?? 1.0), 0.1, 1.0),
+            globalRatchet: clampNum(Number(fx.globalRatchet ?? 0.2), 0, 1),
+            swing: clampNum(Number(fx.swing ?? 0.12), 0, 0.5)
+          },
+          tracks,
+          mod: BureauEngine.normalizeMod(doc.mod),
+          arrangement: doc.arrangement || null
+        };
+      }
+
+      /**
+       * Upgrade a version-1 pattern document (the schema specified in
+       * docs/PATTERNS.md §9, or a bare preset-shaped object with `lengths`
+       * and `data`) to the version-2 session shape.
+       */
+      static sessionFromV1(doc) {
+        const tracks = [];
+        for (let i = 0; i < TRACK_CONFIGS.length; i++) {
+          const lane = Array.isArray(doc.data?.[i]) ? doc.data[i] : [];
+          const steps = Array.from({ length: 32 }, () => BureauEngine.normalizeStep(null));
+          lane.forEach((item) => {
+            if (item && Number.isInteger(item.i) && item.i >= 0 && item.i < 32) {
+              steps[item.i] = BureauEngine.normalizeStep({
+                a: 1, v: item.v, r: item.r, pr: item.pr, p: item.p
+              });
+            }
+          });
+          tracks.push(BureauEngine.normalizeTrack({ length: doc.lengths?.[i], steps }, i));
+        }
+        return BureauEngine.normalizeSession({ bpm: doc.bpm, fx: doc.fx, tracks });
+      }
+
+      /**
+       * Migrate any supported session document to a normalised version-2
+       * session. Accepts version-2 sessions, version-1 pattern documents and
+       * bare preset-shaped objects. Throws on anything unrecognised.
+       */
+      static migrateSessionDoc(doc) {
+        if (!doc || typeof doc !== 'object' || Array.isArray(doc)) {
+          throw new Error('Not a Form 909-WARP session document.');
+        }
+        if (doc.format === 'form909warp.session' && doc.version === 2) {
+          return BureauEngine.normalizeSession(doc);
+        }
+        const isV1 = doc.format === 'form909warp.pattern' || doc.version === 1 ||
+          (!doc.format && Array.isArray(doc.data) && Array.isArray(doc.lengths));
+        if (isV1) return BureauEngine.sessionFromV1(doc);
+        throw new Error(`Unrecognised session format: ${String(doc.format || '(none)')}`);
+      }
+
+      /**
+       * Apply a session document to the engine state. State only — the UI
+       * wrapper (applySessionUI) re-renders afterwards.
+       *
+       * @param {object} doc any document accepted by migrateSessionDoc
+       * @param {{skipHistory?: boolean}} [opts]
+       */
+      applySession(doc, opts = {}) {
+        const clean = BureauEngine.migrateSessionDoc(doc);
+        this.bpm = clean.bpm;
+        Object.assign(this.fx, clean.fx);
+        clean.tracks.forEach((t, i) => {
+          const track = this.tracks[i];
+          if (!track) return;
+          track.currentLength = t.length;
+          track.mute = t.mute;
+          track.solo = t.solo;
+          track.engine = t.engine;
+          track.engineParam = t.engineParam;
+          Object.assign(track.fx, t.fx);
+          for (let j = 0; j < 32; j++) track.steps[j] = t.steps[j];
+        });
+        this.mod = clean.mod;
+        if (clean.arrangement) {
+          this.arrangement = {
+            scenes: clean.arrangement.scenes || [],
+            automation: clean.arrangement.automation || [],
+            playing: false
+          };
+        }
+        this.syncAudioParams();
+        if (!opts.skipHistory) this.pushHistory();
+        return clean;
+      }
+
+      /** Apply a pattern snapshot (tempo + fx + tracks) to the state. */
+      applyPattern(snap, opts = {}) {
+        return this.applySession(
+          {
+            format: 'form909warp.session',
+            version: 2,
+            bpm: snap.bpm,
+            fx: snap.fx,
+            tracks: snap.tracks
+          },
+          opts
+        );
+      }
+
+      // --- Undo / redo ------------------------------------------------------
+
+      /**
+       * Push the current session onto the undo stack. Call sites invoke this
+       * AFTER a mutation, so the invariant is: the top of the undo stack is
+       * always the current state, and the entry below it is the state to
+       * return to. Serialised snapshots are a few kilobytes, so the stack is
+       * bounded by count (50), not size. Consecutive identical states are
+       * collapsed so a no-op cannot flood the stack.
+       */
+      pushHistory() {
+        const doc = this.serializeSession();
+        // The save timestamp is volatile; nulling it keeps consecutive
+        // no-op snapshots byte-identical so they collapse.
+        doc.meta.savedAt = null;
+        const snap = JSON.stringify(doc);
+        if (this.undoStack[this.undoStack.length - 1] === snap) return;
+        this.undoStack.push(snap);
+        if (this.undoStack.length > 50) this.undoStack.shift();
+        this.redoStack.length = 0;
+        this.persistSession();
+        if (this.onHistoryChange) this.onHistoryChange();
+      }
+
+      /**
+       * Reverse the most recent mutation: the current state moves to the redo
+       * stack and the entry below it becomes current. Undo stops at the
+       * oldest recorded state (the boot state) rather than guessing.
+       * @returns {boolean} success
+       */
+      undo() {
+        if (this.undoStack.length < 2) return false;
+        this.redoStack.push(this.undoStack.pop());
+        if (this.redoStack.length > 50) this.redoStack.shift();
+        this.applySession(JSON.parse(this.undoStack[this.undoStack.length - 1]), { skipHistory: true });
+        if (this.onHistoryChange) this.onHistoryChange();
+        return true;
+      }
+
+      /** Re-apply the most recently undone mutation. @returns {boolean} */
+      redo() {
+        if (!this.redoStack.length) return false;
+        const snap = this.redoStack.pop();
+        this.undoStack.push(snap);
+        if (this.undoStack.length > 50) this.undoStack.shift();
+        this.applySession(JSON.parse(snap), { skipHistory: true });
+        if (this.onHistoryChange) this.onHistoryChange();
+        return true;
+      }
+
+      // --- Pattern snapshots & morphing --------------------------------------
+
+      /** Store the current pattern in snapshot slot A–D. */
+      storeSnapshot(slot) {
+        if (!Object.prototype.hasOwnProperty.call(this.snapshots, slot)) return false;
+        this.snapshots[slot] = this.serializePattern();
+        return true;
+      }
+
+      /**
+       * Recall a snapshot slot, replacing the current pattern. The recall is
+       * itself undoable (pushHistory runs before the state is replaced).
+       */
+      recallSnapshot(slot) {
+        const snap = this.snapshots[slot];
+        if (!snap) return false;
+        // Record the pre-recall state, apply, then record the post-recall
+        // state. The first push collapses when the pre-recall state is already
+        // the stack top (the normal case — every UI mutation pushes history);
+        // it still guarantees undo can revert a recall on a fresh stack.
+        this.pushHistory();
+        this.applyPattern(snap, { skipHistory: true });
+        this.pushHistory();
+        return true;
+      }
+
+      /**
+       * Morph the current pattern towards a snapshot slot.
+       *
+       * Numeric parameters interpolate linearly. Discrete fields (active,
+       * ratchet count, curve, condition, lock switches, lane length, engine)
+       * resolve through a deterministic per-cell hash: the cell flips when
+       * the morph amount crosses its hash value. The same slot and amount
+       * therefore always produce the same pattern — morphing is a composed
+       * edit, not a random one, and one undo step reverses it.
+       *
+       * @param {string} slot 'A'–'D'
+       * @param {number} amount 0–1
+       * @returns {boolean} false when the slot is empty or amount is 0
+       */
+      morphTowards(slot, amount) {
+        const target = this.snapshots[slot];
+        if (!target) return false;
+        const amt = clampNum(Number(amount) || 0, 0, 1);
+        if (amt <= 0) return false;
+        if (amt >= 1) return this.recallSnapshot(slot);
+        // Record the pre-morph state (collapses when already on the stack),
+        // so undo can revert the morph even on a fresh history.
+        this.pushHistory();
+        const lerp = (a, b) => a + (b - a) * amt;
+
+        this.tracks.forEach((track, tIdx) => {
+          const tTrack = target.tracks[tIdx];
+          if (!tTrack) return;
+          if (cellHash(tIdx, 0, 101) < amt && tTrack.length !== track.currentLength) {
+            track.currentLength = clampInt(tTrack.length, 1, 32);
+          }
+          track.steps.forEach((step, sIdx) => {
+            const tStep = tTrack.steps[sIdx];
+            if (!tStep) return;
+            const src = BureauEngine.normalizeStep(step);
+            const dst = BureauEngine.normalizeStep(tStep);
+            if (src.active !== dst.active) {
+              step.active = cellHash(tIdx, sIdx, 0) < amt ? dst.active : src.active;
+            }
+            step.vel = Math.round(lerp(src.vel, dst.vel, amt));
+            step.prob = Math.round(lerp(src.prob, dst.prob, amt));
+            step.pitchOffset = Math.round(lerp(src.pitchOffset, dst.pitchOffset, amt));
+            if (cellHash(tIdx, sIdx, 11) < amt) step.ratchet = dst.ratchet;
+            if (cellHash(tIdx, sIdx, 23) < amt) step.ratchetCurve = dst.ratchetCurve;
+            if (cellHash(tIdx, sIdx, 37) < amt) step.condition = dst.condition;
+            for (const def of LOCK_DEFS) {
+              const sl = src.locks[def.key];
+              const dl = dst.locks[def.key];
+              if (sl.on !== dl.on) {
+                const hl = cellHash(tIdx, sIdx, 50 + def.key.length * 7);
+                step.locks[def.key].on = hl < amt ? dl.on : sl.on;
+              }
+              step.locks[def.key].value = clampNum(lerp(sl.value, dl.value, amt), def.min, def.max);
+            }
+          });
+          if (cellHash(tIdx, 0, 202) < amt) track.engine = tTrack.engine || 'default';
+          track.engineParam = clampNum(lerp(track.engineParam ?? 0.5, tTrack.engineParam ?? 0.5, amt), 0, 1);
+          track.fx.cutoff = clampNum(lerp(track.fx.cutoff, tTrack.fx.cutoff, amt), 150, 20000);
+          track.fx.res = clampNum(lerp(track.fx.res, tTrack.fx.res, amt), 0.1, 30);
+          track.fx.drive = clampNum(lerp(track.fx.drive, tTrack.fx.drive, amt), 0, 1);
+          track.fx.delaySend = clampNum(lerp(track.fx.delaySend, tTrack.fx.delaySend, amt), 0, 1);
+          track.fx.pan = clampNum(lerp(track.fx.pan, tTrack.fx.pan, amt), -1, 1);
+        });
+
+        this.bpm = Math.round(lerp(this.bpm, target.bpm, amt));
+        for (const key of ['crush', 'drive', 'swing', 'cutoff', 'delayTime', 'delayFeedback']) {
+          this.fx[key] = lerp(this.fx[key], target.fx[key], amt);
+        }
+        this.pushHistory();
+        return true;
+      }
+
+      // --- Persistence -------------------------------------------------------
+
+      static STORAGE_KEY = 'form909warp.session.v2';
+
+      /** Autosave the session to localStorage (best effort, never throws). */
+      persistSession() {
+        if (!this.autosave) return;
+        try {
+          window.localStorage.setItem(
+            BureauEngine.STORAGE_KEY,
+            JSON.stringify(this.serializeSession())
+          );
+        } catch (err) { /* storage full or unavailable — the session simply is not persisted */ }
+      }
+
+      /**
+       * Restore the autosaved session from localStorage.
+       * @returns {boolean} true when a session was restored.
+       */
+      restorePersistedSession() {
+        let raw = null;
+        try {
+          raw = window.localStorage.getItem(BureauEngine.STORAGE_KEY);
+        } catch (err) { return false; }
+        if (!raw) return false;
+        this.applySession(JSON.parse(raw), { skipHistory: true });
+        return true;
+      }
+
+      /**
+       * Encode the session into a URL fragment: deflate-raw compressed JSON,
+       * base64url encoded, prefixed with a mode marker ('z' compressed,
+       * 'p' plain fallback where CompressionStream is unavailable).
+       * @returns {Promise<string>} e.g. '#f909=z…'
+       */
+      async encodeSessionUrl() {
+        const json = JSON.stringify(this.serializeSession());
+        const bytes = new TextEncoder().encode(json);
+        let payload = bytes;
+        let mode = 'p';
+        try {
+          if (typeof CompressionStream === 'function') {
+            const cs = new CompressionStream('deflate-raw');
+            const buf = await new Response(new Blob([bytes]).stream().pipeThrough(cs)).arrayBuffer();
+            payload = new Uint8Array(buf);
+            mode = 'z';
+          }
+        } catch (err) { /* fall back to the plain encoding below */ }
+        return `#f909=${mode}${base64UrlEncode(payload)}`;
+      }
+
+      /**
+       * Decode a URL fragment produced by encodeSessionUrl.
+       * @returns {Promise<object|null>} the session document, or null when
+       *   the fragment is not a Form 909-WARP session.
+       */
+      async decodeSessionUrl(hash) {
+        if (typeof hash !== 'string' || !hash.startsWith('#f909=')) return null;
+        const body = hash.slice(6);
+        const mode = body[0];
+        const data = base64UrlDecode(body.slice(1));
+        let json;
+        if (mode === 'z') {
+          const ds = new DecompressionStream('deflate-raw');
+          const buf = await new Response(new Blob([data]).stream().pipeThrough(ds)).arrayBuffer();
+          json = new TextDecoder().decode(buf);
+        } else {
+          json = new TextDecoder().decode(data);
+        }
+        return JSON.parse(json);
       }
 
       // --- Precise Scheduler Engine ---
@@ -1844,55 +3866,60 @@
         this.stepIndex++;
       }
 
-      scheduleStep(globalStep, time) {
-        // Solo is derived from the tracks themselves, so there is exactly one
-        // source of truth. (A shadow `this.solos` array previously drifted out
-        // of sync whenever a preset reloaded the track list.)
-        const anySolo = this.tracks.some(t => t.solo);
+      /**
+       * Resolve one global step against every lane and schedule the sounds.
+       *
+       * @param {number} globalStep monotonic step counter
+       * @param {number} time absolute time on the audio clock
+       * @param {() => number} [rand] randomness source — `Math.random` live,
+       *   the seeded mulberry32 stream when driven by the offline render.
+       */
+      scheduleStep(globalStep, time, rand = Math.random) {
+        // The shared planner decides, per track, whether this step fires and
+        // with how many ratchets — probability, injection and conditional
+        // triggers included. (Solo is derived from the tracks themselves, so
+        // there is exactly one source of truth; a shadow `this.solos` array
+        // previously drifted out of sync whenever a preset reloaded.)
+        const plans = computeStepPlans(this.tracks, this.fx, globalStep, rand, this.histories);
 
         this.tracks.forEach((track, tIdx) => {
-          if (track.mute) return;
-          if (anySolo && !track.solo) return;
+          const plan = plans[tIdx];
 
           // Polyrhythmic indexing for this track length
           const trackStepIndex = globalStep % track.currentLength;
-          const stepData = track.steps[trackStepIndex];
 
-          // Visual cursor feedback dispatched
-          const schedTime = time;
-          const drawDelay = Math.max(0, (schedTime - this.audioCtx.currentTime) * 1000);
-          setTimeout(() => {
-            this.updateTrackVisualCursor(tIdx, trackStepIndex);
-          }, drawDelay);
-
-          if (!stepData.active) return;
-
-          // Probability calculation
-          const probRoll = Math.random() * 100;
-          const effectiveProb = (stepData.prob * this.fx.globalProb);
-          if (probRoll > effectiveProb) return;
-
-          // Ratchets / Micro-drills scheduling
-          let ratchets = stepData.ratchet;
-          if (this.fx.globalRatchet > 0 && ratchets === 1 && Math.random() < this.fx.globalRatchet * 0.4) {
-            ratchets = Math.random() > 0.5 ? 2 : 4;
+          // Visual cursor feedback dispatched (display only — never audio)
+          if (plan.audible) {
+            const schedTime = time;
+            const drawDelay = Math.max(0, (schedTime - this.audioCtx.currentTime) * 1000);
+            setTimeout(() => {
+              this.updateTrackVisualCursor(tIdx, trackStepIndex);
+            }, drawDelay);
           }
 
-          const stepDuration = (60.0 / this.bpm) * 0.25;
-          const subStepTime = stepDuration / ratchets;
+          if (!plan.fire) return;
+          const stepData = track.steps[trackStepIndex];
 
-          for (let r = 0; r < ratchets; r++) {
+          const stepDuration = (60.0 / this.bpm) * 0.25;
+          const offsets = ratchetOffsets(plan.ratchet, stepData.ratchetCurve, stepDuration, rand);
+
+          offsets.forEach((offset, r) => {
             // Humanize micro-jitter
-            const jitter = (Math.random() - 0.5) * (this.fx.humanize / 1000);
-            const triggerTime = Math.max(time, time + (r * subStepTime) + jitter);
-            
+            const jitter = (rand() - 0.5) * (this.fx.humanize / 1000);
+            const triggerTime = Math.max(time, time + offset + jitter);
+
             // Ratchet velocity decay for drill texture
             const ratchetVel = Math.max(20, stepData.vel * (1 - (r * 0.12)));
             const burstStepData = { ...stepData, vel: ratchetVel };
 
-            this.playTrackSound(tIdx, triggerTime, burstStepData);
-          }
+            const chainInput = this.trackChains && this.trackChains[tIdx]
+              ? this.trackChains[tIdx].input
+              : this.busIn;
+            this.playTrackSound(tIdx, triggerTime, burstStepData, this.audioCtx, chainInput, rand);
+          });
         });
+
+        this.updateHistories(globalStep, plans);
       }
 
       updateTrackVisualCursor(trackIdx, stepIdx) {
@@ -1990,6 +4017,7 @@
             }
           });
         });
+        this.pushHistory();
         renderAllTracks();
         updateTicker("MUTATION APPLIED: POLYNOMIAL DEVIATION DISTRIBUTED OVER MATRIX.");
       }
@@ -2056,59 +4084,17 @@
         const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
         const offline = new OfflineCtx(2, Math.ceil(sampleRate * duration), sampleRate);
 
-        // ---- Offline bus: mirrors `setupMasterBus()` ----
-        const offBus = offline.createGain();
-
-        const offCrush = offline.createWaveShaper();
-        offCrush.curve = this.updateCrushCurve(this.fx.crush);
-        offCrush.oversample = 'none';
-
-        const offFilter = offline.createBiquadFilter();
-        offFilter.type = 'lowpass';
-        offFilter.frequency.value = this.fx.cutoff;
-        offFilter.Q.value = 1.8;
-
-        const offDrive = offline.createWaveShaper();
-        offDrive.curve = this.updateDriveCurve(this.fx.drive);
-        offDrive.oversample = '4x';
-
-        const offDelay = offline.createDelay();
-        offDelay.delayTime.value = this.fx.delayTime;
-        const offDelayFb = offline.createGain();
-        offDelayFb.gain.value = this.fx.delayFeedback;
-        const offDelayWet = offline.createGain();
-        offDelayWet.gain.value = 0.28;
-
-        offDelay.connect(offDelayFb);
-        offDelayFb.connect(offDelay);
-        offDelay.connect(offDelayWet);
-
-        const offLimiter = offline.createDynamicsCompressor();
-        offLimiter.threshold.value = -3.5;
-        offLimiter.knee.value = 6;
-        offLimiter.ratio.value = 12;
-        offLimiter.attack.value = 0.003;
-        offLimiter.release.value = 0.08;
-
-        // Live playback trims 0.88 after the limiter. Without the same trim the
-        // bounce came out roughly 1.1 dB hotter than the monitored signal.
-        const offMaster = offline.createGain();
-        offMaster.gain.value = 0.88;
-
-        offBus.connect(offCrush);
-        offCrush.connect(offFilter);
-        offFilter.connect(offDrive);
-        offFilter.connect(offDelay);
-        offDelayWet.connect(offDrive);
-        offDrive.connect(offLimiter);
-        offLimiter.connect(offMaster);
-        offMaster.connect(offline.destination);
+        // ---- Offline graph: the SAME construction as `setupMasterBus()` ----
+        // buildAudioGraph() is shared verbatim, so the bounce is the
+        // performance — per-track chains included.
+        const graph = this.buildAudioGraph(offline);
+        graph.masterGain.connect(offline.destination);
+        const offChains = graph.trackChains;
 
         // ---- Schedule every step ----
         const stepRate = 0.25;
         const secondsPerBeat = 60.0 / this.bpm;
         const totalSteps = totalBeats * 4;
-        const anySolo = this.tracks.some(t => t.solo);
 
         let currentTime = 0.05;
 
@@ -2119,32 +4105,27 @@
           }
           const stepTimestamp = currentTime + swingOffset;
 
+          // Same planner as `scheduleStep` — the bounce is the performance.
+          const plans = computeStepPlans(this.tracks, this.fx, s, rand, this.histories);
+
           this.tracks.forEach((track, tIdx) => {
-            if (track.mute) return;
-            if (anySolo && !track.solo) return;
+            const plan = plans[tIdx];
+            if (!plan.fire) return;
 
             const stepData = track.steps[s % track.currentLength];
-            if (!stepData.active) return;
 
-            // Probability gate — same arithmetic as `scheduleStep`.
-            if (rand() * 100 > stepData.prob * this.fx.globalProb) return;
+            // Same helper as `scheduleStep`.
+            const offsets = ratchetOffsets(plan.ratchet, stepData.ratchetCurve, secondsPerBeat * stepRate, rand);
 
-            // Drill injection — same arithmetic as `scheduleStep`.
-            let ratchets = stepData.ratchet;
-            if (this.fx.globalRatchet > 0 && ratchets === 1 && rand() < this.fx.globalRatchet * 0.4) {
-              ratchets = rand() > 0.5 ? 2 : 4;
-            }
-
-            const subDur = (secondsPerBeat * stepRate) / ratchets;
-
-            for (let r = 0; r < ratchets; r++) {
+            offsets.forEach((offset, r) => {
               const jitter = (rand() - 0.5) * (this.fx.humanize / 1000);
-              const rTime = Math.max(stepTimestamp, stepTimestamp + (r * subDur) + jitter);
+              const rTime = Math.max(stepTimestamp, stepTimestamp + offset + jitter);
               const ratchetVel = Math.max(20, stepData.vel * (1 - (r * 0.12)));
-              this.playTrackSound(tIdx, rTime, { ...stepData, vel: ratchetVel }, offline, offBus);
-            }
+              this.playTrackSound(tIdx, rTime, { ...stepData, vel: ratchetVel }, offline, offChains[tIdx].input, rand);
+            });
           });
 
+          this.updateHistories(s, plans);
           currentTime += secondsPerBeat * stepRate;
         }
 
@@ -2595,6 +4576,24 @@
           [{i:0, r:3, p:15, pr:78},{i:5, r:4, p:-12, pr:70},{i:8, r:2, p:8}],
           [{i:0, p:-12},{i:5, r:2, p:-5},{i:10, p:7}]
         ]
+      },
+
+      granlab: {
+        bpm: 152,
+        lengths: [16, 16, 12, 16, 16, 16, 16, 16],
+        crush: 0.12,
+        drive: 0.3,
+        swing: 0.14,
+        data: [
+          [{i:0, v:110},{i:4, r:2, v:90, pr:85},{i:8, v:104},{i:12, r:3, v:80, pr:75}],
+          [{i:2, v:96},{i:6, r:2, v:88, pr:80},{i:10, v:92},{i:14, r:2, v:70, pr:65}],
+          [{i:1, v:70, pr:90},{i:5, v:64, pr:85},{i:9, v:70, pr:90},{i:11, v:58, pr:75}],
+          [{i:3, r:2, p:5, pr:88},{i:7, v:84},{i:11, r:2, p:-4, pr:80}],
+          [{i:6, r:4, p:9, pr:70},{i:14, r:2, p:-7, pr:60}],
+          [{i:0, p:-12, v:100},{i:8, p:-12, v:88, pr:90}],
+          [{i:0, v:88, pr:95},{i:3, r:2, v:70, pr:80},{i:6, v:82, pr:90},{i:9, r:2, v:64, pr:70},{i:12, v:78, pr:85},{i:15, v:58, pr:60}],
+          [{i:4, p:7, v:96},{i:12, p:-5, v:84, pr:85}]
+        ]
       }
     };
 
@@ -2619,15 +4618,28 @@
       document.getElementById('masterSwing').value = Math.round(p.swing * 100);
       document.getElementById('masterSwingVal').innerText = `${Math.round(p.swing * 100)}%`;
 
-      // Wipe current
+      // Conditional memory restarts with the new pattern.
+      bureau.resetHistories();
+
+      // Wipe current. A case file is a complete sound: lane engines and
+      // per-track chain settings reset with it.
       bureau.tracks.forEach((track, idx) => {
         track.currentLength = p.lengths[idx] || 16;
+        track.engine = 'default';
+        track.engineParam = 0.5;
+        Object.assign(track.fx, makeTrackFx());
         track.steps.forEach(s => {
           s.active = false;
           s.ratchet = 1;
           s.vel = 100;
           s.prob = 100;
           s.pitchOffset = 0;
+          s.ratchetCurve = 'even';
+          s.condition = 'none';
+          for (const def of LOCK_DEFS) {
+            s.locks[def.key].on = false;
+            s.locks[def.key].value = def.def;
+          }
         });
 
         // Fill pattern data
@@ -2643,6 +4655,10 @@
         });
       });
 
+      // Loading a case file is a major mutation: it is undoable. The push
+      // happens AFTER the load so the stack top is the loaded state.
+      bureau.syncAudioParams();
+      bureau.pushHistory();
       renderAllTracks();
       updateTicker(`PATTERN LOADED: [${presetKey.toUpperCase()}] RE-INDEXED BY AUDIT UNIT`);
     }
@@ -2660,8 +4676,16 @@
       const pitch = step.pitchOffset === 0
         ? 'no pitch lock'
         : `${step.pitchOffset > 0 ? 'plus' : 'minus'} ${Math.abs(step.pitchOffset)} semitones`;
+      const lockCount = LOCK_DEFS.reduce((n, def) => n + (step.locks[def.key].on ? 1 : 0), 0);
+      const locks = lockCount === 0
+        ? 'no parameter locks'
+        : `${lockCount} parameter lock${lockCount === 1 ? '' : 's'}`;
+      const ratchet = step.ratchet > 1 && step.ratchetCurve !== 'even'
+        ? `ratchet ${step.ratchet} times, ${step.ratchetCurve} spacing`
+        : `ratchet ${step.ratchet} times`;
+      const condition = step.condition === 'none' ? '' : `, condition ${step.condition}`;
       return `${track.name}, step ${sIdx + 1}, ${step.active ? 'on' : 'off'}, ` +
-             `ratchet ${step.ratchet} times, ${pitch}, probability ${step.prob} percent.`;
+             `${ratchet}, ${pitch}, ${locks}${condition}, probability ${step.prob} percent.`;
     }
 
     /**
@@ -2715,8 +4739,9 @@
 
         for (let sIdx = 0; sIdx < track.currentLength; sIdx++) {
           const step = track.steps[sIdx];
+          const lockCount = LOCK_DEFS.reduce((n, def) => n + (step.locks[def.key].on ? 1 : 0), 0);
           const cell = document.createElement('div');
-          cell.className = `step-cell ${step.active ? 'active-trigger' : ''} ${step.ratchet > 1 ? 'ratchet-' + step.ratchet : ''}`;
+          cell.className = `step-cell ${step.active ? 'active-trigger' : ''} ${step.ratchet > 1 ? 'ratchet-' + step.ratchet : ''} ${lockCount ? 'has-locks' : ''}`;
           cell.dataset.track = tIdx;
           cell.dataset.step = sIdx;
 
@@ -2745,12 +4770,13 @@
           const toggle = (withRatchet) => {
             bureau.initAudio();
             if (withRatchet) {
-              // Cycle ratchets: 1 -> 2 -> 3 -> 4 -> 1
-              step.ratchet = (step.ratchet % 4) + 1;
+              // Cycle ratchets: 1 -> 2 -> … -> 16 -> 1
+              step.ratchet = step.ratchet >= 16 ? 1 : step.ratchet + 1;
               step.active = true;
             } else {
               step.active = !step.active;
             }
+            bureau.pushHistory();
             selectStep(tIdx, sIdx);
             renderAllTracks();
           };
@@ -2819,11 +4845,13 @@
         // Bind Mute & Solo
         document.getElementById(`mute-${tIdx}`).addEventListener('click', () => {
           track.mute = !track.mute;
+          bureau.pushHistory();
           updateTicker(`TRACK [${track.name}] ${track.mute ? 'MUTED BY COMMITTEE ORDER' : 'RETURNED TO SERVICE'}.`);
           renderAllTracks();
         });
         document.getElementById(`solo-${tIdx}`).addEventListener('click', () => {
           track.solo = !track.solo;
+          bureau.pushHistory();
           updateTicker(`TRACK [${track.name}] ${track.solo ? 'ISOLATED FOR AUDIT' : 'REJOINED THE ENSEMBLE'}.`);
           renderAllTracks();
         });
@@ -2835,6 +4863,7 @@
           const tIdx = parseInt(e.target.dataset.track);
           const newLen = Math.max(1, Math.min(32, parseInt(e.target.value) || 16));
           bureau.tracks[tIdx].currentLength = newLen;
+          bureau.pushHistory();
           renderAllTracks();
           updateTicker(`TRACK [${bureau.tracks[tIdx].name}] SET TO ${newLen}/16 POLYRHYTHM.`);
         });
@@ -2861,21 +4890,33 @@
     }
 
     // Bjorklund Euclidean Rhythm generator
+    /**
+     * Pure Euclidean rhythm: `hits` pulses spread as evenly as possible
+     * across `steps` (the bucket method). Shared by the EUCLID button and
+     * the lab's EUCLIDIFY transform.
+     */
+    function euclideanPattern(steps, hits) {
+      const n = Math.max(1, Math.floor(steps));
+      const k = Math.max(0, Math.min(n, Math.floor(hits)));
+      const pattern = new Array(n).fill(false);
+      let bucket = 0;
+      for (let i = 0; i < n; i++) {
+        bucket += k;
+        if (bucket >= n) {
+          bucket -= n;
+          pattern[i] = true;
+        }
+      }
+      return pattern;
+    }
+
     function generateEuclidean(tIdx) {
       const track = bureau.tracks[tIdx];
       const totalSteps = track.currentLength;
       const pulses = Math.max(1, Math.floor(totalSteps * (Math.random() * 0.5 + 0.25)));
 
       // Pattern generation
-      let pattern = new Array(totalSteps).fill(false);
-      let bucket = 0;
-      for (let i = 0; i < totalSteps; i++) {
-        bucket += pulses;
-        if (bucket >= totalSteps) {
-          bucket -= totalSteps;
-          pattern[i] = true;
-        }
-      }
+      const pattern = euclideanPattern(totalSteps, pulses);
 
       pattern.forEach((act, idx) => {
         track.steps[idx].active = act;
@@ -2884,6 +4925,7 @@
         }
       });
 
+      bureau.pushHistory();
       renderAllTracks();
       updateTicker(`EUCLIDEAN ALGORITHM: ${pulses} HITS ACROSS ${totalSteps} STEPS APPLIED.`);
     }
@@ -2895,49 +4937,49 @@
     const GENERATOR_PROFILES = {
       braindance: {
         label: 'BRAINDANCE', bpm: [138, 178],
-        lengths: [[16, 16, 16, 13, 11, 16], [16, 14, 16, 12, 14, 9], [15, 13, 16, 11, 13, 16]],
-        density: [0.22, 0.17, 0.5, 0.26, 0.22, 0.24], ratchet: [0.12, 0.2, 0.14, 0.2, 0.42, 0.08],
-        pitch: [0.12, 0.18, 0.16, 0.62, 0.72, 0.34], probabilityLock: 0.32,
+        lengths: [[16, 16, 16, 13, 11, 16, 13, 16], [16, 14, 16, 12, 14, 9, 11, 14], [15, 13, 16, 11, 13, 16, 13, 16]],
+        density: [0.22, 0.17, 0.5, 0.26, 0.22, 0.24, 0.2, 0.16], ratchet: [0.12, 0.2, 0.14, 0.2, 0.42, 0.08, 0.3, 0.06],
+        pitch: [0.12, 0.18, 0.16, 0.62, 0.72, 0.34, 0.6, 0.4], probabilityLock: 0.32,
         swing: [0.04, 0.24], humanize: [2, 12], globalProb: [0.78, 1], globalRatchet: [0.08, 0.38],
         crush: [0.08, 0.3], drive: [0.12, 0.4], accent: 0.8, velocity: [62, 122]
       },
       breakcore: {
         label: 'BREAKCORE', bpm: [176, 236],
-        lengths: [[16, 16, 16, 12, 16, 16], [14, 14, 16, 7, 13, 14], [16, 13, 16, 11, 9, 16]],
-        density: [0.4, 0.36, 0.7, 0.39, 0.48, 0.27], ratchet: [0.34, 0.42, 0.3, 0.38, 0.72, 0.12],
-        pitch: [0.18, 0.28, 0.18, 0.58, 0.72, 0.32], probabilityLock: 0.43,
+        lengths: [[16, 16, 16, 12, 16, 16, 13, 16], [14, 14, 16, 7, 13, 14, 11, 14], [16, 13, 16, 11, 9, 16, 13, 16]],
+        density: [0.4, 0.36, 0.7, 0.39, 0.48, 0.27, 0.3, 0.2], ratchet: [0.34, 0.42, 0.3, 0.38, 0.72, 0.12, 0.5, 0.08],
+        pitch: [0.18, 0.28, 0.18, 0.58, 0.72, 0.32, 0.66, 0.44], probabilityLock: 0.43,
         swing: [0, 0.12], humanize: [0, 8], globalProb: [0.72, 0.98], globalRatchet: [0.28, 0.72],
         crush: [0.22, 0.58], drive: [0.32, 0.68], accent: 0.56, velocity: [68, 127]
       },
       glitch: {
         label: 'GLITCH COLLAGE', bpm: [104, 190],
-        lengths: [[13, 11, 16, 7, 9, 13], [16, 13, 16, 12, 7, 16], [15, 13, 16, 11, 14, 9]],
-        density: [0.14, 0.15, 0.42, 0.34, 0.43, 0.19], ratchet: [0.12, 0.18, 0.32, 0.32, 0.68, 0.1],
-        pitch: [0.28, 0.34, 0.35, 0.78, 0.9, 0.55], probabilityLock: 0.68,
+        lengths: [[13, 11, 16, 7, 9, 13, 11, 13], [16, 13, 16, 12, 7, 16, 13, 16], [15, 13, 16, 11, 14, 9, 11, 14]],
+        density: [0.14, 0.15, 0.42, 0.34, 0.43, 0.19, 0.24, 0.18], ratchet: [0.12, 0.18, 0.32, 0.32, 0.68, 0.1, 0.55, 0.1],
+        pitch: [0.28, 0.34, 0.35, 0.78, 0.9, 0.55, 0.8, 0.6], probabilityLock: 0.68,
         swing: [0, 0.2], humanize: [5, 22], globalProb: [0.58, 0.9], globalRatchet: [0.14, 0.58],
         crush: [0.25, 0.72], drive: [0.16, 0.56], accent: 0.24, velocity: [40, 112]
       },
       polyrhythm: {
         label: 'POLYRHYTHM', bpm: [124, 184],
-        lengths: [[13, 11, 16, 7, 9, 13], [15, 13, 16, 11, 14, 9], [16, 14, 16, 13, 7, 12]],
-        density: [0.23, 0.18, 0.46, 0.3, 0.28, 0.27], ratchet: [0.1, 0.18, 0.19, 0.26, 0.48, 0.09],
-        pitch: [0.12, 0.22, 0.2, 0.72, 0.78, 0.42], probabilityLock: 0.38,
+        lengths: [[13, 11, 16, 7, 9, 13, 11, 13], [15, 13, 16, 11, 14, 9, 11, 14], [16, 14, 16, 13, 7, 12, 13, 16]],
+        density: [0.23, 0.18, 0.46, 0.3, 0.28, 0.27, 0.2, 0.18], ratchet: [0.1, 0.18, 0.19, 0.26, 0.48, 0.09, 0.35, 0.08],
+        pitch: [0.12, 0.22, 0.2, 0.72, 0.78, 0.42, 0.7, 0.5], probabilityLock: 0.38,
         swing: [0.02, 0.22], humanize: [2, 14], globalProb: [0.75, 1], globalRatchet: [0.08, 0.42],
         crush: [0.06, 0.38], drive: [0.12, 0.4], accent: 0.72, velocity: [56, 120]
       },
       ambient: {
         label: 'SPARSE / AMBIENT', bpm: [78, 142],
-        lengths: [[16, 16, 16, 13, 11, 16], [13, 11, 16, 7, 9, 13], [16, 13, 16, 12, 14, 16]],
-        density: [0.1, 0.1, 0.3, 0.16, 0.18, 0.2], ratchet: [0.04, 0.08, 0.1, 0.14, 0.28, 0.04],
-        pitch: [0.18, 0.2, 0.2, 0.7, 0.76, 0.52], probabilityLock: 0.58,
+        lengths: [[16, 16, 16, 13, 11, 16, 13, 16], [13, 11, 16, 7, 9, 13, 11, 14], [16, 13, 16, 12, 14, 16, 13, 16]],
+        density: [0.1, 0.1, 0.3, 0.16, 0.18, 0.2, 0.12, 0.1], ratchet: [0.04, 0.08, 0.1, 0.14, 0.28, 0.04, 0.15, 0.05],
+        pitch: [0.18, 0.2, 0.2, 0.7, 0.76, 0.52, 0.6, 0.45], probabilityLock: 0.58,
         swing: [0.02, 0.18], humanize: [3, 18], globalProb: [0.7, 0.98], globalRatchet: [0.02, 0.2],
         crush: [0.02, 0.18], drive: [0.04, 0.22], accent: 0.9, velocity: [38, 94]
       },
       drill: {
         label: 'DRILL FRACTURE', bpm: [178, 220],
-        lengths: [[14, 14, 14, 7, 14, 14], [16, 14, 16, 7, 13, 14], [14, 16, 16, 11, 13, 14]],
-        density: [0.3, 0.28, 0.56, 0.25, 0.37, 0.23], ratchet: [0.26, 0.34, 0.22, 0.3, 0.62, 0.1],
-        pitch: [0.12, 0.24, 0.18, 0.6, 0.76, 0.4], probabilityLock: 0.46,
+        lengths: [[14, 14, 14, 7, 14, 14, 11, 14], [16, 14, 16, 7, 13, 14, 13, 16], [14, 16, 16, 11, 13, 14, 11, 14]],
+        density: [0.3, 0.28, 0.56, 0.25, 0.37, 0.23, 0.3, 0.2], ratchet: [0.26, 0.34, 0.22, 0.3, 0.62, 0.1, 0.45, 0.08],
+        pitch: [0.12, 0.24, 0.18, 0.6, 0.76, 0.4, 0.65, 0.45], probabilityLock: 0.46,
         swing: [0, 0.08], humanize: [0, 8], globalProb: [0.72, 0.96], globalRatchet: [0.24, 0.62],
         crush: [0.18, 0.48], drive: [0.24, 0.58], accent: 0.52, velocity: [62, 127]
       }
@@ -2986,6 +5028,12 @@
           step.vel = 100;
           step.prob = 100;
           step.pitchOffset = 0;
+          step.ratchetCurve = 'even';
+          step.condition = 'none';
+          for (const def of LOCK_DEFS) {
+            step.locks[def.key].on = false;
+            step.locks[def.key].value = def.def;
+          }
         });
 
         for (let stepIndex = 0; stepIndex < track.currentLength; stepIndex++) {
@@ -3016,11 +5064,13 @@
           }
         }
 
-        // Even a sparse profile should produce a playable six-voice idea rather
-        // than leaving an entire lane accidentally empty on a short cycle.
+        // Even a sparse profile should produce a playable idea rather than
+        // leaving an entire lane accidentally empty on a short cycle.
         if (!track.steps.slice(0, track.currentLength).some(step => step.active)) {
-          const anchors = [[0, 8, 4], [4, 12, 2], [0, 4, 8], [1, 3, 5], [2, 5, 1], [0, 8, 4]][tIdx]
-            .filter(index => index < track.currentLength);
+          const anchors = [
+            [0, 8, 4], [4, 12, 2], [0, 4, 8], [1, 3, 5],
+            [2, 5, 1], [0, 8, 4], [0, 3, 6], [0, 7, 12]
+          ][tIdx].filter(index => index < track.currentLength);
           const fallbackIndex = anchors.length
             ? anchors[Math.floor(Math.random() * anchors.length)]
             : Math.floor(Math.random() * track.currentLength);
@@ -3036,8 +5086,11 @@
         }
       });
 
+      // The generation is a major mutation: it is undoable. Pushed AFTER the
+      // pattern is written so the stack top is the generated state.
+      bureau.pushHistory();
       renderAllTracks();
-      updateTicker(`GENERATED ${profile.label} PATTERN: ${bureau.bpm} BPM // SIX LANES RECOMPOSED.`);
+      updateTicker(`GENERATED ${profile.label} PATTERN: ${bureau.bpm} BPM // ALL LANES RECOMPOSED.`);
     }
 
     function selectStep(tIdx, sIdx) {
@@ -3050,10 +5103,364 @@
       document.getElementById('stepVelVal').innerText = step.vel;
       document.getElementById('stepRatch').value = step.ratchet;
       document.getElementById('stepRatchVal').innerText = `${step.ratchet}x`;
+      document.getElementById('stepRatchCurve').value = step.ratchetCurve;
+      renderStepCondition();
+
+      // The TRACK CHAIN panel follows the inspected lane.
+      bureau.focusTrack = tIdx;
+      renderTrackFxPanel();
       document.getElementById('stepProb').value = step.prob;
       document.getElementById('stepProbVal').innerText = `${step.prob}%`;
       document.getElementById('stepPitch').value = step.pitchOffset;
       document.getElementById('stepPitchVal').innerText = `${step.pitchOffset > 0 ? '+' : ''}${step.pitchOffset} st`;
+
+      renderStepLocks();
+    }
+
+    /**
+     * Render the per-step parameter lock controls for the selected step.
+     * Each lock is a toggle plus a slider; edits write only the selected
+     * step and push one history entry per completed gesture.
+     */
+    function renderStepLocks() {
+      const panel = document.getElementById('stepLocks');
+      if (!panel) return;
+      panel.innerHTML = '';
+      if (!bureau.selectedStep) {
+        panel.innerHTML = '<div class="empty-state">SELECT A STEP CELL TO EDIT ITS LOCKS.</div>';
+        return;
+      }
+      const readStep = () => {
+        const sel = bureau.selectedStep;
+        return sel ? bureau.tracks[sel.tIdx].steps[sel.sIdx] : null;
+      };
+      for (const def of LOCK_DEFS) {
+        const step = readStep();
+        const lock = step.locks[def.key];
+        const row = document.createElement('div');
+        row.className = 'lock-row';
+        row.innerHTML = `
+          <button class="track-mini-btn lock-toggle ${lock.on ? 'active' : ''}" data-lock="${def.key}"
+                  aria-pressed="${lock.on ? 'true' : 'false'}"
+                  aria-label="Toggle the ${def.label} parameter lock">${def.label}</button>
+          <input type="range" class="lock-slider" data-lock="${def.key}"
+                 min="${def.min}" max="${def.max}" step="${def.step}" value="${lock.value}"
+                 ${lock.on ? '' : 'disabled'} aria-label="${def.label} lock value">
+          <span class="dial-val lock-val" data-lock="${def.key}">${def.fmt(lock.value)}</span>
+        `;
+        panel.appendChild(row);
+      }
+      panel.querySelectorAll('.lock-toggle').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const step = readStep();
+          if (!step) return;
+          const key = btn.dataset.lock;
+          step.locks[key].on = !step.locks[key].on;
+          bureau.pushHistory();
+          renderStepLocks();
+          renderAllTracks();
+        });
+      });
+      panel.querySelectorAll('.lock-slider').forEach((slider) => {
+        slider.addEventListener('input', (e) => {
+          const step = readStep();
+          if (!step) return;
+          const key = e.target.dataset.lock;
+          const value = parseFloat(e.target.value);
+          step.locks[key].value = value;
+          const def = LOCK_DEFS.find((d) => d.key === key);
+          const label = panel.querySelector(`.lock-val[data-lock="${key}"]`);
+          if (label && def) label.innerText = def.fmt(value);
+        });
+        slider.addEventListener('change', () => {
+          bureau.pushHistory();
+          renderAllTracks();
+        });
+      });
+    }
+
+    /**
+     * Render the firing-condition select for the selected step. Inter-track
+     * conditions list every OTHER lane; the selected lane never waits on
+     * itself.
+     */
+    function renderStepCondition() {
+      const select = document.getElementById('stepCondition');
+      if (!select) return;
+      const sel = bureau.selectedStep;
+      const current = sel ? bureau.tracks[sel.tIdx].steps[sel.sIdx].condition : 'none';
+      const selfIdx = sel ? sel.tIdx : -1;
+      const options = CONDITION_DEFS.map((c) => ({ value: c.id, label: c.label }));
+      bureau.tracks.forEach((track, tIdx) => {
+        if (tIdx === selfIdx) return;
+        options.push({ value: `track:${tIdx}`, label: `TRACK: ${track.name}` });
+      });
+      select.innerHTML = options.map((o) => `<option value="${o.value}">${o.label}</option>`).join('');
+      select.value = current;
+    }
+
+    /** Write the focused lane's chain parameters into the TRACK CHAIN panel. */
+    function renderTrackFxPanel() {
+      const tIdx = bureau.focusTrack || 0;
+      const track = bureau.tracks[tIdx];
+      if (!track) return;
+      document.getElementById('trackFxLaneName').innerText = track.name;
+
+      const set = (id, value, text) => {
+        const el = document.getElementById(id);
+        if (el) el.value = value;
+        const label = document.getElementById(`${id}Val`);
+        if (label) label.innerText = text;
+      };
+      const cutoff = track.fx.cutoff;
+      set('tfCutoff', cutoff, cutoff >= 1000 ? `${(cutoff / 1000).toFixed(1)}k` : `${Math.round(cutoff)}`);
+      set('tfRes', track.fx.res, track.fx.res.toFixed(1));
+      set('tfDrive', Math.round(track.fx.drive * 100), `${Math.round(track.fx.drive * 100)}%`);
+      set('tfDelaySend', Math.round(track.fx.delaySend * 100), `${Math.round(track.fx.delaySend * 100)}%`);
+      const pan = Math.round(track.fx.pan * 100);
+      set('tfPan', pan, pan === 0 ? 'C' : (pan > 0 ? `R${pan}` : `L${-pan}`));
+
+      const engine = track.engine || 'default';
+      const engineSelect = document.getElementById('tfEngine');
+      if (engineSelect) engineSelect.value = engine;
+      const paramLabel = document.getElementById('tfEngineParamLabel');
+      if (paramLabel) paramLabel.innerText = engine === 'wavetable' ? 'MORPH'
+        : engine === 'ringmod' ? 'CARRIER'
+        : engine === 'fshift' ? 'RATE' : 'ENGINE PARAM';
+      set('tfEngineParam', Math.round((track.engineParam ?? 0.5) * 100), formatEngineParam(engine, track.engineParam ?? 0.5));
+    }
+
+    /** Human-readable engineParam value for the panel label. */
+    function formatEngineParam(engine, value) {
+      const v = clampNum(value, 0, 1);
+      if (engine === 'wavetable') return `${Math.round(v * 100)}%`;
+      if (engine === 'ringmod') return `${Math.round(40 * Math.pow(25, v))} Hz`;
+      if (engine === 'fshift') return `${(0.5 + v * 29.5).toFixed(1)} Hz`;
+      return `${Math.round(v * 100)}%`;
+    }
+
+    /** Wire the TRACK CHAIN panel sliders to the focused lane + live chain. */
+    function bindTrackFxPanel() {
+      const tIdx = () => bureau.focusTrack || 0;
+      const apply = () => {
+        const track = bureau.tracks[tIdx()];
+        const chain = bureau.trackChains && bureau.trackChains[tIdx()];
+        if (track && chain) bureau.applyTrackFx(track, chain);
+      };
+      const bind = (id, read, write, format) => {
+        const el = document.getElementById(id);
+        el.addEventListener('input', (e) => {
+          const track = bureau.tracks[tIdx()];
+          if (!track) return;
+          write(track, read(e.target.value));
+          const label = document.getElementById(`${id}Val`);
+          if (label) label.innerText = format(track);
+          apply();
+        });
+        el.addEventListener('change', () => bureau.pushHistory());
+      };
+      const fmtCutoff = (t) => {
+        const c = t.fx.cutoff;
+        return c >= 1000 ? `${(c / 1000).toFixed(1)}k` : `${Math.round(c)}`;
+      };
+      const fmtPan = (t) => {
+        const p = Math.round(t.fx.pan * 100);
+        return p === 0 ? 'C' : (p > 0 ? `R${p}` : `L${-p}`);
+      };
+      bind('tfCutoff', (v) => parseInt(v, 10), (t, v) => { t.fx.cutoff = v; }, fmtCutoff);
+      bind('tfRes', (v) => parseFloat(v), (t, v) => { t.fx.res = v; }, (t) => t.fx.res.toFixed(1));
+      bind('tfDrive', (v) => parseInt(v, 10) / 100, (t, v) => { t.fx.drive = v; },
+        (t) => `${Math.round(t.fx.drive * 100)}%`);
+      bind('tfDelaySend', (v) => parseInt(v, 10) / 100, (t, v) => { t.fx.delaySend = v; },
+        (t) => `${Math.round(t.fx.delaySend * 100)}%`);
+      bind('tfPan', (v) => parseInt(v, 10) / 100, (t, v) => { t.fx.pan = v; }, fmtPan);
+
+      const engineSelect = document.getElementById('tfEngine');
+      engineSelect.addEventListener('change', (e) => {
+        const track = bureau.tracks[tIdx()];
+        if (!track) return;
+        track.engine = e.target.value;
+        const paramLabel = document.getElementById('tfEngineParamLabel');
+        if (paramLabel) paramLabel.innerText = track.engine === 'wavetable' ? 'MORPH'
+          : track.engine === 'ringmod' ? 'CARRIER'
+          : track.engine === 'fshift' ? 'RATE' : 'ENGINE PARAM';
+        const label = document.getElementById('tfEngineParamVal');
+        if (label) label.innerText = formatEngineParam(track.engine, track.engineParam ?? 0.5);
+        bureau.pushHistory();
+        renderAllTracks();
+      });
+
+      const engineParam = document.getElementById('tfEngineParam');
+      engineParam.addEventListener('input', (e) => {
+        const track = bureau.tracks[tIdx()];
+        if (!track) return;
+        track.engineParam = parseInt(e.target.value, 10) / 100;
+        const label = document.getElementById('tfEngineParamVal');
+        if (label) label.innerText = formatEngineParam(track.engine || 'default', track.engineParam);
+      });
+      engineParam.addEventListener('change', () => bureau.pushHistory());
+    }
+
+    /**
+     * Render the five modulation source rows from engine state. Rows are
+     * queried by class + data-index, never by dynamic id.
+     */
+    function renderModMatrix() {
+      const list = document.getElementById('modSourceList');
+      if (!list) return;
+      list.innerHTML = '';
+      bureau.mod.sources.forEach((src, index) => {
+        const row = document.createElement('div');
+        row.className = 'mod-row';
+        row.dataset.index = index;
+        const destOptions = MOD_DESTS.map((d) =>
+          `<option value="${d.id}" ${d.id === src.dest ? 'selected' : ''}>${d.label}</option>`).join('');
+        const typeOptions = MOD_TYPES.map((t) =>
+          `<option value="${t.id}" ${t.id === src.type ? 'selected' : ''}>${t.label}</option>`).join('');
+        const shapeOptions = MOD_SHAPES.map((s) =>
+          `<option value="${s.id}" ${s.id === src.shape ? 'selected' : ''}>${s.label}</option>`).join('');
+        row.innerHTML = `
+          <div class="btn-row" style="margin-top:0;">
+            <button class="track-mini-btn mod-toggle ${src.on ? 'active' : ''}" data-index="${index}"
+                    aria-pressed="${src.on ? 'true' : 'false'}"
+                    aria-label="Toggle modulation source ${index + 1}">${src.on ? 'ON' : 'OFF'}</button>
+            <select class="mini-select mod-type" data-index="${index}" aria-label="Source ${index + 1} type">${typeOptions}</select>
+            <select class="mini-select mod-dest" data-index="${index}" aria-label="Source ${index + 1} destination">${destOptions}</select>
+            <button class="track-mini-btn mod-polarity" data-index="${index}"
+                    aria-label="Toggle source ${index + 1} polarity">${src.polarity === 'unipolar' ? 'UNI' : 'BIPOLAR'}</button>
+          </div>
+          <div class="btn-row">
+            <span class="mod-tag">RATE</span>
+            <input type="range" class="mod-rate" data-index="${index}" min="5" max="120" value="${Math.round(src.rate * 10)}"
+                   aria-label="Source ${index + 1} rate">
+            <span class="dial-val mod-rate-val">${src.rate.toFixed(1)} Hz</span>
+            <span class="mod-tag">DEPTH</span>
+            <input type="range" class="mod-depth" data-index="${index}" min="0" max="100" value="${Math.round(src.depth * 100)}"
+                   aria-label="Source ${index + 1} depth">
+            <span class="dial-val mod-depth-val">${Math.round(src.depth * 100)}%</span>
+            <select class="mini-select mod-shape" data-index="${index}" aria-label="Source ${index + 1} LFO shape">${shapeOptions}</select>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+      bindModMatrixRows();
+    }
+
+    /** Wire the modulation matrix rows to engine state + the live graph. */
+    function bindModMatrixRows() {
+      const list = document.getElementById('modSourceList');
+      if (!list) return;
+
+      const structural = () => {
+        if (bureau.graph) bureau.rebuildModulation(bureau.graph);
+      };
+
+      list.querySelectorAll('.mod-toggle').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const src = bureau.mod.sources[parseInt(btn.dataset.index, 10)];
+          src.on = !src.on;
+          structural();
+          bureau.pushHistory();
+          renderModMatrix();
+          updateTicker(`MODULATION SOURCE ${parseInt(btn.dataset.index, 10) + 1} ${src.on ? 'ENGAGED' : 'DISENGAGED'}.`);
+        });
+      });
+
+      list.querySelectorAll('.mod-type, .mod-dest').forEach((select) => {
+        select.addEventListener('change', (e) => {
+          const src = bureau.mod.sources[parseInt(e.target.dataset.index, 10)];
+          if (e.target.classList.contains('mod-type')) src.type = e.target.value;
+          else src.dest = e.target.value;
+          structural();
+          bureau.pushHistory();
+          renderModMatrix();
+        });
+      });
+
+      list.querySelectorAll('.mod-polarity').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const index = parseInt(btn.dataset.index, 10);
+          const src = bureau.mod.sources[index];
+          src.polarity = src.polarity === 'unipolar' ? 'bipolar' : 'unipolar';
+          structural();
+          bureau.pushHistory();
+          renderModMatrix();
+        });
+      });
+
+      // Rate, depth and shape update the live bundles without a rebuild.
+      list.querySelectorAll('.mod-rate').forEach((slider) => {
+        slider.addEventListener('input', (e) => {
+          const index = parseInt(e.target.dataset.index, 10);
+          const src = bureau.mod.sources[index];
+          src.rate = parseInt(e.target.value, 10) / 10;
+          const label = list.querySelector(`.mod-rate-val[data-index="${index}"]`);
+          const row = list.querySelector(`.mod-row[data-index="${index}"]`);
+          if (row) {
+            const val = row.querySelector('.mod-rate-val');
+            if (val) val.innerText = `${src.rate.toFixed(1)} Hz`;
+          }
+          if (bureau.graph) bureau.updateModBundles(bureau.graph);
+        });
+        slider.addEventListener('change', () => bureau.pushHistory());
+      });
+
+      list.querySelectorAll('.mod-depth').forEach((slider) => {
+        slider.addEventListener('input', (e) => {
+          const index = parseInt(e.target.dataset.index, 10);
+          const src = bureau.mod.sources[index];
+          src.depth = parseInt(e.target.value, 10) / 100;
+          const row = list.querySelector(`.mod-row[data-index="${index}"]`);
+          if (row) {
+            const val = row.querySelector('.mod-depth-val');
+            if (val) val.innerText = `${Math.round(src.depth * 100)}%`;
+          }
+          if (bureau.graph) bureau.updateModBundles(bureau.graph);
+        });
+        slider.addEventListener('change', () => bureau.pushHistory());
+      });
+
+      list.querySelectorAll('.mod-shape').forEach((select) => {
+        select.addEventListener('change', (e) => {
+          const src = bureau.mod.sources[parseInt(e.target.dataset.index, 10)];
+          src.shape = e.target.value;
+          if (bureau.graph) bureau.updateModBundles(bureau.graph);
+          bureau.pushHistory();
+        });
+      });
+    }
+
+    /** Wire the GENERATIVE LAB panel. */
+    function bindGenLab() {
+      const laneId = () => document.getElementById('genLaneSelect').value;
+
+      document.getElementById('genCaBtn').addEventListener('click', () => {
+        const rule = parseInt(document.getElementById('genRuleInput').value, 10);
+        const count = bureau.evolveCA(laneId(), rule);
+        renderAllTracks();
+        updateTicker(`CELLULAR EVOLUTION: RULE ${clampInt(rule, 0, 255)} APPLIED TO ${count} LANE(S).`);
+      });
+
+      document.getElementById('genMarkovBtn').addEventListener('click', () => {
+        const bias = parseInt(document.getElementById('genBias').value, 10) / 100;
+        const count = bureau.markovLane(laneId(), bias);
+        renderAllTracks();
+        updateTicker(`MARKOV REGENERATION: TRANSITION WALK APPLIED TO ${count} LANE(S).`);
+      });
+
+      const biasSlider = document.getElementById('genBias');
+      biasSlider.addEventListener('input', () => {
+        document.getElementById('genBiasVal').innerText = biasSlider.value;
+      });
+
+      document.querySelectorAll('.gen-transform-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.transform;
+          const count = bureau.transformLane(laneId(), id);
+          renderAllTracks();
+          updateTicker(`TRANSFORM ${id.toUpperCase()}: APPLIED TO ${count} LANE(S).`);
+        });
+      });
     }
 
     function updateTicker(msg) {
@@ -3076,6 +5483,20 @@
       document.getElementById('stepRatchVal').innerText = `${e.target.value}x`;
       renderAllTracks();
     });
+    document.getElementById('stepRatchCurve').addEventListener('change', (e) => {
+      if (!bureau.selectedStep) return;
+      const { tIdx, sIdx } = bureau.selectedStep;
+      bureau.tracks[tIdx].steps[sIdx].ratchetCurve = e.target.value;
+      bureau.pushHistory();
+      renderAllTracks();
+    });
+    document.getElementById('stepCondition').addEventListener('change', (e) => {
+      if (!bureau.selectedStep) return;
+      const { tIdx, sIdx } = bureau.selectedStep;
+      bureau.tracks[tIdx].steps[sIdx].condition = e.target.value;
+      bureau.pushHistory();
+      renderAllTracks();
+    });
 
     document.getElementById('stepProb').addEventListener('input', (e) => {
       if (!bureau.selectedStep) return;
@@ -3093,6 +5514,12 @@
       document.getElementById('stepPitchVal').innerText = `${val > 0 ? '+' : ''}${val} st`;
       renderAllTracks();
     });
+
+    // Inspector edits are undoable; 'change' fires on release, so dragging a
+    // slider produces one history entry, not one per tick.
+    for (const id of ['stepVel', 'stepRatch', 'stepProb', 'stepPitch']) {
+      document.getElementById(id).addEventListener('change', () => bureau.pushHistory());
+    }
 
     // --- Global FX UI Bindings ---
     document.getElementById('fxCrush').addEventListener('input', (e) => {
@@ -3159,6 +5586,13 @@
       bureau.fx.swing = val / 100.0;
       document.getElementById('masterSwingVal').innerText = `${val}%`;
     });
+
+    // The bus sliders are part of the session; each completed drag is one
+    // undoable mutation.
+    for (const id of ['fxCrush', 'fxDrive', 'fxHumanize', 'fxCutoff', 'fxDelayTime',
+                      'fxDelayFeedback', 'globalProb', 'globalRatchet', 'masterSwing']) {
+      document.getElementById(id).addEventListener('change', () => bureau.pushHistory());
+    }
 
     // --- Transport & Controls ---
     const playBtn = document.getElementById('playBtn');
@@ -3336,10 +5770,31 @@
       togglePlayback();
     });
 
+    /**
+     * Undo/redo shortcuts. Inside a text field the browser's own undo wins,
+     * so the global handler stands down there (same rule as the space bar).
+     */
+    window.addEventListener('keydown', (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const key = (e.key || '').toLowerCase();
+      const t = e.target;
+      const inField = t && /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName || '');
+      if (key === 'z' && !e.shiftKey) {
+        if (inField) return;
+        e.preventDefault();
+        undoUI();
+      } else if ((key === 'z' && e.shiftKey) || key === 'y') {
+        if (inField) return;
+        e.preventDefault();
+        redoUI();
+      }
+    });
+
     document.getElementById('tempoInput').addEventListener('change', (e) => {
       const bpm = Math.max(40, Math.min(360, parseInt(e.target.value) || 168));
       bureau.bpm = bpm;
       e.target.value = bpm;
+      bureau.pushHistory();
       updateTicker(`METRIC TEMPO FIXED AT ${bpm} QUARTER-CYCLES/MIN.`);
     });
 
@@ -3354,6 +5809,7 @@
           s.ratchet = 1;
         });
       });
+      bureau.pushHistory();
       renderAllTracks();
       updateTicker("MEMORY WIPED: ALL REGISTERS PURGED TO ZERO STATE.");
     });
@@ -3478,8 +5934,325 @@
       updateTicker(quote);
     }, 7000);
 
+    // --- Session Archive UI ------------------------------------------------
+
+    function timestamp() {
+      return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    }
+
+    /** Trigger a browser download for a Blob. */
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.style.display = 'none';
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        if (anchor.parentNode) anchor.parentNode.removeChild(anchor);
+      }, 1500);
+    }
+
+    /**
+     * Write every widget from engine state. Used after applying a session so
+     * the interface reflects the loaded document exactly.
+     */
+    function syncAllControls() {
+      const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.value = value;
+      };
+      const setVal = (id, value, text) => {
+        set(id, value);
+        const label = document.getElementById(`${id}Val`);
+        if (label) label.innerText = text;
+      };
+
+      set('tempoInput', bureau.bpm);
+      setVal('fxCrush', bureau.fx.crush, `${Math.round(bureau.fx.crush * 100)}%`);
+      setVal('fxDrive', bureau.fx.drive, `${Math.round(bureau.fx.drive * 100)}%`);
+      setVal('fxHumanize', bureau.fx.humanize, `${bureau.fx.humanize}ms`);
+      const cutoff = bureau.fx.cutoff;
+      setVal('fxCutoff', cutoff, cutoff >= 1000 ? `${(cutoff / 1000).toFixed(1)}k` : `${Math.round(cutoff)}`);
+      setVal('fxDelayTime', bureau.fx.delayTime, `${Math.round(bureau.fx.delayTime * 1000)}ms`);
+      setVal('fxDelayFeedback', bureau.fx.delayFeedback, `${Math.round(bureau.fx.delayFeedback * 100)}%`);
+      setVal('globalProb', Math.round(bureau.fx.globalProb * 100), `${Math.round(bureau.fx.globalProb * 100)}%`);
+      setVal('globalRatchet', Math.round(bureau.fx.globalRatchet * 100), `${Math.round(bureau.fx.globalRatchet * 100)}%`);
+      setVal('masterSwing', Math.round(bureau.fx.swing * 100), `${Math.round(bureau.fx.swing * 100)}%`);
+
+      // Keep the live audio graph (master bus + per-track chains) in step
+      // with the loaded values.
+      bureau.syncAudioParams();
+
+      // Panels contributed by later sections; guarded so the boot order and
+      // partial states never throw.
+      if (typeof renderModMatrix === 'function') renderModMatrix();
+      if (typeof renderArrangement === 'function') renderArrangement();
+      if (typeof renderTrackFxPanel === 'function') renderTrackFxPanel();
+    }
+
+    /** Apply a session document and re-render the whole interface. */
+    function applySessionUI(doc, opts = {}) {
+      bureau.applySession(doc, opts);
+      syncAllControls();
+      renderAllTracks();
+    }
+
+    function undoUI() {
+      if (bureau.undo()) {
+        syncAllControls();
+        renderAllTracks();
+        updateTicker('TEMPORAL RECALL: ONE MUTATION REVERSED.');
+      } else {
+        updateTicker('UNDO REGISTER EMPTY: NOTHING LEFT TO RECALL.');
+      }
+    }
+
+    function redoUI() {
+      if (bureau.redo()) {
+        syncAllControls();
+        renderAllTracks();
+        updateTicker('TEMPORAL REAPPLY: MUTATION RESTORED.');
+      } else {
+        updateTicker('REDO REGISTER EMPTY: NOTHING LEFT TO REAPPLY.');
+      }
+    }
+
+    function updateUndoButtons() {
+      const undoBtn = document.getElementById('undoBtn');
+      const redoBtn = document.getElementById('redoBtn');
+      if (undoBtn) undoBtn.disabled = bureau.undoStack.length === 0;
+      if (redoBtn) redoBtn.disabled = bureau.redoStack.length === 0;
+    }
+
+    /** Rebuild the four snapshot slot rows from engine state. */
+    function renderSnapshotSlots() {
+      const grid = document.getElementById('snapshotGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      for (const slot of ['A', 'B', 'C', 'D']) {
+        const filled = !!bureau.snapshots[slot];
+        const row = document.createElement('div');
+        row.className = 'btn-row';
+        row.style.marginTop = '0';
+        row.innerHTML = `
+          <span class="snapshot-slot-label">SLOT ${slot}</span>
+          <button class="track-mini-btn snap-store-btn ${filled ? 'active' : ''}" data-slot="${slot}"
+                  aria-label="Store the current pattern in snapshot slot ${slot}">STORE</button>
+          <button class="track-mini-btn snap-recall-btn ${filled ? 'active' : ''}" data-slot="${slot}" ${filled ? '' : 'disabled'}
+                  aria-label="Recall snapshot slot ${slot}">RECALL</button>
+        `;
+        grid.appendChild(row);
+      }
+      grid.querySelectorAll('.snap-store-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const slot = btn.dataset.slot;
+          bureau.storeSnapshot(slot);
+          renderSnapshotSlots();
+          updateTicker(`PATTERN FILED IN SNAPSHOT SLOT ${slot}.`);
+        });
+      });
+      grid.querySelectorAll('.snap-recall-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const slot = btn.dataset.slot;
+          if (bureau.recallSnapshot(slot)) {
+            syncAllControls();
+            renderAllTracks();
+            updateTicker(`SNAPSHOT SLOT ${slot} RECALLED: MATRIX RESTORED.`);
+          } else {
+            updateTicker(`SNAPSHOT SLOT ${slot} IS EMPTY.`);
+          }
+        });
+      });
+    }
+
+    /** Wire every control in the SESSION ARCHIVE panel. */
+    function bindSessionUI() {
+      const fileInput = document.getElementById('sessionFileInput');
+
+      document.getElementById('saveFileBtn').addEventListener('click', () => {
+        const json = JSON.stringify(bureau.serializeSession(), null, 2);
+        downloadBlob(
+          new Blob([json], { type: 'application/json' }),
+          `BUREAU_SESSION_${timestamp()}.f909.json`
+        );
+        updateTicker('SESSION FILE WRITTEN: FULL MATRIX + BUS SETTINGS ARCHIVED.');
+      });
+
+      document.getElementById('loadFileBtn').addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        try {
+          const doc = JSON.parse(await file.text());
+          applySessionUI(doc);
+          updateTicker('SESSION FILE LOADED: MATRIX RE-INDEXED FROM ARCHIVE.');
+        } catch (err) {
+          updateTicker(`SESSION FILE REJECTED: ${(err && err.message) || 'MALFORMED DOCUMENT'}.`);
+        }
+        fileInput.value = '';
+      });
+
+      document.getElementById('copySessionBtn').addEventListener('click', async () => {
+        try {
+          if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('unavailable');
+          await navigator.clipboard.writeText(JSON.stringify(bureau.serializeSession(), null, 2));
+          updateTicker('SESSION COPIED TO CLIPBOARD AS JSON TEXT.');
+        } catch (err) {
+          updateTicker('CLIPBOARD WRITE DENIED: USE SAVE FILE INSTEAD.');
+        }
+      });
+
+      document.getElementById('pasteSessionBtn').addEventListener('click', async () => {
+        try {
+          if (!navigator.clipboard || !navigator.clipboard.readText) throw new Error('unavailable');
+          const text = await navigator.clipboard.readText();
+          applySessionUI(JSON.parse(text));
+          updateTicker('SESSION PASTED FROM CLIPBOARD: MATRIX RE-INDEXED.');
+        } catch (err) {
+          updateTicker(`CLIPBOARD READ FAILED: ${(err && err.message) || 'NO VALID SESSION ON THE CLIPBOARD'}.`);
+        }
+      });
+
+      document.getElementById('shareUrlBtn').addEventListener('click', async () => {
+        try {
+          const hash = await bureau.encodeSessionUrl();
+          const base = ((window.location && window.location.href) || '').split('#')[0];
+          if (window.history && typeof window.history.replaceState === 'function') {
+            window.history.replaceState(null, '', hash);
+          }
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(base + hash);
+            }
+          } catch (err) { /* the address bar already carries the link */ }
+          updateTicker('SHARE LINK ENCODED: THE ADDRESS BAR NOW IS THE PATTERN.');
+        } catch (err) {
+          updateTicker('SHARE LINK ENCODING FAILED: SESSION TOO LARGE FOR A URL.');
+        }
+      });
+
+      const autosaveBtn = document.getElementById('autosaveBtn');
+      const renderAutosave = () => {
+        autosaveBtn.classList.toggle('active', bureau.autosave);
+        autosaveBtn.setAttribute('aria-pressed', bureau.autosave ? 'true' : 'false');
+        autosaveBtn.innerText = bureau.autosave ? 'AUTOSAVE ON' : 'AUTOSAVE OFF';
+      };
+      autosaveBtn.addEventListener('click', () => {
+        bureau.autosave = !bureau.autosave;
+        if (bureau.autosave) {
+          bureau.persistSession();
+        } else {
+          try { window.localStorage.removeItem(BureauEngine.STORAGE_KEY); } catch (err) {}
+        }
+        renderAutosave();
+        updateTicker(`AUTOSAVE ${bureau.autosave ? 'ENGAGED' : 'DISENGAGED'}.`);
+      });
+      renderAutosave();
+
+      document.getElementById('undoBtn').addEventListener('click', undoUI);
+      document.getElementById('redoBtn').addEventListener('click', redoUI);
+      bureau.onHistoryChange = updateUndoButtons;
+      updateUndoButtons();
+
+      // The morph slider previews its amount while dragging and applies a
+      // single undoable morph on release.
+      const morphSlider = document.getElementById('morphSlider');
+      morphSlider.addEventListener('input', () => {
+        document.getElementById('morphVal').innerText = `${morphSlider.value}%`;
+      });
+      morphSlider.addEventListener('change', () => {
+        const slot = document.getElementById('morphSlotSelect').value;
+        const amount = parseInt(morphSlider.value, 10) / 100;
+        if (bureau.morphTowards(slot, amount)) {
+          syncAllControls();
+          renderAllTracks();
+          updateTicker(`PATTERN MORPHED ${Math.round(amount * 100)}% TOWARDS SNAPSHOT SLOT ${slot}.`);
+        } else {
+          updateTicker(`CANNOT MORPH: SNAPSHOT SLOT ${slot} IS EMPTY.`);
+        }
+        morphSlider.value = 0;
+        document.getElementById('morphVal').innerText = '0%';
+      });
+
+      renderSnapshotSlots();
+    }
+
+    /**
+     * Boot order: a session in the URL fragment wins, then the autosaved
+     * local session, then the default case file. The fragment path is async
+     * (decompression); the other two are synchronous so the interface is
+     * settled before the first paint in the common case.
+     */
+    function boot() {
+      const hash = (window.location && window.location.hash) || '';
+      if (hash.startsWith('#f909=')) {
+        bureau.decodeSessionUrl(hash).then((doc) => {
+          if (doc) {
+            applySessionUI(doc, { skipHistory: true });
+            updateTicker('SESSION DECODED FROM TRANSMISSION LINK: MATRIX RE-INDEXED.');
+            return;
+          }
+          finishBoot();
+        }).catch(() => {
+          updateTicker('TRANSMISSION LINK MALFORMED: FALLING BACK TO LOCAL ARCHIVE.');
+          finishBoot();
+        });
+        return;
+      }
+      finishBoot();
+    }
+
+    function finishBoot() {
+      let restored = false;
+      try {
+        if (bureau.restorePersistedSession()) {
+          syncAllControls();
+          renderAllTracks();
+          updateTicker('SESSION RESTORED FROM LOCAL ARCHIVE STORAGE.');
+          restored = true;
+        }
+      } catch (err) { /* fall through to the default case file */ }
+      if (!restored) loadPreset('confield');
+    }
+
     // Initial boot
-    loadPreset('confield');
+    bindSessionUI();
+    bindTrackFxPanel();
+    renderTrackFxPanel();
+    renderModMatrix();
+    bindGenLab();
+    boot();
+
+    // --- Console / integration API -----------------------------------------
+    //
+    // A small, documented surface for driving the instrument from the browser
+    // console and from the Node test harness (tools/test/). It exposes the
+    // state owner and the pure-ish helpers; it is not a stability guarantee
+    // beyond what docs/API.md documents.
+    window.Form909Warp = {
+      version: '1.2.0',
+      bureau,
+      PRESETS,
+      TRACK_CONFIGS,
+      LORE_QUOTES,
+      BureauEngine,
+      loadPreset,
+      generateEuclidean,
+      generateIdmPattern,
+      renderAllTracks,
+      selectStep,
+      updateTicker,
+      // Session API (see docs/PATTERNS.md §9)
+      serializeSession: () => bureau.serializeSession(),
+      applySession: (doc, opts) => bureau.applySession(doc, opts),
+      migrateSessionDoc: BureauEngine.migrateSessionDoc,
+      encodeSessionUrl: () => bureau.encodeSessionUrl(),
+      decodeSessionUrl: (hash) => bureau.decodeSessionUrl(hash),
+      syncAllControls
+    };
   </script>
 </body>
 </html>

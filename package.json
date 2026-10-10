@@ -21,6 +21,7 @@
     "validate": "node tools/validate.mjs",
     "links": "node tools/check-links.mjs",
     "check": "npm run validate && npm run links",
+    "test": "node --test tools/test/*.test.mjs",
     "serve": "node tools/serve.mjs"
   },
   "engines": {

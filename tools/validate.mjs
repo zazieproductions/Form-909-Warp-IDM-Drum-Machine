@@ -137,9 +137,12 @@ if (presetStart < 0 || presetEnd < 0) {
 
     const invalidSteps = [];
     for (const [key, preset] of Object.entries(presets || {})) {
+      // Presets carry six or eight lanes: the original six voices, plus the
+      // granular and resonator lanes added in v1.2.
+      const laneCount = preset.lengths && preset.lengths.length;
       if (!Array.isArray(preset.lengths) || !Array.isArray(preset.data) ||
-          preset.lengths.length !== 6 || preset.data.length !== 6) {
-        invalidSteps.push(`${key}: expected six lane lengths and six data arrays`);
+          (laneCount !== 6 && laneCount !== 8) || preset.data.length !== laneCount) {
+        invalidSteps.push(`${key}: expected six or eight lane lengths and matching data arrays`);
         continue;
       }
       preset.data.forEach((lane, laneIndex) => {
@@ -161,6 +164,48 @@ if (presetStart < 0 || presetEnd < 0) {
     }
     if (invalidSteps.length) fail(`Invalid preset step data: ${invalidSteps.join('; ')}`);
     else note(`${presetKeys.length} presets match the archive selector; lane lengths and step locks are in range.`);
+
+    // Generative profiles must describe every lane (lengths per variant, plus
+    // the per-lane density/ratchet/pitch arrays).
+    const profileStart = html.indexOf('const GENERATOR_PROFILES = {');
+    const profileEnd = html.indexOf('\n    function generateIdmPattern', profileStart);
+    if (profileStart < 0 || profileEnd < 0) {
+      fail('Could not locate the GENERATOR_PROFILES object or its end marker.');
+    } else {
+      try {
+        const profileSource = html.slice(profileStart, profileEnd)
+          .trim()
+          .replace(/^const GENERATOR_PROFILES =/, 'globalThis.GENERATOR_PROFILES =');
+        const profileSandbox = {};
+        vm.runInNewContext(profileSource, profileSandbox, { timeout: 1000 });
+        const profiles = profileSandbox.GENERATOR_PROFILES;
+        const laneCount = (html.match(/const TRACK_CONFIGS = \[[\s\S]*?\n    \];/) || [''])[0]
+          .split('id:').length - 1;
+        const profileProblems = [];
+        for (const [key, profile] of Object.entries(profiles || {})) {
+          for (const [variantIndex, lengths] of (profile.lengths || []).entries()) {
+            if (!Array.isArray(lengths) || lengths.length !== laneCount) {
+              profileProblems.push(`${key}: lengths variant ${variantIndex} has ${lengths && lengths.length} lanes, expected ${laneCount}`);
+            } else {
+              lengths.forEach((len, laneIndex) => {
+                if (!Number.isInteger(len) || len < 1 || len > 32) {
+                  profileProblems.push(`${key}: lengths variant ${variantIndex} lane ${laneIndex} out of range`);
+                }
+              });
+            }
+          }
+          for (const field of ['density', 'ratchet', 'pitch']) {
+            if (!Array.isArray(profile[field]) || profile[field].length !== laneCount) {
+              profileProblems.push(`${key}: ${field} has ${(profile[field] || []).length} lanes, expected ${laneCount}`);
+            }
+          }
+        }
+        if (profileProblems.length) fail(`Invalid generative profiles: ${profileProblems.join('; ')}`);
+        else note(`${Object.keys(profiles || {}).length} generative profiles cover all ${laneCount} lanes.`);
+      } catch (err) {
+        fail(`Generative profiles could not be validated: ${err.message}`);
+      }
+    }
   } catch (err) {
     fail(`Preset data could not be validated: ${err.message}`);
   }
