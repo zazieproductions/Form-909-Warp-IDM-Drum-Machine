@@ -16,6 +16,8 @@ Offline 24-bit WAV rendering. Zero dependencies, zero build step, one file.
 [![License](https://img.shields.io/badge/license-MIT-94a3b8?style=for-the-badge)](LICENSE)
 [![Lines of code](https://img.shields.io/badge/loc-2.7k-94a3b8?style=for-the-badge)](#project-scale)
 
+👉 **[Open it live in your browser](https://8080-imy6mydufmrufm0dp3in1.e2b.app)** — the full drum machine, running right now. No install, no build, just click and play.
+
 </div>
 
 ---
