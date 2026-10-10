@@ -40,6 +40,22 @@ const result = await bureau.exportWav(4, setProgress, { bitDepth: 24 });
 | Lengths | 2, 4, 8 or 16 patterns |
 | Tail | 1.5 s appended so delay feedback rings out |
 
+### Live session recording
+
+**RECORD LIVE** is separate from the offline bounce. It captures the actual
+real-time performance—including edits, mutation, probability, synthesis and
+master effects—from the post-effects `AnalyserNode` into a
+`MediaStreamAudioDestinationNode`. No microphone permission is requested and
+no external input is captured. If the sequencer is idle, recording starts it;
+press **STOP + SAVE** to flush and download the take. A take started over an
+already-running transport leaves playback running when capture stops.
+
+The `MediaRecorder` codec/container depends on browser support: WebM/Opus is
+common, while some browsers offer Ogg/Opus or MP4/AAC. The downloaded extension
+matches the selected container (`.webm`, `.ogg` or `.m4a`). These are
+real-time, typically compressed audio files—not WAV. Use **EXPORT 24-BIT WAV**
+when you need a deterministic, uncompressed offline render.
+
 ---
 
 ## 2. The render pipeline
@@ -322,6 +338,8 @@ reproduced.
 | Failure | Behaviour |
 |---|---|
 | `OfflineAudioContext` unavailable | `exportWav` throws; the dialog shows the error message |
+| `MediaRecorder` unavailable | Live-record button reports that browser capture is unsupported; offline WAV export remains available |
+| Live recorder errors | The active state is cleared and the failure is announced in the ticker |
 | Render throws mid-way | Caught; button re-enabled, progress reset, message shown |
 | `suspend`/`resume` unsupported | Progress degrades to two stages; the render still completes |
 | Render stalls | 120-second deadline releases the UI; the promise still resolves or rejects on its own |

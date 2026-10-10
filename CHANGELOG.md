@@ -10,6 +10,29 @@ moved. A pattern is a user artefact.
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Expanded the curated pattern archive from 9 to 21 cases**, adding offset,
+  breakcore, ambient, granular-glitch, high-speed drill and odd-meter material.
+- **Style-aware generative patterns** with Braindance, Breakcore, Glitch
+  Collage, Polyrhythm, Sparse/Ambient, Drill Fracture and Surprise Mix modes.
+  Each seed varies lane lengths, tempo, role-shaped density, ratchets, pitch
+  locks and matching performance controls.
+- **Real-time session recording.** `RECORD LIVE` captures the post-effects
+  master output through the browser's `MediaRecorder`; `STOP + SAVE` downloads
+  a playable audio file in a browser-supported format. Recording starts the
+  transport when idle, but leaves an already-running transport alone on stop.
+- Correct handling of preset velocity/probability locks set to zero.
+- Made audio initialisation truly idempotent so repeated controls/recording
+  gestures do not spawn duplicate oscilloscope animation loops.
+
+### Notes
+
+- Live captures use the browser's supported compressed audio container (often
+  WebM/Opus), unlike the separate deterministic 24-bit offline WAV export.
+
 ## [1.1.0] — 2025-11-14
 
 A correctness and accessibility release. Three advertised capabilities did not

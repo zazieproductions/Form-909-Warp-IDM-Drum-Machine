@@ -85,10 +85,10 @@ below traces back to one of them.
 
 ```
 Form-909-Warp-IDM-Drum-Machine/
-├── Form-909 Warp IDM Drum Machine.html   ← the entire application (2 736 lines)
-│     ├── <style>   lines 16–754          design tokens, layout, CRT treatment
-│     ├── <body>    lines 756–1 005       static shell: header, racks, modal
-│     └── <script>  lines 1 007–2 735     engine, presets, UI, bindings
+├── Form-909 Warp IDM Drum Machine.html   ← the entire application (3 484 lines)
+│     ├── <style>   lines 16–829          design tokens, layout, CRT treatment
+│     ├── <body>    lines 831–1 111        static shell: header, racks, modal
+│     └── <script>  lines 1 113–3 483     engine, presets, UI, bindings
 │
 ├── tools/
 │   ├── validate.mjs       static integrity checks (CI)
@@ -107,7 +107,7 @@ comments:
 | `TRACK_CONFIGS` | Declarative definition of the six voices |
 | `LORE_QUOTES` | Ticker strings |
 | `class BureauEngine` | State, audio graph, scheduler, voices, export |
-| `PRESETS` | Nine declarative patterns |
+| `PRESETS` | Twenty-one declarative patterns |
 | `loadPreset()` | Preset → state projection |
 | `renderAllTracks()` | State → DOM |
 | `generateEuclidean()` | Rhythm generator |
@@ -125,6 +125,8 @@ All mutable truth lives on one instance, `bureau`, created once at boot.
 BureauEngine
 ├── audioCtx          AudioContext | null          lazily created on first gesture
 ├── isPlaying         boolean
+├── isRecording       boolean                      live MediaRecorder capture state
+├── recordingDestination MediaStreamAudioDestinationNode | null  created for a live take
 ├── bpm               number                       40–360
 ├── stepIndex         number                       monotonic global counter
 ├── nextNoteTime      number                       seconds on the audio clock
@@ -405,9 +407,11 @@ Built once, in `setupMasterBus()`, when the `AudioContext` is first created.
                                                         │         │
                                                         └─────────┘
                                                                      │
-   limiter ──▶ masterGain(0.88) ──▶ analyser ──▶ destination         │
-                                        │                            │
-                                        └──▶ canvas (vector scope) ◀──┘
+   limiter ──▶ masterGain(0.88) ──▶ analyser ──┬──▶ destination
+                                        ├──▶ canvas (vector scope)
+                                        └──▶ recordingDestination (live take only)
+                                                   │
+                                                   └──▶ MediaRecorder → download
 ```
 
 | Node | Type | Settings |
@@ -680,8 +684,9 @@ roadmap item — per-track buses.
 **Rationale.** A performance should differ each pass; a deliverable should not.
 The two requirements genuinely conflict and the split resolves it.
 
-**Cost.** A bounce is not a recording of any specific live pass. This is
-intentional and documented in the UI.
+**Cost.** An offline bounce is not a recording of a specific live pass. The
+separate **RECORD LIVE** capture is available for performances; the bounce stays
+seeded and reproducible by design.
 
 ---
 
@@ -781,7 +786,7 @@ See [PATTERNS.md](PATTERNS.md) for the schema and an authoring guide.
 
 This is a sonic change. Read the review path in
 [CONTRIBUTING.md](../CONTRIBUTING.md) — presets are expected to stay
-recognisable, and any change to a generator affects all nine.
+recognisable, and any change to a generator affects the whole 21-case archive.
 
 ---
 

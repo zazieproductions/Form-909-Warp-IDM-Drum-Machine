@@ -5,7 +5,7 @@
 Form 909-WARP has no public package API: it is a single HTML file with one
 inline script. This document is the reference for the objects, methods and DOM
 contracts inside that script, written so a contributor can navigate it without
-reading all 1 727 lines.
+reading all 2 371 lines.
 
 Everything described here lives in the global scope of the inline `<script>`.
 There are no exports.
@@ -59,8 +59,9 @@ const TRACK_CONFIGS = [
 
 ### `PRESETS`
 
-Nine declarative patterns. Schema documented in
-[PATTERNS.md](PATTERNS.md#preset-schema).
+Twenty-one declarative patterns. Schema documented in
+[PATTERNS.md](PATTERNS.md#preset-schema), with character notes in
+[PATTERNS.md §5](PATTERNS.md#5-the-21-case-files).
 
 | Key | BPM | Lane lengths | Crush | Drive | Swing |
 |---|---|---|---|---|---|
@@ -73,6 +74,18 @@ Nine declarative patterns. Schema documented in
 | `raster` | 128 | 16 × 6 | 0.05 | 0.15 | 0.00 |
 | `boiler` | 165 | 16 × 6 | 0.38 | 0.65 | 0.22 |
 | `empty` | 160 | 16 × 6 | 0.10 | 0.20 | 0.00 |
+| `shardgarden` | 134 | 16, 16, 16, 13, 11, 16 | 0.14 | 0.21 | 0.18 |
+| `fractureline` | 176 | 16, 16, 13, 7, 13, 16 | 0.32 | 0.44 | 0.04 |
+| `elasticclock` | 148 | 13, 16, 12, 11, 9, 16 | 0.08 | 0.24 | 0.20 |
+| `granule` | 116 | 16, 13, 16, 12, 7, 16 | 0.22 | 0.12 | 0.08 |
+| `hypergrid` | 226 | 16, 14, 16, 7, 9, 16 | 0.38 | 0.50 | 0.02 |
+| `wonkcurrent` | 108 | 16, 16, 12, 11, 13, 16 | 0.10 | 0.30 | 0.28 |
+| `phasefold` | 162 | 15, 13, 16, 11, 14, 9 | 0.19 | 0.31 | 0.12 |
+| `brokenmirror` | 136 | 16, 12, 16, 7, 11, 16 | 0.26 | 0.34 | 0.16 |
+| `bitrot` | 184 | 16, 16, 13, 9, 7, 16 | 0.62 | 0.58 | 0.03 |
+| `glasswing` | 120 | 16, 16, 16, 13, 9, 16 | 0.06 | 0.12 | 0.10 |
+| `sidechannel` | 172 | 14, 14, 16, 11, 13, 14 | 0.30 | 0.40 | 0.05 |
+| `nullisland` | 140 | 13, 11, 16, 7, 9, 13 | 0.18 | 0.22 | 0.11 |
 
 ### `LORE_QUOTES`
 
@@ -90,6 +103,10 @@ The single state owner. Instantiated once, as `bureau`.
 |---|---|---|---|
 | `audioCtx` | `AudioContext \| null` | `null` | Created lazily on first user gesture |
 | `isPlaying` | `boolean` | `false` | Transport state |
+| `isRecording` | `boolean` | `false` | Live master-bus capture state |
+| `scopeStarted` | `boolean` | `false` | Ensures audio initialisation starts one scope animation loop |
+| `mediaRecorder` | `MediaRecorder \| null` | `null` | Browser-native recorder for the current take |
+| `recordingDestination` | `MediaStreamAudioDestinationNode \| null` | `null` | Receives the post-effects analyser output during capture |
 | `bpm` | `number` | `168` | 40–360 |
 | `stepIndex` | `number` | `0` | Monotonic global step counter; never reset |
 | `nextNoteTime` | `number` | `0` | Seconds on the audio clock for the next step |
@@ -195,6 +212,24 @@ Constructs the live node graph. See
 
 Starts a `requestAnimationFrame` loop drawing `analyser` time-domain data onto
 `#oscilloscope`. Runs for the lifetime of the page once started.
+
+### `startRecording(onError?)`
+
+Starts a browser-native `MediaRecorder` from a `MediaStreamAudioDestinationNode`
+connected to the post-effects analyser. If transport is idle, it starts playback
+as part of the recording gesture. It returns `{ ok: true, mimeType }` or
+`{ ok: false, reason, error? }` when audio or recording support is unavailable.
+
+The browser chooses a supported audio container (commonly WebM/Opus; some
+browsers use Ogg/Opus or MP4/AAC). Live recordings are real-time compressed
+captures, distinct from the offline 24-bit WAV bounce.
+
+### `stopRecording()`
+
+Returns a promise resolving to `{ blob, mimeType }` after the recorder flushes
+its final chunk. The UI downloads the blob with a matching extension. Playback
+is stopped only when recording itself started the transport; a take made over
+an already-running transport leaves playback running.
 
 ---
 
@@ -417,6 +452,14 @@ binds handlers, and restores keyboard focus to the cell that had it.
 - Adds `role="button"`, `aria-pressed`, `aria-label` and `tabIndex` per cell.
   Only active steps join the tab order.
 
+### `generateIdmPattern(style)`
+
+Creates a fresh six-lane composition from one of the `GENERATOR_PROFILES`
+(Braindance, Breakcore, Glitch Collage, Polyrhythm, Sparse/Ambient, Drill
+Fracture). The `surprise` style selects a profile at random. It changes BPM,
+lane lengths, step parameters and the profile's performance controls before
+re-rendering the grid.
+
 ### `loadPreset(key)`
 
 ```js
@@ -427,8 +470,8 @@ Loads `PRESETS[key]`, falling back to `confield` for unknown keys. Writes `bpm`,
 `fx.crush`, `fx.drive` and `fx.swing` to state **and** to their widgets, then
 resets every step and re-applies the pattern data.
 
-> Only three of the nine `fx` fields are preset-controlled. Cutoff, delay and
-> the collapse-matrix parameters persist across preset changes — intentional,
+> Only crush, drive and swing are preset-controlled. Cutoff, delay and the
+> collapse-matrix parameters persist across preset changes — intentional,
 > because those are the performer's bus settings rather than the pattern's.
 
 ### `selectStep(tIdx, sIdx)`
@@ -485,6 +528,9 @@ missing.
 | ID | Element | Purpose |
 |---|---|---|
 | `playBtn` | `button` | Transport toggle |
+| `recordBtn` | `button` | Start live master capture; stop to download |
+| `recordTimer` | `span` | Elapsed live-take time |
+| `recordHint` | visually-hidden paragraph | Recording behavior for assistive technology |
 | `tempoInput` | `input[type=number]` | BPM, 40–360 |
 | `chaosBtn` | `button` | Mutate |
 | `exportModalBtn` | `button` | Opens the export dialog |
@@ -497,7 +543,7 @@ missing.
 | `oscilloscope` | `canvas` | 300 × 90 vector scope |
 | `loreTicker` | `div[role=status]` | `aria-live` status line |
 | `dspLoad` | `span` | Static read-out |
-| `presetSelect` | `select` | Nine case files |
+| `presetSelect` | `select` | Twenty-one curated case files |
 
 ### Master effects
 
@@ -519,7 +565,8 @@ missing.
 |---|---|---|
 | `tracksContainer` | `div` | Lane host, rebuilt by `renderAllTracks()` |
 | `clearAllBtn` | `button` | Purge all |
-| `randomizeAllBtn` | `button` | Generative seed |
+| `patternStyleSelect` | `select` | Style profile for the generative seed |
+| `randomizeAllBtn` | `button` | Generate a style-aware IDM pattern |
 | `lane-${tIdx}` | `div.step-lane` | Per-lane cell container |
 | `mute-${tIdx}` | `button` | Per-lane mute |
 | `solo-${tIdx}` | `button` | Per-lane solo |
@@ -571,6 +618,7 @@ Custom properties read by the script and the stylesheet, all declared in
 | `.track-len-input` | `change` | Set `currentLength`, clamped 1–32 |
 | `.euclid-gen-btn` | `click` | `generateEuclidean(tIdx)` |
 | `#playBtn` | `click` | `togglePlayback()` |
+| `#recordBtn` | `click` | Start/stop a live take, then download |
 | `#tempoInput` | `change` | Set BPM, clamped 40–360 |
 | `#chaosBtn` | `click` | `mutateRhythms()` |
 | `#clearAllBtn` | `click` | Deactivate every step |

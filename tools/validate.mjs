@@ -13,7 +13,8 @@
  *   3. Every dynamic id template (id="foo-${i}") has a matching query builder.
  *   4. Every <label for="x"> resolves to a real control id.
  *   5. CSS custom properties referenced via var(--x) are all declared in :root.
- *   6. Tag balance sanity for the top-level structural elements.
+ *   6. Preset keys match the archive selector and all step data is in range.
+ *   7. Tag balance sanity for the top-level structural elements.
  *
  * Exit code 0 on success, 1 on any failure.
  *
@@ -107,7 +108,65 @@ if (undeclaredVars.length) {
   note(`${usedVars.size} CSS custom properties all declared in :root.`);
 }
 
-/* ------------------------------------------------------------ 6. tag balance */
+/* ------------------------------------------------------------ 6. preset data */
+const presetStart = html.indexOf('const PRESETS = {');
+const presetEnd = html.indexOf('\n    function loadPreset', presetStart);
+if (presetStart < 0 || presetEnd < 0) {
+  fail('Could not locate the declarative PRESETS object or its end marker.');
+} else {
+  try {
+    const presetSource = html.slice(presetStart, presetEnd)
+      .trim()
+      .replace(/^const PRESETS =/, 'globalThis.PRESETS =');
+    const sandbox = {};
+    vm.runInNewContext(presetSource, sandbox, { timeout: 1000 });
+    const presets = sandbox.PRESETS;
+    const dropdown = html.match(/<select id="presetSelect"[\s\S]*?<\/select>/);
+    const optionKeys = dropdown
+      ? [...dropdown[0].matchAll(/<option value="([^"]+)"/g)].map((match) => match[1])
+      : [];
+    const presetKeys = Object.keys(presets || {});
+
+    if (!dropdown) fail('The preset archive selector is missing.');
+    const missingOptions = presetKeys.filter((key) => !optionKeys.includes(key));
+    const missingPresets = optionKeys.filter((key) => !Object.hasOwn(presets || {}, key));
+    if (missingOptions.length || missingPresets.length) {
+      fail(`Preset/archive selector mismatch; missing options: ${missingOptions.join(', ') || 'none'}; ` +
+           `missing presets: ${missingPresets.join(', ') || 'none'}.`);
+    }
+
+    const invalidSteps = [];
+    for (const [key, preset] of Object.entries(presets || {})) {
+      if (!Array.isArray(preset.lengths) || !Array.isArray(preset.data) ||
+          preset.lengths.length !== 6 || preset.data.length !== 6) {
+        invalidSteps.push(`${key}: expected six lane lengths and six data arrays`);
+        continue;
+      }
+      preset.data.forEach((lane, laneIndex) => {
+        const length = preset.lengths[laneIndex];
+        if (!Number.isInteger(length) || length < 1 || length > 32 || !Array.isArray(lane)) {
+          invalidSteps.push(`${key}: invalid lane ${laneIndex} length or data`);
+          return;
+        }
+        lane.forEach((step) => {
+          if (!Number.isInteger(step.i) || step.i < 0 || step.i >= length ||
+              (step.r != null && (step.r < 1 || step.r > 4)) ||
+              (step.p != null && (step.p < -24 || step.p > 24)) ||
+              (step.v != null && (step.v < 0 || step.v > 127)) ||
+              (step.pr != null && (step.pr < 0 || step.pr > 100))) {
+            invalidSteps.push(`${key}: invalid step data in lane ${laneIndex}`);
+          }
+        });
+      });
+    }
+    if (invalidSteps.length) fail(`Invalid preset step data: ${invalidSteps.join('; ')}`);
+    else note(`${presetKeys.length} presets match the archive selector; lane lengths and step locks are in range.`);
+  } catch (err) {
+    fail(`Preset data could not be validated: ${err.message}`);
+  }
+}
+
+/* ------------------------------------------------------------ 7. tag balance */
 // Count structural tags only in the markup itself: <script> and <style> bodies
 // legitimately contain things like "<body>" inside comments and strings, and
 // counting those would produce false positives.
