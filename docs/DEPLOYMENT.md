@@ -27,7 +27,7 @@ considerations for each.
 **One file.**
 
 ```
-Form-909 Warp IDM Drum Machine.html     ~93 KB
+Form-909 Warp IDM Drum Machine.html     ~129 KB
 ```
 
 That is the complete application: markup, styles, engine, presets and
@@ -36,7 +36,7 @@ everything else.
 | Property | Value |
 |---|---|
 | Files | 1 |
-| Total size | ~93 KB |
+| Total size | ~129 KB |
 | Runtime dependencies | 0 |
 | Build step | none |
 | External requests | 3 webfonts (optional) |
@@ -256,7 +256,7 @@ makes cache invalidation a question worth answering.
 | **ETag revalidation** | `Cache-Control: no-cache` + ETag | Always current; a round trip per load |
 
 Recommendation: `max-age=3600` for the HTML, or `no-cache` with ETags if you
-want immediacy. At ~93 KB, revalidation costs far less than a stale
+want immediacy. At ~129 KB, revalidation costs far less than a stale
 instrument.
 
 ### The dev server
@@ -357,7 +357,7 @@ A short checklist, run against the live URL:
 |---|---|---|
 | 1 | Load the page | Renders; no console errors |
 | 2 | Press <kbd>Space</kbd> | Audio starts |
-| 3 | Load each of the nine presets | Each applies without error |
+| 3 | Load each of the 21 presets | Each applies without error |
 | 4 | Export 2 patterns | A `.wav` downloads |
 | 5 | Tab to a step cell, press <kbd>Enter</kbd> | The step toggles and focus stays |
 | 6 | Open the export modal, press <kbd>Esc</kbd> | Closes; focus returns |

@@ -178,7 +178,7 @@ noise-sweep texture voice would extend the range.
 
 **Approach.** Follow the extension procedure in
 [ARCHITECTURE.md §15](ARCHITECTURE.md#15-extension-points): append to
-`TRACK_CONFIGS`, add a switch case, write the generator, extend all nine
+`TRACK_CONFIGS`, add a switch case, write the generator, extend all 21
 presets.
 
 **Trade-off.** A seventh lane makes the grid taller and every preset longer.
@@ -196,7 +196,7 @@ specific voice is requested repeatedly.
 without them, but it is not fully offline, and it is the only external request.
 
 **Approach.** Embed WOFF2 subsets. The three faces are small; base64-embedding
-would add roughly 30–60 KB to a 93 KB file.
+would add roughly 30–60 KB to the current 129 KB file.
 
 **Trade-off.** A ~50 % increase in file size, and the fonts become part of the
 artefact — which is arguably the right outcome for a single-file application.
@@ -295,7 +295,7 @@ Smaller items, not yet scheduled.
 | 16-bit dither | Flat TPDF dither would improve 16-bit exports; inaudible at 24-bit |
 | Broadcast Wave (`bext`) chunk | Adds origin and timing metadata to exports |
 | True-peak measurement | Report peak headroom in the export dialog rather than relying on the fixed trim |
-| More presets | The archive is at nine; contributions welcome |
+| More presets | The archive now has 21 cases; contributions welcome |
 | Keyboard shortcuts for presets | Number keys 1–9 |
 | Per-lane randomise | Stochastic fill for one lane rather than the whole matrix |
 | Velocity-sensitive drag | Drag vertically across a cell to set velocity |
@@ -331,7 +331,7 @@ and none requires understanding all of it.
 
 | Issue | Area | Teaches |
 |---|---|---|
-| Add a tenth preset | `PRESETS`, [PATTERNS.md](PATTERNS.md) | The pattern schema and preset authoring |
+| Contribute another curated case | `PRESETS`, [PATTERNS.md](PATTERNS.md) | The pattern schema and preset authoring |
 | Add keyboard shortcuts 1–9 for presets | Event bindings | The binding layer and keyboard handling |
 | Add a boolean non-colour indicator to active cells | CSS | The grid's visual encoding; closes [G1](ACCESSIBILITY.md#g1--step-state-is-conveyed-by-colour-alone) |
 | Split the status ticker | DOM, ARIA | Live regions; closes [G2](ACCESSIBILITY.md#g2--the-status-ticker-rotates-decorative-content) |

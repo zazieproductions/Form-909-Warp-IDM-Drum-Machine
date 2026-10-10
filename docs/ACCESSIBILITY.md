@@ -107,16 +107,18 @@ otherwise receive.
 
 ### Labelling
 
-All 13 range inputs, both number inputs, both selects and every icon-less button
-carry an explicit association: `<label for="…">` where a visible label exists,
-`aria-label` where it does not. `tools/validate.mjs` fails CI if any
+All 13 range inputs, the BPM and rendered lane-length number inputs, all three
+selects and every icon-less button carry an explicit association: `<label
+for="…">` where a visible label exists, `aria-label` where it does not. `tools/validate.mjs` fails CI if any
 `label[for]` resolves to a missing id.
 
 ### The live region
 
 `#loreTicker` is an `aria-live="polite"` status region. Loading a preset,
-mutating, changing a lane length and completing an export all announce through
-it.
+mutating, changing a lane length, starting/stopping a live take and completing
+an export all announce through it. The live record button also updates its
+accessible name and `aria-pressed` state; `#recordHint` explains that capture
+records the master output and downloads a browser-supported audio file.
 
 **Known concern.** While the transport runs, the ticker also rotates through
 in-character Bureau announcements every 7 seconds. For a screen reader user
@@ -129,7 +131,9 @@ region in two — tracked in [§8](#8-known-gaps).
 ## 4. Motion
 
 The interface borrows heavily from CRT instrumentation: a scanline overlay,
-blinking LEDs, a pulsing record indicator and a phosphor-glow oscilloscope.
+blinking LEDs, a pulsing live-recording indicator and a phosphor-glow oscilloscope.
+The record button's visual pulse mirrors a real capture state rather than a
+decorative or always-armed indicator.
 
 ```css
 @media (prefers-reduced-motion: reduce) {

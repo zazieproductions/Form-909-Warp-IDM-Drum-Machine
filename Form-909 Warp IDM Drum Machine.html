@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="dark">
-  <meta name="description" content="Form 909-WARP — a zero-dependency, browser-native IDM drum machine and polyrhythmic sequencer built on the Web Audio API. Six synthesis voices, per-step parameter locks, Euclidean generation and offline 24-bit WAV rendering.">
+  <meta name="description" content="Form 909-WARP — a zero-dependency IDM drum machine with 21 curated patterns, style-aware generation, six synthesis voices, live session recording and offline 24-bit WAV export.">
   <meta name="author" content="zazieproductions">
   <meta property="og:type" content="website">
   <meta property="og:title" content="The Bureau of Unreasonable Rhythms — Form 909-WARP">
-  <meta property="og:description" content="A zero-dependency IDM drum machine: six Web Audio synthesis voices, polyrhythmic lanes, per-step parameter locks and offline 24-bit WAV export.">
+  <meta property="og:description" content="A zero-dependency IDM drum machine with 21 curated patterns, style-aware generation, live session recording and offline 24-bit WAV export.">
   <title>The Bureau of Unreasonable Rhythms — Experimental Metric Facility</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -121,6 +121,7 @@
     .transport-dock {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 12px;
       background: #090c0f;
       padding: 6px 12px;
@@ -178,6 +179,53 @@
       background: #854d0e;
       border-color: #f59e0b;
       color: #fef08a;
+    }
+
+    button.btn.record-btn {
+      background: #2b1118;
+      border-color: #be123c;
+      color: #fda4af;
+    }
+
+    button.btn.record-btn:hover {
+      background: #4c1423;
+      border-color: #fb7185;
+      color: #fff1f2;
+    }
+
+    button.btn.record-btn.recording {
+      background: #9f1239;
+      border-color: #fb7185;
+      color: white;
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.42);
+      animation: pulse-danger 1s infinite alternate;
+    }
+
+    button.btn.record-btn:disabled {
+      cursor: wait;
+      opacity: 0.8;
+    }
+
+    .record-dot {
+      width: 8px;
+      height: 8px;
+      display: inline-block;
+      flex: 0 0 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+
+    .record-btn.recording .record-dot {
+      animation: blink 0.7s infinite alternate;
+    }
+
+    .record-timer {
+      min-width: 38px;
+      color: #fda4af;
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
     }
 
     .status-meter {
@@ -361,6 +409,28 @@
     }
 
     select.preset-dropdown:focus {
+      border-color: var(--cyan);
+    }
+
+    .pattern-generation-controls {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    select.pattern-style-select {
+      max-width: 170px;
+      background: #090c0f;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      padding: 5px 7px;
+      border-radius: 3px;
+      font: 10px var(--mono);
+    }
+
+    select.pattern-style-select:focus-visible {
       border-color: var(--cyan);
     }
 
@@ -782,6 +852,12 @@
         <span>EXECUTE [SPACE]</span>
       </button>
 
+      <button id="recordBtn" class="btn record-btn" aria-pressed="false" aria-label="Record live audio session" aria-describedby="recordHint" title="Capture the live master output and download the take when stopped.">
+        <span class="record-dot" aria-hidden="true"></span>
+        <span id="recordBtnLabel">RECORD LIVE</span>
+      </button>
+      <span id="recordTimer" class="record-timer" aria-hidden="true">00:00</span>
+
       <div style="display:flex; align-items:center; gap:6px;">
         <label for="tempoInput" style="font-size:10px; color:var(--text-dim);">BPM</label>
         <input type="number" id="tempoInput" min="40" max="360" value="168" aria-label="Tempo in beats per minute" style="width:52px; background:#0c1015; border:1px solid #334155; color:var(--cyan); font-family:var(--mono); padding:4px 6px; border-radius:3px; font-size:12px; font-weight:bold; text-align:center;">
@@ -799,6 +875,9 @@
     </div>
     <p id="transportHint" class="visually-hidden">
       Press the space bar to start or stop the sequencer whenever focus is not inside a text field or a step cell.
+    </p>
+    <p id="recordHint" class="visually-hidden">
+      Record the live master output, including the synthesised drums and effects. If playback is stopped, recording starts it. Click again to stop and download an audio file in a format supported by this browser.
     </p>
   </header>
 
@@ -827,7 +906,7 @@
       <section class="module-box">
         <div class="module-title">
           <span>CURATED DISSONANCE ARCHIVE</span>
-          <span class="badge">9 PROTOCOLS</span>
+          <span class="badge">21 PROTOCOLS</span>
         </div>
         <div class="preset-selector">
           <label class="visually-hidden" for="presetSelect">Curated dissonance archive: choose a case file</label>
@@ -841,6 +920,18 @@
             <option value="raster">Case 07: Raster Minimalism (128 BPM · Sparse Sub Clicks)</option>
             <option value="boiler">Case 08: Bureau Boiler Room (165 BPM · Industrial Crush)</option>
             <option value="empty">Case 09: Blank Slate (Initialized 160 BPM)</option>
+            <option value="shardgarden">Case 10: Shard Garden (134 BPM · Offset shards)</option>
+            <option value="fractureline">Case 11: Fractureline (176 BPM · Breakcore bursts)</option>
+            <option value="elasticclock">Case 12: Elastic Clock (148 BPM · Skipping pulse)</option>
+            <option value="granule">Case 13: Granule Study (116 BPM · Sparse micro-glitch)</option>
+            <option value="hypergrid">Case 14: Hypergrid (226 BPM · Maximum density)</option>
+            <option value="wonkcurrent">Case 15: Wonk Current (108 BPM · Half-time wobble)</option>
+            <option value="phasefold">Case 16: Phase Fold (162 BPM · Interlocking meters)</option>
+            <option value="brokenmirror">Case 17: Broken Mirror (136 BPM · Fractured backbeat)</option>
+            <option value="bitrot">Case 18: Bitrot Cascade (184 BPM · Crushed stutters)</option>
+            <option value="glasswing">Case 19: Glasswing (120 BPM · Airy and granular)</option>
+            <option value="sidechannel">Case 20: Side Channel (172 BPM · Drill cross-currents)</option>
+            <option value="nullisland">Case 21: Null Island (140 BPM · Unstable sparse poly)</option>
           </select>
           <div class="shortcut-legend">
             <span>Click Step = Toggle</span>
@@ -928,9 +1019,19 @@
           <span style="font-size:13px; font-weight:700; color:#e2e8f0; letter-spacing:1px;">SYNCHRONOUS SUB-DIVIDED LANES</span>
           <p style="font-size:10px; color:var(--text-dim);">Polyrhythmic step length, micro-ratchets &amp; discrete parameter locks per voice</p>
         </div>
-        <div style="display:flex; gap:8px;">
+        <div class="pattern-generation-controls">
+          <label class="visually-hidden" for="patternStyleSelect">Pattern style for the generative seed</label>
+          <select id="patternStyleSelect" class="pattern-style-select" title="Choose a rhythmic style for the pattern generator">
+            <option value="braindance">STYLE: BRAINDANCE</option>
+            <option value="breakcore">STYLE: BREAKCORE</option>
+            <option value="glitch">STYLE: GLITCH COLLAGE</option>
+            <option value="polyrhythm">STYLE: POLYRHYTHM</option>
+            <option value="ambient">STYLE: SPARSE / AMBIENT</option>
+            <option value="drill">STYLE: DRILL FRACTURE</option>
+            <option value="surprise">STYLE: SURPRISE MIX</option>
+          </select>
           <button id="clearAllBtn" class="btn" style="font-size:10px; padding:4px 8px;">PURGE ALL</button>
-          <button id="randomizeAllBtn" class="btn" style="font-size:10px; padding:4px 8px;">GENERATIVE SEED</button>
+          <button id="randomizeAllBtn" class="btn accent" style="font-size:10px; padding:4px 8px;" title="Generate a new style-aware IDM pattern">GENERATIVE SEED</button>
         </div>
       </div>
 
@@ -1083,6 +1184,7 @@
       constructor() {
         this.audioCtx = null;
         this.audioUnavailable = false;
+        this.scopeStarted = false;
         this.isPlaying = false;
         this.bpm = 168;
         this.stepIndex = 0;
@@ -1111,6 +1213,16 @@
         // Web Audio node cache for the offline render graph (see `exportWav`).
         this._crushCurve = null;
         this._crushBits = null;
+
+        // Live recording is routed from the post-effects analyser into a
+        // MediaStreamDestination, so it captures the exact sound being heard.
+        this.isRecording = false;
+        this.mediaRecorder = null;
+        this.recordingDestination = null;
+        this.recordingChunks = [];
+        this.recordingCompletion = null;
+        this.recordingInitiatedTransport = false;
+        this.recordingErrorHandler = null;
 
         this.initTracks();
       }
@@ -1154,10 +1266,13 @@
         // The scope is a readout, not part of the signal path: if its 2D
         // context is unavailable the instrument stays audible and simply
         // renders no waveform.
-        try {
-          this.setupOscilloscope();
-        } catch (err) {
-          console.warn('Form 909-WARP: vector scope unavailable.', err);
+        if (!this.scopeStarted) {
+          try {
+            this.setupOscilloscope();
+            this.scopeStarted = true;
+          } catch (err) {
+            console.warn('Form 909-WARP: vector scope unavailable.', err);
+          }
         }
 
         if (this.audioCtx.state === 'suspended') {
@@ -1578,6 +1693,133 @@
         clearInterval(this.timerID);
         // Clear visually active step indicators
         document.querySelectorAll('.step-cell.current-cursor').forEach(el => el.classList.remove('current-cursor'));
+      }
+
+      /**
+       * Start a real-time capture of the post-effects master output.
+       * Recording is browser-native; the resulting container/codec is selected
+       * from the formats supported by MediaRecorder (commonly WebM/Opus).
+       * If transport is stopped, it starts with the recording.
+       *
+       * @param {(error:Error) => void} [onError]
+       * @returns {{ok:boolean, reason?:string, error?:Error, mimeType?:string}}
+       */
+      startRecording(onError) {
+        if (this.isRecording) return { ok: false, reason: 'already-recording' };
+        if (!this.initAudio()) return { ok: false, reason: 'audio-unavailable' };
+
+        const Recorder = window.MediaRecorder;
+        if (typeof Recorder !== 'function') return { ok: false, reason: 'unsupported' };
+
+        try {
+          if (!this.recordingDestination) {
+            this.recordingDestination = this.audioCtx.createMediaStreamDestination();
+            this.analyser.connect(this.recordingDestination);
+          }
+
+          const mimeCandidates = [
+            'audio/webm;codecs=opus',
+            'audio/ogg;codecs=opus',
+            'audio/mp4'
+          ];
+          let recorder = null;
+          for (const mimeType of mimeCandidates) {
+            try {
+              if (typeof Recorder.isTypeSupported === 'function' &&
+                  !Recorder.isTypeSupported(mimeType)) continue;
+              recorder = new Recorder(this.recordingDestination.stream, { mimeType });
+              break;
+            } catch (err) {
+              // Try the next browser-native container/codec combination.
+            }
+          }
+          if (!recorder) recorder = new Recorder(this.recordingDestination.stream);
+
+          const startedTransport = !this.isPlaying;
+          if (startedTransport && !this.start()) {
+            return { ok: false, reason: 'audio-unavailable' };
+          }
+
+          this.recordingInitiatedTransport = startedTransport;
+          this.recordingChunks = [];
+          this.recordingErrorHandler = typeof onError === 'function' ? onError : null;
+          this.mediaRecorder = recorder;
+
+          let resolveRecording;
+          let rejectRecording;
+          this.recordingCompletion = new Promise((resolve, reject) => {
+            resolveRecording = resolve;
+            rejectRecording = reject;
+          });
+          // A recorder can fail before the performer presses stop; observe that
+          // rejection now, while still returning it to stopRecording callers.
+          this.recordingCompletion.catch(() => {});
+
+          recorder.addEventListener('dataavailable', (event) => {
+            if (event.data && event.data.size > 0) this.recordingChunks.push(event.data);
+          });
+          recorder.addEventListener('error', (event) => {
+            const error = event.error || new Error('The browser could not continue recording audio.');
+            this.isRecording = false;
+            if (this.recordingInitiatedTransport && this.isPlaying) this.stop();
+            this.recordingInitiatedTransport = false;
+            if (this.recordingErrorHandler) this.recordingErrorHandler(error);
+            rejectRecording(error);
+          }, { once: true });
+          recorder.addEventListener('stop', () => {
+            const mimeType = recorder.mimeType ||
+              (this.recordingChunks.find(chunk => chunk.type) || {}).type || 'audio/webm';
+            const blob = new Blob(this.recordingChunks, { type: mimeType });
+            this.recordingChunks = [];
+            this.mediaRecorder = null;
+            this.recordingCompletion = null;
+            this.recordingErrorHandler = null;
+            this.recordingInitiatedTransport = false;
+            this.isRecording = false;
+
+            if (this.recordingDestination) {
+              try { this.analyser.disconnect(this.recordingDestination); } catch (err) {}
+              this.recordingDestination.stream.getTracks().forEach(track => track.stop());
+              this.recordingDestination = null;
+            }
+            resolveRecording({ blob, mimeType });
+          }, { once: true });
+
+          recorder.start(250);
+          this.isRecording = true;
+          return { ok: true, mimeType: recorder.mimeType || 'audio/webm' };
+        } catch (error) {
+          if (this.recordingInitiatedTransport && this.isPlaying) this.stop();
+          this.recordingInitiatedTransport = false;
+          this.isRecording = false;
+          this.mediaRecorder = null;
+          this.recordingChunks = [];
+          this.recordingCompletion = null;
+          return { ok: false, reason: 'start-failed', error };
+        }
+      }
+
+      /**
+       * Stop a live take and resolve with its compressed audio blob.
+       * @returns {Promise<{blob:Blob, mimeType:string}>}
+       */
+      stopRecording() {
+        if (!this.mediaRecorder || !this.isRecording) {
+          return Promise.reject(new Error('There is no active live recording.'));
+        }
+
+        const recorder = this.mediaRecorder;
+        const completion = this.recordingCompletion;
+        const stopTransportWithTake = this.recordingInitiatedTransport;
+        this.isRecording = false;
+        this.recordingInitiatedTransport = false;
+        try {
+          if (recorder.state !== 'inactive') recorder.stop();
+          if (stopTransportWithTake && this.isPlaying) this.stop();
+        } catch (error) {
+          return Promise.reject(error);
+        }
+        return completion;
       }
 
       scheduler() {
@@ -2173,11 +2415,193 @@
         drive: 0.2,
         swing: 0.0,
         data: [[], [], [], [], [], []]
+      },
+      shardgarden: {
+        bpm: 134,
+        lengths: [16, 16, 16, 13, 11, 16],
+        crush: 0.14,
+        drive: 0.21,
+        swing: 0.18,
+        data: [
+          [{i:0, v:116},{i:5, r:2, p:-5},{i:11, v:92},{i:14, r:3, p:3}],
+          [{i:3, r:1, p:0},{i:8, r:2, p:7},{i:13, r:3, pr:72}],
+          [{i:0, r:2},{i:3},{i:5, r:3, pr:82},{i:8, r:2},{i:11},{i:14, r:4}],
+          [{i:1, p:12},{i:4, r:2, p:5},{i:7, p:-5},{i:10, r:3, p:19},{i:12, r:2, p:7}],
+          [{i:2, r:4, p:-12, pr:70},{i:4, r:2, p:8},{i:7, r:3, p:15, pr:80},{i:10, r:2, p:3}],
+          [{i:0, p:-12},{i:6, p:-5},{i:10, p:7},{i:15, r:2}]
+        ]
+      },
+      fractureline: {
+        bpm: 176,
+        lengths: [16, 16, 13, 7, 13, 16],
+        crush: 0.32,
+        drive: 0.44,
+        swing: 0.04,
+        data: [
+          [{i:0, v:120},{i:3, r:2},{i:7, v:92},{i:10, r:3, p:-5},{i:13, r:2}],
+          [{i:2, r:2, p:3},{i:6, v:112},{i:9, r:4, pr:82},{i:14, r:3},{i:15, r:2}],
+          [{i:0, r:3},{i:1, r:2},{i:4, r:4},{i:6, r:2},{i:8, r:3},{i:11, r:4}],
+          [{i:1, r:4, p:8},{i:3, r:3, p:-5},{i:6, r:4, p:12}],
+          [{i:0, r:3, p:15},{i:3, r:4, p:-12},{i:6, r:3, p:7},{i:9, r:4, p:19},{i:12, r:4, pr:88}],
+          [{i:0, p:-12},{i:5, r:2, p:-5},{i:8, p:7},{i:12, r:3, p:3}]
+        ]
+      },
+      elasticclock: {
+        bpm: 148,
+        lengths: [13, 16, 12, 11, 9, 16],
+        crush: 0.08,
+        drive: 0.24,
+        swing: 0.2,
+        data: [
+          [{i:0, v:112},{i:4, r:2, p:-3},{i:8, v:88},{i:11, r:2}],
+          [{i:4, r:2},{i:11, r:1, p:5},{i:15, r:3, pr:78}],
+          [{i:0, r:2},{i:2},{i:5, r:3},{i:8, r:2},{i:10, r:3}],
+          [{i:0, p:12},{i:3, r:2, p:7},{i:6, p:3},{i:9, r:3, p:10}],
+          [{i:1, r:3, p:-12},{i:4, r:2, p:8},{i:7, r:4, p:15}],
+          [{i:0, p:-12},{i:5, p:-5},{i:9, r:2, p:3},{i:13, p:7}]
+        ]
+      },
+      granule: {
+        bpm: 116,
+        lengths: [16, 13, 16, 12, 7, 16],
+        crush: 0.22,
+        drive: 0.12,
+        swing: 0.08,
+        data: [
+          [{i:0, v:105, pr:90},{i:11, r:2, p:-7, pr:74}],
+          [{i:6, r:2, p:5, pr:76},{i:12, v:72, pr:68}],
+          [{i:0, r:2, v:66},{i:3, r:3, v:54, pr:80},{i:7, r:2, v:72},{i:10, r:4, v:48, pr:65},{i:14, r:3, v:58}],
+          [{i:2, r:3, p:19, pr:78},{i:5, r:2, p:-12},{i:9, r:4, p:12, pr:72}],
+          [{i:1, r:4, p:7, pr:68},{i:4, r:3, p:19, pr:75}],
+          [{i:0, p:-19, v:84},{i:7, p:-12, v:70, pr:82},{i:13, p:-5, v:64}]
+        ]
+      },
+      hypergrid: {
+        bpm: 226,
+        lengths: [16, 14, 16, 7, 9, 16],
+        crush: 0.38,
+        drive: 0.5,
+        swing: 0.02,
+        data: [
+          [{i:0, v:120},{i:3, r:2},{i:4},{i:7, r:3},{i:8},{i:11, r:2},{i:12},{i:15, r:4}],
+          [{i:1, r:2},{i:4, r:3},{i:7, r:4},{i:10, r:2},{i:13, r:4}],
+          [{i:0, r:3},{i:2, r:4},{i:4, r:3},{i:6, r:4},{i:8, r:3},{i:10, r:4},{i:12, r:3},{i:14, r:4}],
+          [{i:0, r:3, p:12},{i:2, r:4, p:7},{i:4, r:3, p:19},{i:6, r:4, p:3}],
+          [{i:1, r:4, p:15},{i:3, r:3, p:-12},{i:5, r:4, p:8},{i:7, r:4, p:19}],
+          [{i:0, r:2, p:-12},{i:4, r:3, p:-5},{i:8, r:2, p:7},{i:12, r:4, p:12}]
+        ]
+      },
+      wonkcurrent: {
+        bpm: 108,
+        lengths: [16, 16, 12, 11, 13, 16],
+        crush: 0.1,
+        drive: 0.3,
+        swing: 0.28,
+        data: [
+          [{i:0, v:115},{i:6, r:2, p:-5},{i:11, v:82}],
+          [{i:4, r:1, p:3},{i:12, r:2, pr:80}],
+          [{i:0, r:2},{i:3},{i:6, r:3},{i:9}],
+          [{i:2, r:2, p:12},{i:5, p:7},{i:9, r:3, p:19}],
+          [{i:1, r:3, p:-12},{i:6, r:2, p:5},{i:10, r:3, p:12}],
+          [{i:0, p:-12},{i:7, p:-5},{i:11, r:2, p:3},{i:15, p:7}]
+        ]
+      },
+      phasefold: {
+        bpm: 162,
+        lengths: [15, 13, 16, 11, 14, 9],
+        crush: 0.19,
+        drive: 0.31,
+        swing: 0.12,
+        data: [
+          [{i:0, v:112},{i:5, r:2, p:-5},{i:9, v:90},{i:13, r:3}],
+          [{i:2, r:2, p:5},{i:7, v:108},{i:11, r:3, pr:82}],
+          [{i:0, r:2},{i:2},{i:5, r:3},{i:8},{i:11, r:2},{i:14, r:4}],
+          [{i:1, p:12},{i:4, r:2, p:7},{i:7, r:3, p:19},{i:10, p:3}],
+          [{i:0, r:3, p:8},{i:4, r:4, p:-12},{i:7, r:2, p:15},{i:12, r:3, p:5}],
+          [{i:0, p:-12},{i:3, p:-5},{i:6, r:2, p:7}]
+        ]
+      },
+      brokenmirror: {
+        bpm: 136,
+        lengths: [16, 12, 16, 7, 11, 16],
+        crush: 0.26,
+        drive: 0.34,
+        swing: 0.16,
+        data: [
+          [{i:0, v:118},{i:3, r:2, p:-5},{i:8, v:104},{i:11, r:3},{i:14, r:2}],
+          [{i:2, r:2, p:3},{i:6, v:110},{i:9, r:3, pr:76}],
+          [{i:1, r:2},{i:4, r:3},{i:6},{i:9, r:2},{i:12, r:4},{i:15, r:2}],
+          [{i:0, r:3, p:12},{i:3, r:4, p:7},{i:6, r:3, p:19}],
+          [{i:1, r:4, p:-12},{i:4, r:2, p:8},{i:7, r:3, p:15},{i:10, r:4, p:3}],
+          [{i:0, p:-12},{i:5, p:-7},{i:10, r:2, p:5},{i:13, p:12}]
+        ]
+      },
+      bitrot: {
+        bpm: 184,
+        lengths: [16, 16, 13, 9, 7, 16],
+        crush: 0.62,
+        drive: 0.58,
+        swing: 0.03,
+        data: [
+          [{i:0, v:120},{i:4, r:2},{i:6, r:4, pr:85},{i:11, r:3},{i:14, r:4}],
+          [{i:2, r:2},{i:7, r:3},{i:10, r:4, pr:80},{i:13, r:3},{i:15, r:4}],
+          [{i:0, r:4},{i:2, r:3},{i:4, r:4},{i:7, r:2},{i:9, r:4},{i:12, r:3}],
+          [{i:0, r:4, p:19},{i:3, r:3, p:-12},{i:6, r:4, p:12}],
+          [{i:1, r:4, p:15},{i:3, r:3, p:-7},{i:5, r:4, p:19}],
+          [{i:0, r:2, p:-12},{i:4, r:3, p:-5},{i:8, r:2, p:7},{i:12, r:4, p:12}]
+        ]
+      },
+      glasswing: {
+        bpm: 120,
+        lengths: [16, 16, 16, 13, 9, 16],
+        crush: 0.06,
+        drive: 0.12,
+        swing: 0.1,
+        data: [
+          [{i:0, v:96, pr:86},{i:10, v:68, pr:72}],
+          [{i:7, r:2, p:5, pr:70},{i:15, v:76, pr:76}],
+          [{i:0, r:2, v:62},{i:4, r:1, v:54},{i:9, r:3, v:48, pr:82},{i:13, v:52}],
+          [{i:2, r:2, p:19, pr:82},{i:7, p:12},{i:11, r:3, p:7, pr:68}],
+          [{i:1, r:3, p:15, pr:74},{i:5, r:2, p:-12, pr:82}],
+          [{i:0, p:-19, v:72},{i:6, p:-12, v:58},{i:12, p:-5, v:64}]
+        ]
+      },
+      sidechannel: {
+        bpm: 172,
+        lengths: [14, 14, 16, 11, 13, 14],
+        crush: 0.3,
+        drive: 0.4,
+        swing: 0.05,
+        data: [
+          [{i:0, v:116},{i:3, r:2},{i:7, v:90},{i:10, r:3}],
+          [{i:2, r:2},{i:5, r:3},{i:9, r:4},{i:12, r:3}],
+          [{i:0, r:3},{i:2, r:2},{i:4, r:4},{i:6, r:3},{i:8, r:4},{i:10, r:3},{i:12, r:4},{i:14, r:2}],
+          [{i:1, r:3, p:12},{i:4, r:4, p:7},{i:7, r:3, p:19},{i:10, r:4, p:5}],
+          [{i:0, r:4, p:15},{i:3, r:3, p:-12},{i:6, r:4, p:8},{i:9, r:3, p:19},{i:12, r:4, p:3}],
+          [{i:0, r:2, p:-12},{i:5, r:3, p:-5},{i:9, r:2, p:7},{i:12, r:3, p:12}]
+        ]
+      },
+      nullisland: {
+        bpm: 140,
+        lengths: [13, 11, 16, 7, 9, 13],
+        crush: 0.18,
+        drive: 0.22,
+        swing: 0.11,
+        data: [
+          [{i:0, v:106, pr:92},{i:7, r:2, p:-5, pr:78}],
+          [{i:3, r:2, p:3, pr:80},{i:8, v:76, pr:70}],
+          [{i:0, r:2},{i:3, r:3, pr:82},{i:7, r:2},{i:12, r:3, pr:76}],
+          [{i:1, r:3, p:12},{i:4, r:4, p:7, pr:84},{i:6, r:3, p:19}],
+          [{i:0, r:3, p:15, pr:78},{i:5, r:4, p:-12, pr:70},{i:8, r:2, p:8}],
+          [{i:0, p:-12},{i:5, r:2, p:-5},{i:10, p:7}]
+        ]
       }
     };
 
     function loadPreset(key) {
-      const p = PRESETS[key] || PRESETS.confield;
+      const presetKey = Object.prototype.hasOwnProperty.call(PRESETS, key) ? key : 'confield';
+      const p = PRESETS[presetKey];
+      document.getElementById('presetSelect').value = presetKey;
       bureau.bpm = p.bpm;
       document.getElementById('tempoInput').value = p.bpm;
 
@@ -2211,16 +2635,16 @@
         pTrack.forEach(item => {
           if (track.steps[item.i]) {
             track.steps[item.i].active = true;
-            track.steps[item.i].ratchet = item.r || 1;
-            track.steps[item.i].pitchOffset = item.p || 0;
-            track.steps[item.i].vel = item.v || 100;
-            track.steps[item.i].prob = item.pr || 100;
+            track.steps[item.i].ratchet = item.r ?? 1;
+            track.steps[item.i].pitchOffset = item.p ?? 0;
+            track.steps[item.i].vel = item.v ?? 100;
+            track.steps[item.i].prob = item.pr ?? 100;
           }
         });
       });
 
       renderAllTracks();
-      updateTicker(`PATTERN LOADED: [${key.toUpperCase()}] RE-INDEXED BY AUDIT UNIT`);
+      updateTicker(`PATTERN LOADED: [${presetKey.toUpperCase()}] RE-INDEXED BY AUDIT UNIT`);
     }
 
     // --- UI Rendering & Interaction ---
@@ -2464,6 +2888,158 @@
       updateTicker(`EUCLIDEAN ALGORITHM: ${pulses} HITS ACROSS ${totalSteps} STEPS APPLIED.`);
     }
 
+    // The generator is style-aware rather than a uniform coin flip. Each
+    // profile supplies a meter palette, voice densities, transient roles and
+    // ranges for the performance controls, so successive seeds remain varied
+    // while still reading like a coherent rhythmic idiom.
+    const GENERATOR_PROFILES = {
+      braindance: {
+        label: 'BRAINDANCE', bpm: [138, 178],
+        lengths: [[16, 16, 16, 13, 11, 16], [16, 14, 16, 12, 14, 9], [15, 13, 16, 11, 13, 16]],
+        density: [0.22, 0.17, 0.5, 0.26, 0.22, 0.24], ratchet: [0.12, 0.2, 0.14, 0.2, 0.42, 0.08],
+        pitch: [0.12, 0.18, 0.16, 0.62, 0.72, 0.34], probabilityLock: 0.32,
+        swing: [0.04, 0.24], humanize: [2, 12], globalProb: [0.78, 1], globalRatchet: [0.08, 0.38],
+        crush: [0.08, 0.3], drive: [0.12, 0.4], accent: 0.8, velocity: [62, 122]
+      },
+      breakcore: {
+        label: 'BREAKCORE', bpm: [176, 236],
+        lengths: [[16, 16, 16, 12, 16, 16], [14, 14, 16, 7, 13, 14], [16, 13, 16, 11, 9, 16]],
+        density: [0.4, 0.36, 0.7, 0.39, 0.48, 0.27], ratchet: [0.34, 0.42, 0.3, 0.38, 0.72, 0.12],
+        pitch: [0.18, 0.28, 0.18, 0.58, 0.72, 0.32], probabilityLock: 0.43,
+        swing: [0, 0.12], humanize: [0, 8], globalProb: [0.72, 0.98], globalRatchet: [0.28, 0.72],
+        crush: [0.22, 0.58], drive: [0.32, 0.68], accent: 0.56, velocity: [68, 127]
+      },
+      glitch: {
+        label: 'GLITCH COLLAGE', bpm: [104, 190],
+        lengths: [[13, 11, 16, 7, 9, 13], [16, 13, 16, 12, 7, 16], [15, 13, 16, 11, 14, 9]],
+        density: [0.14, 0.15, 0.42, 0.34, 0.43, 0.19], ratchet: [0.12, 0.18, 0.32, 0.32, 0.68, 0.1],
+        pitch: [0.28, 0.34, 0.35, 0.78, 0.9, 0.55], probabilityLock: 0.68,
+        swing: [0, 0.2], humanize: [5, 22], globalProb: [0.58, 0.9], globalRatchet: [0.14, 0.58],
+        crush: [0.25, 0.72], drive: [0.16, 0.56], accent: 0.24, velocity: [40, 112]
+      },
+      polyrhythm: {
+        label: 'POLYRHYTHM', bpm: [124, 184],
+        lengths: [[13, 11, 16, 7, 9, 13], [15, 13, 16, 11, 14, 9], [16, 14, 16, 13, 7, 12]],
+        density: [0.23, 0.18, 0.46, 0.3, 0.28, 0.27], ratchet: [0.1, 0.18, 0.19, 0.26, 0.48, 0.09],
+        pitch: [0.12, 0.22, 0.2, 0.72, 0.78, 0.42], probabilityLock: 0.38,
+        swing: [0.02, 0.22], humanize: [2, 14], globalProb: [0.75, 1], globalRatchet: [0.08, 0.42],
+        crush: [0.06, 0.38], drive: [0.12, 0.4], accent: 0.72, velocity: [56, 120]
+      },
+      ambient: {
+        label: 'SPARSE / AMBIENT', bpm: [78, 142],
+        lengths: [[16, 16, 16, 13, 11, 16], [13, 11, 16, 7, 9, 13], [16, 13, 16, 12, 14, 16]],
+        density: [0.1, 0.1, 0.3, 0.16, 0.18, 0.2], ratchet: [0.04, 0.08, 0.1, 0.14, 0.28, 0.04],
+        pitch: [0.18, 0.2, 0.2, 0.7, 0.76, 0.52], probabilityLock: 0.58,
+        swing: [0.02, 0.18], humanize: [3, 18], globalProb: [0.7, 0.98], globalRatchet: [0.02, 0.2],
+        crush: [0.02, 0.18], drive: [0.04, 0.22], accent: 0.9, velocity: [38, 94]
+      },
+      drill: {
+        label: 'DRILL FRACTURE', bpm: [178, 220],
+        lengths: [[14, 14, 14, 7, 14, 14], [16, 14, 16, 7, 13, 14], [14, 16, 16, 11, 13, 14]],
+        density: [0.3, 0.28, 0.56, 0.25, 0.37, 0.23], ratchet: [0.26, 0.34, 0.22, 0.3, 0.62, 0.1],
+        pitch: [0.12, 0.24, 0.18, 0.6, 0.76, 0.4], probabilityLock: 0.46,
+        swing: [0, 0.08], humanize: [0, 8], globalProb: [0.72, 0.96], globalRatchet: [0.24, 0.62],
+        crush: [0.18, 0.48], drive: [0.24, 0.58], accent: 0.52, velocity: [62, 127]
+      }
+    };
+
+    function generateIdmPattern(requestedStyle) {
+      const styleNames = Object.keys(GENERATOR_PROFILES);
+      const style = requestedStyle === 'surprise'
+        ? styleNames[Math.floor(Math.random() * styleNames.length)]
+        : (GENERATOR_PROFILES[requestedStyle] ? requestedStyle : 'braindance');
+      const profile = GENERATOR_PROFILES[style];
+      const randomIn = ([min, max]) => min + Math.random() * (max - min);
+      const randomInt = ([min, max]) => Math.round(randomIn([min, max]));
+      const chosenLengths = profile.lengths[Math.floor(Math.random() * profile.lengths.length)];
+      const pitchChoices = [-19, -12, -7, -5, -3, 0, 3, 5, 7, 12, 19, 24];
+      const ratchetChoices = [2, 2, 3, 3, 4];
+
+      bureau.bpm = randomInt(profile.bpm);
+      document.getElementById('tempoInput').value = bureau.bpm;
+      bureau.fx.swing = randomIn(profile.swing);
+      document.getElementById('masterSwing').value = Math.round(bureau.fx.swing * 100);
+      document.getElementById('masterSwingVal').innerText = `${Math.round(bureau.fx.swing * 100)}%`;
+      bureau.fx.humanize = randomInt(profile.humanize);
+      document.getElementById('fxHumanize').value = bureau.fx.humanize;
+      document.getElementById('fxHumanizeVal').innerText = `${bureau.fx.humanize}ms`;
+      bureau.fx.globalProb = randomIn(profile.globalProb);
+      document.getElementById('globalProb').value = Math.round(bureau.fx.globalProb * 100);
+      document.getElementById('globalProbVal').innerText = `${Math.round(bureau.fx.globalProb * 100)}%`;
+      bureau.fx.globalRatchet = randomIn(profile.globalRatchet);
+      document.getElementById('globalRatchet').value = Math.round(bureau.fx.globalRatchet * 100);
+      document.getElementById('globalRatchetVal').innerText = `${Math.round(bureau.fx.globalRatchet * 100)}%`;
+      bureau.fx.crush = randomIn(profile.crush);
+      document.getElementById('fxCrush').value = bureau.fx.crush;
+      document.getElementById('fxCrushVal').innerText = `${Math.round(bureau.fx.crush * 100)}%`;
+      if (bureau.crushShaper) bureau.updateCrushCurve(bureau.fx.crush);
+      bureau.fx.drive = randomIn(profile.drive);
+      document.getElementById('fxDrive').value = bureau.fx.drive;
+      document.getElementById('fxDriveVal').innerText = `${Math.round(bureau.fx.drive * 100)}%`;
+      if (bureau.driveShaper) bureau.updateDriveCurve(bureau.fx.drive);
+
+      bureau.tracks.forEach((track, tIdx) => {
+        track.currentLength = chosenLengths[tIdx];
+        track.steps.forEach(step => {
+          step.active = false;
+          step.ratchet = 1;
+          step.vel = 100;
+          step.prob = 100;
+          step.pitchOffset = 0;
+        });
+
+        for (let stepIndex = 0; stepIndex < track.currentLength; stepIndex++) {
+          const step = track.steps[stepIndex];
+          const beat = stepIndex % 4;
+          const halfBeat = stepIndex % 8;
+          let roleBias = 0;
+          if (tIdx === 0) roleBias = halfBeat === 0 ? 0.34 : beat === 2 ? 0.12 : -0.04;
+          if (tIdx === 1) roleBias = halfBeat === 4 ? 0.3 : halfBeat === 0 ? -0.06 : beat === 3 ? 0.08 : -0.02;
+          if (tIdx === 2) roleBias = stepIndex % 2 === 0 ? 0.12 : -0.04;
+          if (tIdx === 3) roleBias = Math.sin((stepIndex / track.currentLength) * Math.PI * 2) * 0.1;
+          if (tIdx === 4) roleBias = stepIndex % 3 === 1 ? 0.09 : -0.02;
+          if (tIdx === 5) roleBias = halfBeat === 0 ? 0.2 : beat === 2 ? 0.06 : -0.04;
+          const hitChance = Math.max(0.025, Math.min(0.94,
+            profile.density[tIdx] + (roleBias * profile.accent)));
+          if (Math.random() >= hitChance) continue;
+
+          step.active = true;
+          step.vel = randomInt(profile.velocity);
+          if (Math.random() < profile.probabilityLock) {
+            step.prob = randomInt(style === 'ambient' ? [48, 94] : [55, 98]);
+          }
+          if (Math.random() < profile.ratchet[tIdx]) {
+            step.ratchet = ratchetChoices[Math.floor(Math.random() * ratchetChoices.length)];
+          }
+          if (Math.random() < profile.pitch[tIdx]) {
+            step.pitchOffset = pitchChoices[Math.floor(Math.random() * pitchChoices.length)];
+          }
+        }
+
+        // Even a sparse profile should produce a playable six-voice idea rather
+        // than leaving an entire lane accidentally empty on a short cycle.
+        if (!track.steps.slice(0, track.currentLength).some(step => step.active)) {
+          const anchors = [[0, 8, 4], [4, 12, 2], [0, 4, 8], [1, 3, 5], [2, 5, 1], [0, 8, 4]][tIdx]
+            .filter(index => index < track.currentLength);
+          const fallbackIndex = anchors.length
+            ? anchors[Math.floor(Math.random() * anchors.length)]
+            : Math.floor(Math.random() * track.currentLength);
+          const fallbackStep = track.steps[fallbackIndex];
+          fallbackStep.active = true;
+          fallbackStep.vel = randomInt(profile.velocity);
+          if (Math.random() < profile.ratchet[tIdx]) {
+            fallbackStep.ratchet = ratchetChoices[Math.floor(Math.random() * ratchetChoices.length)];
+          }
+          if (Math.random() < profile.pitch[tIdx]) {
+            fallbackStep.pitchOffset = pitchChoices[Math.floor(Math.random() * pitchChoices.length)];
+          }
+        }
+      });
+
+      renderAllTracks();
+      updateTicker(`GENERATED ${profile.label} PATTERN: ${bureau.bpm} BPM // SIX LANES RECOMPOSED.`);
+    }
+
     function selectStep(tIdx, sIdx) {
       bureau.selectedStep = { tIdx, sIdx };
       const step = bureau.tracks[tIdx].steps[sIdx];
@@ -2611,6 +3187,9 @@
         }
         updateTicker("TRANSMISSION ACTIVE: UNREASONABLE METRICS DISPATCHED.");
       } else {
+        // A manual transport stop/restart transfers ownership from the record
+        // control; ending that take must not stop playback the user restarted.
+        if (bureau.isRecording) bureau.recordingInitiatedTransport = false;
         bureau.stop();
         updateTicker("FACILITY HALTED: RECORDING IDLE AUDIT MEASURES.");
       }
@@ -2618,6 +3197,129 @@
     }
 
     playBtn.addEventListener('click', togglePlayback);
+
+    const recordBtn = document.getElementById('recordBtn');
+    const recordBtnLabel = document.getElementById('recordBtnLabel');
+    const recordTimer = document.getElementById('recordTimer');
+    let recordingClock = null;
+    let recordingStartedAt = 0;
+    let recordingFinalizing = false;
+
+    function renderRecordButton() {
+      if (recordingFinalizing) {
+        recordBtn.disabled = true;
+        recordBtn.classList.remove('recording');
+        recordBtn.setAttribute('aria-pressed', 'false');
+        recordBtn.setAttribute('aria-label', 'Preparing the live recording download');
+        recordBtnLabel.textContent = 'WRITING FILE';
+        recordTimer.textContent = 'SAVE';
+        return;
+      }
+
+      recordBtn.disabled = false;
+      if (bureau.isRecording) {
+        recordBtn.classList.add('recording');
+        recordBtn.setAttribute('aria-pressed', 'true');
+        recordBtn.setAttribute('aria-label', 'Stop recording and download the live take');
+        recordBtnLabel.textContent = 'STOP + SAVE';
+      } else {
+        recordBtn.classList.remove('recording');
+        recordBtn.setAttribute('aria-pressed', 'false');
+        recordBtn.setAttribute('aria-label', 'Record live audio session');
+        recordBtnLabel.textContent = 'RECORD LIVE';
+      }
+    }
+
+    function formatRecordingTime() {
+      const elapsedSeconds = Math.max(0, Math.floor((Date.now() - recordingStartedAt) / 1000));
+      const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+      const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
+      return `${minutes}:${seconds}`;
+    }
+
+    function clearRecordingClock() {
+      if (recordingClock !== null) clearInterval(recordingClock);
+      recordingClock = null;
+    }
+
+    function handleRecordingFailure(error) {
+      clearRecordingClock();
+      recordingStartedAt = 0;
+      recordingFinalizing = false;
+      recordTimer.textContent = '00:00';
+      renderRecordButton();
+      renderPlayButton();
+      updateTicker(`LIVE RECORDING FAILED: ${(error && error.message) || 'CAPTURE INTERRUPTED'}.`);
+    }
+
+    function downloadLiveTake(recording) {
+      const mimeType = recording.mimeType || recording.blob.type || 'audio/webm';
+      const extension = mimeType.includes('ogg') ? 'ogg' :
+        (mimeType.includes('mp4') ? 'm4a' : (mimeType.includes('wav') ? 'wav' : 'webm'));
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const url = URL.createObjectURL(recording.blob);
+      const anchor = document.createElement('a');
+      anchor.style.display = 'none';
+      anchor.href = url;
+      anchor.download = `BUREAU_LIVE_SESSION_${bureau.bpm}BPM_${timestamp}.${extension}`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        if (anchor.parentNode) anchor.parentNode.removeChild(anchor);
+      }, 1500);
+    }
+
+    async function toggleLiveRecording() {
+      if (!bureau.isRecording) {
+        const result = bureau.startRecording(handleRecordingFailure);
+        if (!result.ok) {
+          const messages = {
+            unsupported: 'THIS BROWSER DOES NOT SUPPORT LIVE AUDIO RECORDING.',
+            'audio-unavailable': 'NO WEB AUDIO DEVICE AVAILABLE FOR LIVE CAPTURE.',
+            'already-recording': 'A LIVE TAKE IS ALREADY IN PROGRESS.'
+          };
+          updateTicker(messages[result.reason] ||
+            `LIVE RECORDING COULD NOT START: ${(result.error && result.error.message) || 'CAPTURE UNAVAILABLE'}.`);
+          return;
+        }
+
+        recordingStartedAt = Date.now();
+        recordTimer.textContent = '00:00';
+        clearRecordingClock();
+        recordingClock = setInterval(() => {
+          if (bureau.isRecording) recordTimer.textContent = formatRecordingTime();
+        }, 1000);
+        renderPlayButton(); // Recording starts transport when it was idle.
+        renderRecordButton();
+        updateTicker('LIVE TAKE RECORDING: MASTER OUTPUT CAPTURED IN REAL TIME. CLICK STOP + SAVE TO DOWNLOAD.');
+        return;
+      }
+
+      const recordedDuration = recordTimer.textContent;
+      recordingFinalizing = true;
+      clearRecordingClock();
+      renderRecordButton();
+      try {
+        const recording = await bureau.stopRecording();
+        if (!recording.blob || recording.blob.size === 0) {
+          throw new Error('The captured take contained no audio data.');
+        }
+        downloadLiveTake(recording);
+        updateTicker(`LIVE TAKE DOWNLOADED: ${recording.mimeType.toUpperCase()} // ${recordedDuration}.`);
+      } catch (error) {
+        updateTicker(`LIVE RECORDING COULD NOT BE SAVED: ${(error && error.message) || 'FILE ERROR'}.`);
+      } finally {
+        recordingFinalizing = false;
+        recordingStartedAt = 0;
+        clearRecordingClock();
+        recordTimer.textContent = '00:00';
+        renderRecordButton();
+        renderPlayButton();
+      }
+    }
+
+    recordBtn.addEventListener('click', toggleLiveRecording);
 
     /**
      * Global space-bar transport. Form controls and step cells handle Space
@@ -2657,15 +3359,7 @@
     });
 
     document.getElementById('randomizeAllBtn').addEventListener('click', () => {
-      bureau.tracks.forEach(t => {
-        t.steps.forEach(s => {
-          s.active = Math.random() < 0.28;
-          s.ratchet = Math.random() < 0.2 ? (Math.random() > 0.5 ? 2 : 4) : 1;
-          s.pitchOffset = Math.random() < 0.25 ? [-12, -5, 0, 7, 12][Math.floor(Math.random() * 5)] : 0;
-        });
-      });
-      renderAllTracks();
-      updateTicker("GENERATIVE SEED COMPUTED: NEW RHYTHMIC EXPERIMENT READY.");
+      generateIdmPattern(document.getElementById('patternStyleSelect').value);
     });
 
     document.getElementById('presetSelect').addEventListener('change', (e) => {

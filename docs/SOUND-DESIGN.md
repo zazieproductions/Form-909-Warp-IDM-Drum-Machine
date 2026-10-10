@@ -410,7 +410,7 @@ character coming from the drive stage rather than from digital clipping.
 Voices are pure functions of their parameters, which makes them the safest
 place to experiment. Before changing one:
 
-1. **Understand what the presets depend on.** All nine were authored against
+1. **Understand what the presets depend on.** All 21 are authored against
    these timbres; a change to `synthKick` changes every preset's low end.
 2. **Check the duration.** If a voice runs longer than one step at high BPM,
    successive triggers overlap. At 210 BPM a step is 71 ms, so the 400 ms kick

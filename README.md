@@ -6,15 +6,15 @@
 
 **A precision metric laboratory for braindance, drill and glitch.**
 
-Six synthesis voices. Polyrhythmic lanes. Per-step parameter locks.
-Offline 24-bit WAV rendering. Zero dependencies, zero build step, one file.
+Six synthesis voices. 21 curated IDM/glitch cases plus style-aware generation.
+Live session recording, offline 24-bit WAV rendering. Zero dependencies, one file.
 
 [![Live demo](https://img.shields.io/badge/demo-open%20in%20browser-38bdf8?style=for-the-badge)](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-10b981?style=for-the-badge)](#why-zero-dependencies)
 [![Build](https://img.shields.io/badge/build-none%20required-64748b?style=for-the-badge)](#quick-start)
 [![Engine](https://img.shields.io/badge/engine-web%20audio%20api-f59e0b?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
 [![License](https://img.shields.io/badge/license-MIT-94a3b8?style=for-the-badge)](LICENSE)
-[![Lines of code](https://img.shields.io/badge/loc-2.7k-94a3b8?style=for-the-badge)](#project-scale)
+[![Lines of code](https://img.shields.io/badge/loc-3.5k-94a3b8?style=for-the-badge)](#project-scale)
 
 <h3>
   <a href="https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html">
@@ -124,7 +124,9 @@ instrument still works; only the typeface changes):
 | Click any step cell | Toggle that trigger. `Shift`+click cycles its ratchet 1→2→3→4. |
 | Click a cell, then move **VELOCITY** / **PROBABILITY** / **PITCH P-LOCK** | Per-step parameter locks. |
 | Press **MUTATE** | Stochastic deviation spread across the whole matrix. |
-| Press **GENERATIVE SEED** | A completely new pattern. |
+| Choose a generator **STYLE**, then press **GENERATIVE SEED** | A new braindance, breakcore, glitch, polyrhythmic, ambient or drill pattern. |
+| Choose one of the **21 archive cases** | Load a distinct, hand-curated IDM/glitch pattern. |
+| Press **RECORD LIVE** | Captures the real-time master output; press **STOP + SAVE** to download the take. |
 | Change a lane's **LEN** to 13 | That lane goes polyrhythmic against the others. |
 | Press **GEN** (Euclid) | A Euclidean distribution of hits across the lane. |
 | Press **EXPORT 24-BIT WAV** | Offline render → a real `.wav` file downloads. |
@@ -140,6 +142,11 @@ instrument still works; only the typeface changes):
 - **Per-step parameter locks**: velocity (0–127), ratchet (1–4),
   probability (0–100 %) and pitch offset (±24 semitones).
 - **Mute and solo** per track, with solo evaluated across the whole matrix.
+- **21 curated case files** spanning micro-rhythms, breakcore, sparse ambient,
+  crushed glitch, drill fills and interlocking odd meters.
+- **Style-aware generative patterns**: choose braindance, breakcore, glitch
+  collage, polyrhythm, sparse/ambient, drill fracture or surprise mix for fresh
+  six-lane patterns with matching tempo, lane lengths and performance settings.
 - **Euclidean rhythm generation** per lane via the Bjorklund/bucket algorithm,
   at randomised density between 25 % and 75 %.
 - **Global probabilistic warp**: a master probability gate, a drill-density
@@ -164,13 +171,17 @@ instrument still works; only the typeface changes):
 - Brickwall-style limiter
 - Live vector scope
 
-### Export
+### Recording & export
 
+- **RECORD LIVE** captures the real-time, post-effects master output while you
+  play, mutate, edit or load patterns; **STOP + SAVE** downloads the take.
+- Live capture uses the browser's supported `MediaRecorder` audio format
+  (usually WebM/Opus; the container varies by browser).
 - Offline render through `OfflineAudioContext` at 48 kHz
 - 2, 4, 8 or 16 patterns per bounce
 - **24-bit PCM** RIFF/WAVE (16-bit available via API)
-- Fully seeded and reproducible
-- Node-for-node identical to the live signal path
+- Offline bounces are fully seeded and reproducible
+- Offline graph mirrors the live signal path
 
 ---
 
@@ -179,7 +190,7 @@ instrument still works; only the typeface changes):
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
 │ FORM 909-WARP   THE BUREAU OF UNREASONABLE RHYTHMS                       │
-│                 ● SYNC   [▶ EXECUTE]  BPM[168]  [MUTATE]  [EXPORT WAV]   │
+│                 ● SYNC [▶ EXECUTE] BPM[168] [● REC LIVE] [EXPORT WAV]   │
 ├─────────────────┬────────────────────────────────────────────────────────┤
 │ VECTOR SCOPE    │  SYNCHRONOUS SUB-DIVIDED LANES                         │
 │  ╱╲  ╱╲╱╲       │  [PURGE ALL] [GENERATIVE SEED]                         │
@@ -345,15 +356,15 @@ Full treatment: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** and
 
 | Metric | Value |
 |---|---|
-| Total source | **1 file**, 2 736 lines, ≈93 KB |
-| JavaScript | ≈1 727 lines (one inline `<script>`) |
-| CSS | ≈737 lines (one inline `<style>`) |
+| Total source | **1 file**, 3 484 lines, ≈129 KB |
+| JavaScript | 2 371 lines (one inline `<script>`) |
+| CSS | 814 lines (one inline `<style>`) |
 | Runtime dependencies | **0** |
 | Build step | **none** |
 | Synthesis voices | 6 |
 | Allocated steps per track | 32 |
 | Selectable lane length | 1–32 |
-| Shipped presets | 9 |
+| Shipped presets | 21 |
 | Export sample rate | 48 kHz |
 | Export bit depth | 24-bit (16-bit available) |
 | Tooling scripts | 3 (validate, link check, dev server) |

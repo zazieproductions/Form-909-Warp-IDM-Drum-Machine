@@ -266,7 +266,7 @@ scheduling.
 
 Changes to a voice, the bus, or a preset.
 
-**Requires:** before/after listening on all nine presets; an explicit statement
+**Requires:** before/after listening on all 21 presets; an explicit statement
 of which presets change and how; the changelog entry noting it is a sonic
 change.
 

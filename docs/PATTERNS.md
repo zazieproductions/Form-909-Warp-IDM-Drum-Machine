@@ -11,7 +11,7 @@ author new material.
 2. [Polyrhythm](#2-polyrhythm)
 3. [Per-step parameters](#3-per-step-parameters)
 4. [Preset schema](#4-preset-schema)
-5. [The nine case files](#5-the-nine-case-files)
+5. [The 21 case files](#5-the-21-case-files)
 6. [Authoring a preset](#6-authoring-a-preset)
 7. [The Euclidean generator](#7-the-euclidean-generator)
 8. [Mutate and generative seed](#8-mutate-and-generative-seed)
@@ -250,19 +250,31 @@ loadPreset('raster');
 
 ---
 
-## 5. The nine case files
+## 5. The 21 case files
 
 | # | Key | BPM | Character | What to listen for |
 |---|---|---|---|---|
-| 01 | `confield` | 168 | Micro-bursts | Default load. 12- and 14-step lanes drifting against a 16-step spine |
-| 02 | `drukqs` | 192 | Ratchets | Dense 4× hat work; prepared-piano drill |
+| 01 | `confield` | 168 | Micro-bursts | Default load; 12- and 14-step lanes drift against a 16-step spine |
+| 02 | `drukqs` | 192 | Ratchets | Dense 4× hat work and prepared-piano drill |
 | 03 | `square` | 178 | Fast bass polyrhythm | Busy sub line at 11- and 13-step lengths |
-| 04 | `subliminal` | 142 | Uneven cycle | 13/13/16/7/9/13 — the most polyrhythmic preset |
+| 04 | `subliminal` | 142 | Uneven cycle | 13/13/16/7/9/13 — the most polyrhythmic original |
 | 05 | `gonk` | 156 | Euclidean | Modular FM clangs at wide pitch locks up to +19 |
-| 06 | `vnares` | 210 | Extreme drill | 7/8 at 210 BPM; the fastest, densest preset |
+| 06 | `vnares` | 210 | Extreme drill | 7/8 at 210 BPM; the fastest of the first nine |
 | 07 | `raster` | 128 | Sparse sub clicks | Minimal; demonstrates restraint |
-| 08 | `boiler` | 165 | Industrial crush | Highest drive (0.65) and swing (0.22) |
+| 08 | `boiler` | 165 | Industrial crush | High drive (0.65) and swing (0.22) |
 | 09 | `empty` | 160 | Blank slate | All steps cleared; a starting point |
+| 10 | `shardgarden` | 134 | Offset shards | Lightly swung metallic fragments across 13/16/11-step lanes |
+| 11 | `fractureline` | 176 | Breakcore bursts | Dense snare/glitch chatter with sharp ratchet fills |
+| 12 | `elasticclock` | 148 | Skipping pulse | Elastic kick, delayed snare and a 9-step glitch cycle |
+| 13 | `granule` | 116 | Sparse micro-glitch | Quiet, probabilistic grains and low pitched sub notes |
+| 14 | `hypergrid` | 226 | Maximum density | Fast 4× bursts, compressed accents and interlocking short meters |
+| 15 | `wonkcurrent` | 108 | Half-time wobble | Deep swing, rolling hats and a lopsided 11-step clang lane |
+| 16 | `phasefold` | 162 | Interlocking meters | Five different lane lengths phase against one another |
+| 17 | `brokenmirror` | 136 | Fractured backbeat | Familiar anchors repeatedly displaced by drill-like fills |
+| 18 | `bitrot` | 184 | Crushed stutters | Heavy bit reduction, bright ratchets and a 7-step glitch pulse |
+| 19 | `glasswing` | 120 | Airy granular | Low-velocity probability with delicate pitched percussion |
+| 20 | `sidechannel` | 172 | Drill cross-currents | 14-step kick/snare against persistent hat and glitch bursts |
+| 21 | `nullisland` | 140 | Unstable sparse poly | A low-density 13/11/16/7/9/13 lattice |
 
 ### Suggested experiments
 
@@ -394,16 +406,28 @@ want the latter.
 
 ### Generative seed
 
-`randomizeAllBtn` handler:
+Choose a style beside **GENERATIVE SEED**. Each press selects a new tempo,
+polyrhythmic lane-length arrangement, lane density and accent profile, then
+adds per-step velocity, probability locks, ratchets and pitch offsets. It also
+sets swing, humanise, global probability, drill density, crush and drive to a
+range suited to that style.
 
-```js
-s.active = Math.random() < 0.28;
-s.ratchet = Math.random() < 0.2 ? (Math.random() > 0.5 ? 2 : 4) : 1;
-s.pitchOffset = Math.random() < 0.25 ? [-12, -5, 0, 7, 12][Math.floor(Math.random() * 5)] : 0;
-```
+| Style | Character |
+|---|---|
+| Braindance | Syncopated kick/snare anchors with migrating percussion and glitch |
+| Breakcore | Higher density, faster tempo and frequent ratchet bursts |
+| Glitch collage | Sparse anchors, granular hats, irregular meters and more probability locks |
+| Polyrhythm | Coprime lane lengths and balanced cross-rhythmic voices |
+| Sparse / ambient | Low velocities, fewer hits, long-cycle phrasing and pitched grains |
+| Drill fracture | 7/8 and 14-step structures with aggressive fill injection |
+| Surprise mix | Randomly selects one of the six profiles |
 
-Creates an entirely new pattern: 28 % density, 20 % of steps ratcheted, 25 %
-pitch-locked. Probability is reset to 100 %.
+The generator is deliberately **style-shaped, not a coin flip**: kick, snare,
+hat, percussion, glitch and sub have different positional biases. Every lane is
+guaranteed at least one active trigger, including short sparse cycles. Each
+click still uses fresh randomness, so repeating a style produces a new pattern
+rather than replaying a fixed template. Unlike **MUTATE**, a seed replaces every
+active step and selects a new rhythmic foundation.
 
 ### Purge
 

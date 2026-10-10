@@ -151,14 +151,15 @@ Run before tagging a release. Each row has an explicit pass criterion.
 | P9 | Solo lane A then lane B | Only lane B sounds |
 | P10 | Press **GEN** on each lane | A Euclidean distribution appears; ticker reports the density |
 | P11 | Press **MUTATE** five times | Pattern evolves without error; density stays broadly similar |
-| P12 | **GENERATIVE SEED** | New pattern; no error |
-| P13 | **PURGE ALL** | All steps inactive; ratchets reset to 1 |
+| P12 | Generate each of the six styles, then **SURPRISE MIX** | Fresh six-lane patterns appear; BPM, lengths and style settings stay in range |
+| P13 | Generate successive seeds without changing style | Pattern changes without errors; no lane exceeds 32 steps |
+| P14 | **PURGE ALL** | All steps inactive; ratchets reset to 1 |
 
 ### Presets
 
 | # | Test | Pass criterion |
 |---|---|---|
-| R1 | Load each of the nine presets in turn | BPM, lengths, crush, drive, swing and pattern all apply |
+| R1 | Load each of the 21 presets in turn | BPM, lengths, crush, drive, swing and pattern all apply |
 | R2 | Load `vnares` (210 BPM, 7/8) | Timing is stable at the fastest setting |
 | R3 | Load `subliminal` (lengths 13/13/16/7/9/13) | Lanes render at their own lengths; drift is audible |
 | R4 | Load `empty` | All lanes clear; no residual active steps |
@@ -188,6 +189,16 @@ Run before tagging a release. Each row has an explicit pass criterion.
 | X6 | Export with delay feedback at 0.85 | Tail rings out; not audibly truncated |
 | X7 | Cancel mid-render | Dialog closes; no orphaned download |
 
+### Live recording
+
+| # | Test | Pass criterion |
+|---|---|---|
+| L1 | Press **RECORD LIVE** while stopped | Capture starts, transport starts, timer advances, button announces the active state |
+| L2 | Stop a take after audible playback | A non-empty browser-supported audio file downloads and opens in a player |
+| L3 | Start capture while transport is already playing | Recording starts without resetting playback; stopping capture leaves transport running |
+| L4 | Start capture while stopped, then stop it | Recording and the transport it started both stop; the downloaded take is playable |
+| L5 | Test where `MediaRecorder` is unavailable | A clear status message appears and transport is not left running |
+
 ### Accessibility
 
 | # | Test | Pass criterion |
@@ -204,7 +215,7 @@ Run before tagging a release. Each row has an explicit pass criterion.
 
 ### Browsers
 
-Run T1–T3, P1–P2, R1, X1 and A1–A5 in each of Chrome, Firefox and Safari.
+Run T1–T3, P1–P2, all six generator styles, R1, X1, L1–L4 and A1–A5 in Chrome, Firefox and Safari. Confirm the live recording's file extension matches the browser's supported MediaRecorder format.
 
 ---
 
@@ -214,10 +225,11 @@ Run T1–T3, P1–P2, R1, X1 and A1–A5 in each of Chrome, Firefox and Safari.
 
 The most important audio test is manual and has a concrete criterion:
 
-1. Load a preset, start playback, and record the output (a loopback capture, or
-   simply listen).
+1. Load a preset, press **RECORD LIVE**, play for at least four patterns, then
+   stop and save the real-time take.
 2. Export the same preset at 4 patterns.
-3. Compare.
+3. Compare the shared passage by listening (or by aligning the recordings in a
+   DAW); live probability and glitch randomness mean individual takes differ.
 
 **Pass criterion:** the bounce has the same density, the same swing feel, the
 same level within ±0.5 dB, and no missing or extra hits.
@@ -259,8 +271,10 @@ level below 0 dBFS.
 Before merging any change, confirm:
 
 - [ ] `npm run check` passes
-- [ ] All nine presets load without error
+- [ ] All 21 presets load without error
+- [ ] Every generator style produces a valid pattern
 - [ ] Transport starts and stops cleanly
+- [ ] Live record captures, downloads and finalizes a take
 - [ ] A lane-length change round-trips (16 → 7 → 16)
 - [ ] The bounce matches live playback (X4)
 - [ ] The focused cell keeps focus across a toggle (A2)
