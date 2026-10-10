@@ -9,14 +9,22 @@
 Six synthesis voices. Polyrhythmic lanes. Per-step parameter locks.
 Offline 24-bit WAV rendering. Zero dependencies, zero build step, one file.
 
-[![Live demo](https://img.shields.io/badge/demo-open%20in%20browser-38bdf8?style=for-the-badge)](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/)
+[![Live demo](https://img.shields.io/badge/demo-open%20in%20browser-38bdf8?style=for-the-badge)](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-10b981?style=for-the-badge)](#why-zero-dependencies)
 [![Build](https://img.shields.io/badge/build-none%20required-64748b?style=for-the-badge)](#quick-start)
 [![Engine](https://img.shields.io/badge/engine-web%20audio%20api-f59e0b?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
 [![License](https://img.shields.io/badge/license-MIT-94a3b8?style=for-the-badge)](LICENSE)
 [![Lines of code](https://img.shields.io/badge/loc-2.7k-94a3b8?style=for-the-badge)](#project-scale)
 
-👉 **[Open it live in your browser](https://8080-imy6mydufmrufm0dp3in1.e2b.app)** — the full drum machine, running right now. No install, no build, just click and play.
+<h3>
+  <a href="https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html">
+    ▶ Launch Form 909-WARP Web Tool — Open in Browser
+  </a>
+</h3>
+
+[**zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine**](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/) · [**Direct Web Tool Link**](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)
+
+👉 **[Open it live in your browser](https://8080-imy6mydufmrufmrufm0dp3in1.e2b.app)** — the full drum machine, running right now. No install, no build, just click and play.
 
 </div>
 
@@ -100,11 +108,13 @@ npm run serve          # → http://localhost:8080/
 npm run serve -- 3000  # or pick a port
 ```
 
-### 3. Just use it
+### 3. Just use it in the browser (GitHub Pages)
 
-No build, no install, no network calls except the three Google Fonts the
-interface uses. If fonts are unavailable the instrument still works; only the
-typeface changes.
+Open the hosted web tool directly — no build, no install, no network calls
+except the three Google Fonts the interface uses (if fonts are unavailable the
+instrument still works; only the typeface changes):
+
+- **Live Web Tool:** [**https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/**](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)
 
 ### First ninety seconds
 
