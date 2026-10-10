@@ -16,9 +16,13 @@ Offline 24-bit WAV rendering. Zero dependencies, zero build step, one file.
 [![License](https://img.shields.io/badge/license-MIT-94a3b8?style=for-the-badge)](LICENSE)
 [![Lines of code](https://img.shields.io/badge/loc-2.7k-94a3b8?style=for-the-badge)](#project-scale)
 
-**▶ [Open the live instrument](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)**
+<h3>
+  <a href="https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html">
+    ▶ Launch Form 909-WARP Web Tool — Open in Browser
+  </a>
+</h3>
 
-*No download, no install — the same single file, served from GitHub Pages.*
+[**zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine**](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/) · [**Direct Web Tool Link**](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)
 
 </div>
 
@@ -76,21 +80,7 @@ usually treat as edge cases:
 
 ## Quick start
 
-**Fastest route: [open the live instrument on GitHub Pages →](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)**
-
-It is the same file that is in this repository, published by GitHub Pages on
-every push to `main`.
-
-> **Which URL is the app?** The link above. The bare site root
-> (`https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/`)
-> currently renders this README instead: Pages is publishing the `main` branch
-> through Jekyll, which promotes `README.md` to the site index, and the
-> `Deploy to GitHub Pages` workflow — which would publish the app as
-> `index.html` — is failing at its deploy step. See
-> [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-
-If you would rather run it yourself, there are three ways in, and none of them
-involve a toolchain.
+There are three ways in, and none of them involve a toolchain.
 
 ### 1. Open the file
 
@@ -116,11 +106,13 @@ npm run serve          # → http://localhost:8080/
 npm run serve -- 3000  # or pick a port
 ```
 
-### 3. Just use it
+### 3. Just use it in the browser (GitHub Pages)
 
-No build, no install, no network calls except the three Google Fonts the
-interface uses. If fonts are unavailable the instrument still works; only the
-typeface changes.
+Open the hosted web tool directly — no build, no install, no network calls
+except the three Google Fonts the interface uses (if fonts are unavailable the
+instrument still works; only the typeface changes):
+
+- **Live Web Tool:** [**https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/**](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html)
 
 ### First ninety seconds
 

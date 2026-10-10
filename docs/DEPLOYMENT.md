@@ -91,21 +91,32 @@ fetch calls and no asset references — so it works at any base path with no
 
 ### Current live state
 
-The repository's Pages source is still **branch `main`, path `/`** rather than
-**GitHub Actions**, so the workflow above builds its artefact but its *Deploy*
-step fails (`actions/deploy-pages` needs the source set to GitHub Actions).
-What is actually being served is the branch, built by Jekyll — and Jekyll
-promotes `README.md` to the site index. That means:
+Both URLs resolve to the instrument today — checked by fetching them:
 
 | URL | Serves |
 |---|---|
-| [`/Form-909%20Warp%20IDM%20Drum%20Machine.html`](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html) | **The instrument.** This is the URL the README links to. |
-| `/` | This repository's README, rendered as a web page. |
+| `/` | The instrument, via the root `index.html` forwarder. |
+| [`/Form-909%20Warp%20IDM%20Drum%20Machine.html`](https://zazieproductions.github.io/Form-909-Warp-IDM-Drum-Machine/Form-909%20Warp%20IDM%20Drum%20Machine.html) | The instrument, directly. |
 
-To make the root serve the app as designed: **Settings → Pages → Source:
-GitHub Actions**, then re-run *Deploy to GitHub Pages*. The deep link above
-keeps working either way, because the workflow preserves the original filename
-alongside `index.html`.
+Two details make that work, and both are load-bearing:
+
+- **`.nojekyll` in the repository root.** The Pages source is **branch `main`,
+  path `/`** (`GET /repos/:owner/:repo/pages` reports `build_type: legacy`,
+  `cname: null`), so the branch is published by Jekyll unless told otherwise.
+  Before `.nojekyll` existed, the root URL served *this README rendered as a
+  web page*, because Jekyll promotes `README.md` to the site index when there
+  is no `index.html` it recognises. Deleting that file brings the behaviour
+  back.
+- **`index.html` in the repository root**, a forwarder to the percent-encoded
+  filename. It is what makes `/` work under branch publishing, and it is
+  separate from the `index.html` the workflow writes into `_site/`.
+
+The setup section above still applies if you want the artefact path to be the
+one that publishes: set **Settings → Pages → Source: GitHub Actions** and
+re-run the workflow. With the source left on branch publishing, run
+`38004593207` of *Deploy to GitHub Pages* failed at its Deploy step while the
+site continued to be served from the branch; the most recent run on `main`
+succeeded.
 
 ### Required permissions
 
